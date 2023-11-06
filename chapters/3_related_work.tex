@@ -1,12 +1,5 @@
 \chapter{Related Work}
 
-This an example [or it should be] \textit{BLUBB}
-\begin{itemize}
-  \item Some information 
-	
-\end{itemize}
-
-
 \section{Climate simulation datasets}
 
 General infos from \cite{mpige}:
@@ -42,3 +35,27 @@ In \cite{taylor2012overview_cmip5}
 
 The work of \citeauthor{precipitation_seasonality}
 
+\section{Means of moisture transport}
+
+\subsection{vertically integrated water vapor transport}
+
+As proposed by \citeauthor{AProposedAlgorithmforMoistureFluxesfromAtmosphericRivers} in \cite{AProposedAlgorithmforMoistureFluxesfromAtmosphericRivers}, one way of measuring moisture ($p$) transport is by vertically integrating over the different pressure levels the zonal and meridional fluxes $\overline{pu}$ and $\overline{pv}$. 
+
+An example of using this method can be found in \cite{Ayantobo2021IntegratedMT} with many more references why this method is working well for these kinds of approaches. 
+Also this paper lists some other methods of moisture transportation which are also used:
+
+\begin{enumerate}
+  \item integrated water vapor distributions (see \cite{gimeno2014atmospheric_rivers_review})
+  \item the lagrangian approach
+  \item stable oxygen isotope investigation
+\end{enumerate}
+
+
+
+\section{Pattern analysis}
+
+\subsection{Empirical Orthogonal Functions}
+
+See \cite{hannachi2007eof_review} for a big overview of EOF in atmospheric science.
+
+See \cite{Ayantobo2021IntegratedMT} for an similar approach as we plan it, except it only focuses on the past
