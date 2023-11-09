@@ -21,7 +21,21 @@ General infos from \cite{mpige}:
 
 \subsection{MPI-GE - The Max Planck Institute grand Ensemble}
 
-In \cite{mpige} theere is much inforamtion available:
+General information about the future scenarios (all based on the dataset available to me on the DKRZ cluster):
+
+\begin{itemize}
+  \item \textbf{Time}: The time axis is  compromised of 1128 values, which count the days since 01.01.2005. The first one is ~380, so it actually starts somewhere in 2006, and all of those values are roughly 30 days apart. This axis is part of every dataset, all stored as floats.
+  \item \textbf{Eastward/Northward Wind}: Given as Floats in the unit of $ms^{-1}$. Each compromises the wind direction in one orthogonal direction. Eastward wind directory is named \textit{ua}, northward \textit{va}  
+  \item \textbf{Specific Humidity}: Specific humidity is given as a float without value. Reason is the unit is actually kg moisture per kilogramm air, which cancels out in the end.
+	
+\end{itemize}
+
+
+
+In \cite{mpige} there is much inforamtion available:
+
+
+
 
 \subsection{CMIP5 - Coupled Model Intercomparison Project}
 
@@ -42,6 +56,7 @@ The work of \citeauthor{precipitation_seasonality}
 As proposed by \citeauthor{AProposedAlgorithmforMoistureFluxesfromAtmosphericRivers} in \cite{AProposedAlgorithmforMoistureFluxesfromAtmosphericRivers}, one way of measuring moisture ($p$) transport is by vertically integrating over the different pressure levels the zonal and meridional fluxes $\overline{pu}$ and $\overline{pv}$. 
 
 An example of using this method can be found in \cite{Ayantobo2021IntegratedMT} with many more references why this method is working well for these kinds of approaches. 
+
 Also this paper lists some other methods of moisture transportation which are also used:
 
 \begin{enumerate}
@@ -50,10 +65,16 @@ Also this paper lists some other methods of moisture transportation which are al
   \item stable oxygen isotope investigation
 \end{enumerate}
 
-Also the authors of \cite{Ayantobo2021IntegratedMT} make a twofold contribution to this work. 
-Here it will be about the IVT of them. 
-They used it to measure the moisture and displayed the first graphics of the woork, illustrating how an IVT map looks at a drought and during a flood.
-Also maps of the mean IVT during each months, displaying the intense raining/wet summers and dry winters
+\subsubsection{Usages of IVT and differences}
+
+In \cite{ralph2017dropsonde} they used a vector field of the IVT: $\int_{p_{low}}^{p_{max}} qV dp$, where $p$ is the pressure level, $q$ is the humidity and $V$ the horizontal vector.
+
+In \cite{sousa2020north} they used a scalar field based on the euclidian norm of the vector field used by \cite{ralph2017dropsonde}.
+
+
+In \cite{Ayantobo2021IntegratedMT} they also used the euclidian norm on a similar field like \cite{ralph2017dropsonde} to measure the impact of  ENSO on south-chinese weather.
+% They used it to measure the moisture and displayed the first graphics of the work, illustrating how an IVT map looks at a drought and during a flood.
+% Also maps of the mean IVT during each months, displaying the intense raining/wet summers and dry winters
 
 \subsection{Moisture Budget}
 
