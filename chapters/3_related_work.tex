@@ -11,28 +11,31 @@ General infos from \cite{mpige}:
 
 \subsection{RCP Scenarios}
 
-\subsection{Questions arising about using climate simulation datasets}
-
-\begin{itemize}
-  \item How many ensemble members are needed for a correct assessment?
-  \item How to sort them out? Random?
-  \item 
-\end{itemize}
+% \subsection{Questions arising about using climate simulation datasets}
+% 
+% \begin{itemize}
+%   \item How many ensemble members are needed for a correct assessment?
+%   \item How to sort them out? Random?
+%   \item 
+% \end{itemize}
 
 \subsection{MPI-GE - The Max Planck Institute grand Ensemble}
 
-General information about the future scenarios (all based on the dataset available to me on the DKRZ cluster):
+General information about the future scenarios (all based on the \textit{rcp85} dataset available to me on the DKRZ cluster, I just assumed its the same for other scenarios. Maybe need to confirm this):
 
 \begin{itemize}
   \item \textbf{Time}: The time axis is  compromised of 1128 values, which count the days since 01.01.2005. The first one is ~380, so it actually starts somewhere in 2006, and all of those values are roughly 30 days apart. This axis is part of every dataset, all stored as floats.
-  \item \textbf{Eastward/Northward Wind}: Given as Floats in the unit of $ms^{-1}$. Each compromises the wind direction in one orthogonal direction. Eastward wind directory is named \textit{ua}, northward \textit{va}  
-  \item \textbf{Specific Humidity}: Specific humidity is given as a float without value. Reason is the unit is actually kg moisture per kilogramm air, which cancels out in the end.
+  \item \textbf{Lat}: Vector of 96 Float Elements ranging from roughly -88 to 88. Results in a resolution of 1.875° in North-South direction.
+  \item \textbf{Lon}: Vector of 192 Float Elements ranging from roughly 0 to 358. Results in a resolution of 1.875° in East-West direction. 
+  \item \textbf{Pressure Level}: Is given for each dataset and consists of 26 Floats, ranging from 10 to 100,000. 
+  \item \textbf{Eastward/Northward Wind}: Given as Floats in the unit of $ms^{-1}$ per \textit{(lat, lon, time, plev)}. Each compromises the wind direction in one orthogonal direction. Eastward wind directory is named \textit{ua}, northward \textit{va}  
+  \item \textbf{Specific Humidity}: Specific humidity is given as a float without value. Reason is the unit is actually kg moisture per kilogramm air, which cancels out in the end. Is given for each \textit{(lat, lon, time, plev)}. Directory name: \textit{hus}
 	
 \end{itemize}
 
 
 
-In \cite{mpige} there is much inforamtion available:
+In \cite{mpige} there is much information available:
 
 
 
@@ -81,8 +84,30 @@ In \cite{Ayantobo2021IntegratedMT} they also used the euclidian norm on a simila
 \citeauthor{atmos13101694} showed in their report \cite{atmos13101694} the directions of moisture flux on the continent borders based on the big ERA5 reanalysis.
 They measure the moisture based on a equation called the \textit{Moisture Budget}, which is based on multiple Faktors: 
 
+
+
+It seems related to the IVT the other authors used, but utilizes the gradient and some other differences. The complete formula is:
+
+$$
+\frac{1}{g} \frac{\delta}{\delta t} \int^{P_s}_0 q dp = - \nabla \cdot \frac{1}{g} \int^{P_s}_0 (qv) dp + E - P
+$$
+
+With: 
+
 \begin{enumerate}
-  \item Vertically integrated Moisture Convergence ($VIMC$): It is basically the gradient of the specific moisture in the air times the Wind vector
+  \item $p$ is the pressure, $P_s$ is the surface pressure
+  \item $q$ is the specific humidity
+  \item $v$ is the horizontal wind vector
+  \item $E$ is the evaporation
+  \item $P$ is the Precipitation
+\end{enumerate}
+
+
+In the actual analysis they used mostly other metrics:
+
+
+\begin{enumerate}
+  \item Vertically integrated Moisture Convergence (\textit{VIMC}): It is basically the gradient of the specific moisture in the air times the Wind vector
   \item $P$ is the precipitation 
   \item $E$ is the evaporation
 \end{enumerate}
