@@ -27,9 +27,13 @@ General information about the future scenarios (all based on the \textit{rcp85} 
   \item \textbf{Time}: The time axis is  compromised of 1128 values, which count the days since 01.01.2005. The first one is ~380, so it actually starts somewhere in 2006, and all of those values are roughly 30 days apart. This axis is part of every dataset, all stored as floats.
   \item \textbf{Lat}: Vector of 96 Float Elements ranging from roughly -88 to 88. Results in a resolution of 1.875° in North-South direction.
   \item \textbf{Lon}: Vector of 192 Float Elements ranging from roughly 0 to 358. Results in a resolution of 1.875° in East-West direction. 
-  \item \textbf{Pressure Level}: Is given for each dataset and consists of 26 Floats, ranging from 10 to 100,000. 
+  \item \textbf{Pressure Level} (plev): Is given for each dataset and consists of 26 Floats, ranging from 10 to 100,000. Unit is $Pa$.
   \item \textbf{Eastward/Northward Wind}: Given as Floats in the unit of $ms^{-1}$ per \textit{(lat, lon, time, plev)}. Each compromises the wind direction in one orthogonal direction. Eastward wind directory is named \textit{ua}, northward \textit{va}  
   \item \textbf{Specific Humidity}: Specific humidity is given as a float without value. Reason is the unit is actually kg moisture per kilogramm air, which cancels out in the end. Is given for each \textit{(lat, lon, time, plev)}. Directory name: \textit{hus}
+  \item \textbf{Surface Wind Speed}: Given as float per \textit{(lat, lon, time, height)}, represents the wind speed in $ms^{-1}$ (no Vector!!) near the surface level. Directory Name: \textit{sfcWind}
+  \item \textbf{Evaporation}: Given as a float and per \textit{(lat, lon, time)}, represents the evaporation flux. Unit is $\frac{kg}{m^2s}$, directory name \textit{evspsbl}
+  \item \textbf{Preciptation}: Given either as normal or convective flux ($\frac{kg}{m^2s}$) per \textit{(lat, lon, time)}. Directory name \textit{pr, prc}.
+  \item \textbf{Water Vapor Content}: Integrated over the colum, given per \textit{(lat, lon, time)}, just the water vapor content, no wind(vector) involved. Directory name: \textit{prw}.
 	
 \end{itemize}
 
