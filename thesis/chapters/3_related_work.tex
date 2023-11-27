@@ -2,7 +2,7 @@
 
 \section{Climate simulation datasets}
 
-General infos from \cite{mpige}:
+General infos from \cite{maher_max_2019}:
 
 \begin{itemize}
   \item 
@@ -39,53 +39,49 @@ General information about the future scenarios (all based on the \textit{rcp85} 
 
 
 
-In \cite{mpige} there is much information available:
+In \cite{maher_max_2019} there is much information available:
 
 
 
 
 \subsection{CMIP5 - Coupled Model Intercomparison Project}
 
-In \cite{taylor2012overview_cmip5}
+In \cite{taylor_overview_2012}
 
 
 \section{Precipitation Literature}
 
-\subsection{Saisonality in Precipitation variability}
-
-
-The work of \citeauthor{precipitation_seasonality}
 
 \section{Means of moisture transport}
 
 \subsection{vertically integrated water vapor transport}
 
-As proposed by \citeauthor{AProposedAlgorithmforMoistureFluxesfromAtmosphericRivers} in \cite{AProposedAlgorithmforMoistureFluxesfromAtmosphericRivers}, one way of measuring moisture ($p$) transport is by vertically integrating over the different pressure levels the zonal and meridional fluxes $\overline{pu}$ and $\overline{pv}$. 
+As proposed by \citeauthor{zhu_proposed_1998} in \cite{zhu_proposed_1998}, one way of measuring moisture ($p$) transport is by vertically integrating over the different pressure levels the zonal and meridional fluxes $\overline{pu}$ and $\overline{pv}$. 
 
-An example of using this method can be found in \cite{Ayantobo2021IntegratedMT} with many more references why this method is working well for these kinds of approaches. 
+An example of using this method can be found in \cite{ayantobo_integrated_2022} with many more references why this method is working well for these kinds of approaches. 
 
 Also this paper lists some other methods of moisture transportation which are also used:
 
 \begin{enumerate}
-  \item integrated water vapor distributions (see \cite{gimeno2014atmospheric_rivers_review})
+  \item integrated water vapor distributions
   \item the lagrangian approach
   \item stable oxygen isotope investigation
 \end{enumerate}
 
 \subsubsection{Usages of IVT and differences}
 
-In \cite{ralph2017dropsonde} they used a vector field of the IVT: $\int_{p_{low}}^{p_{max}} qV dp$, where $p$ is the pressure level, $q$ is the humidity and $V$ the horizontal vector.
+In \cite{ralph_dropsonde_2017} they used a vector field of the IVT: $\int_{p_{low}}^{p_{max}} qV dp$, where $p$ is the pressure level, $q$ is the humidity and $V$ the horizontal vector.
 
-In \cite{sousa2020north} they used a scalar field based on the euclidian norm of the vector field used by \cite{ralph2017dropsonde}.
+In \cite{sousa_north_2020} they used a scalar field based on the euclidian norm of the vector field used by \cite{ralph_dropsonde_2017}.
 
 
-In \cite{Ayantobo2021IntegratedMT} they also used the euclidian norm on a similar field like \cite{ralph2017dropsonde} to measure the impact of  ENSO on south-chinese weather.
+In \cite{ayantobo_integrated_2022} they also used the euclidian norm on a similar field like \cite{ralph_dropsonde_2017} to measure the impact of  ENSO on south-chinese weather.
 % They used it to measure the moisture and displayed the first graphics of the work, illustrating how an IVT map looks at a drought and during a flood.
 % Also maps of the mean IVT during each months, displaying the intense raining/wet summers and dry winters
 
 \subsection{Moisture Budget}
 
-\citeauthor{atmos13101694} showed in their report \cite{atmos13101694} the directions of moisture flux on the continent borders based on the big ERA5 reanalysis.
+\citeauthor{yang_moisture_2022} showed in their report \cite{yang_moisture_2022} the directions of moisture flux on the continent borders based on the big ERA5 reanalysis.
 They measure the moisture based on a equation called the \textit{Moisture Budget}, which is based on multiple Faktors: 
 
 
@@ -122,7 +118,7 @@ Furthermore they evaluateded the correlation between the moisture transport and 
 
 \subsection{Empirical Orthogonal Functions}
 
-See \cite{hannachi2007eof_review} for a big overview of EOF in atmospheric science.
+See \cite{hannachi_empirical_2007} for a big overview of EOF in atmospheric science.
 
-See \cite{Ayantobo2021IntegratedMT} for an similar approach as we plan it, except it only focuses on the past.
+See \cite{ayantobo_integrated_2022} for an similar approach as we plan it, except it only focuses on the past.
 They 
