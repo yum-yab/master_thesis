@@ -1,5 +1,289 @@
 \section{Dataset}
 
-\begin{frame}{The Max Planck Institute - Grand Ensemble}
+\begin{frame}{The Max Planck Institute - Grand Ensemble \cite{maher_max_2019}}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      {\large \textbf{Quick Facts:}}
+      \begin{itemize}
+        \item released in 2019 \cite{maher_max_2019}
+        \item 86 Terabyte of data
+        \item unfortunately not publicly available anymore
+        
+      \end{itemize}
+      
+      
+    \end{column}
+    \begin{column}{0.5\textwidth}
+
+     \begin{forest}
+      for tree={
+        font=\ttfamily,
+        grow'=0,
+        child anchor=west,
+        parent anchor=south,
+        anchor=west,
+        calign=first,
+        edge path={
+          \noexpand\path [draw, \forestoption{edge}]
+          (!u.south west) +(7.5pt,0) |- node[fill,inner sep=1.25pt] {} (.child anchor)\forestoption{edge label};
+        },
+        before typesetting nodes={
+          if n=1
+            {insert before={[,phantom]}}
+            {}
+        },
+        fit=band,
+        before computing xy={l=15pt},
+      }
+    [MPI-GE
+    [ \textcolor{red}{\$RCP-SENARIO}  
+    [\textcolor{teal}{\$SIMULATION-TYPE}
+        [\textcolor{purple}{\$FIELD-TYPE}
+        [\textcolor{blue}{\$MEMBER}
+              [\$VERSION
+                [field.nc]
+              ]
+            ]
+          ]
+        ]
+      ]
+      [\textcolor{red}{historical}]
+    ]
+    \end{forest}     
+      
+    \end{column}
+    
+  \end{columns}
+  
+\end{frame}
+
+
+\begin{frame}{The Max Planck Institute - Grand Ensemble \cite{maher_max_2019}}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \textcolor{red}{\large \textbf{Simulation Time Scopes}}
+      \begin{itemize}
+        \item Future simulations in the form of RCP scenarios (\textbf{R}epresentative \textbf{C}oncentration \textbf{P}athway)
+        \item simulation from 2005-2099 (stringent pathway (rcp2.6), intermediate scenario (rcp4.5), worst case (rcp8.5))
+        \item also a historical (1850-2005) and prehistorical (2000 years) control simulation
+      \end{itemize}
+      
+      
+    \end{column}
+    \begin{column}{0.5\textwidth}
+
+     \begin{forest}
+      for tree={
+        font=\ttfamily,
+        grow'=0,
+        child anchor=west,
+        parent anchor=south,
+        anchor=west,
+        calign=first,
+        edge path={
+          \noexpand\path [draw, \forestoption{edge}]
+          (!u.south west) +(7.5pt,0) |- node[fill,inner sep=1.25pt] {} (.child anchor)\forestoption{edge label};
+        },
+        before typesetting nodes={
+          if n=1
+            {insert before={[,phantom]}}
+            {}
+        },
+        fit=band,
+        before computing xy={l=15pt},
+      }
+    [MPI-GE
+    [ \textcolor{red}{\$RCP-SENARIO}  
+    [\textcolor{teal}{\$SIMULATION-TYPE}
+        [\textcolor{purple}{\$FIELD-TYPE}
+        [\textcolor{blue}{\$MEMBER}
+              [\$VERSION
+                [field.nc]
+              ]
+            ]
+          ]
+        ]
+      ]
+      [\textcolor{red}{historical}]
+    ]
+    \end{forest}     
+      
+    \end{column}
+    
+  \end{columns}
+  
+\end{frame}
+
+
+\begin{frame}{The Max Planck Institute - Grand Ensemble \cite{maher_max_2019}}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \textcolor{purple}{\large \textbf{Field Types}}
+      \begin{itemize}
+        \item 32 different fields for the atmosphere
+        \item Resolution: Lat/Long: $1.875 °$ , Time: monthly averages, Vertical: 26 Levels from 10 to 100000 $Pa$ 
+        \item Examples: evaporation, preciptation, horizontal wind speed, specific humidity   
+      \end{itemize}
+      
+      
+    \end{column}
+    \begin{column}{0.5\textwidth}
+
+     \begin{forest}
+      for tree={
+        font=\ttfamily,
+        grow'=0,
+        child anchor=west,
+        parent anchor=south,
+        anchor=west,
+        calign=first,
+        edge path={
+          \noexpand\path [draw, \forestoption{edge}]
+          (!u.south west) +(7.5pt,0) |- node[fill,inner sep=1.25pt] {} (.child anchor)\forestoption{edge label};
+        },
+        before typesetting nodes={
+          if n=1
+            {insert before={[,phantom]}}
+            {}
+        },
+        fit=band,
+        before computing xy={l=15pt},
+      }
+    [MPI-GE
+    [ \textcolor{red}{\$RCP-SENARIO}  
+    [\textcolor{teal}{\$SIMULATION-TYPE}
+        [\textcolor{purple}{\$FIELD-TYPE}
+        [\textcolor{blue}{\$MEMBER}
+              [\$VERSION
+                [field.nc]
+              ]
+            ]
+          ]
+        ]
+      ]
+      [\textcolor{red}{historical}]
+    ]
+    \end{forest}     
+      
+    \end{column}
+    
+  \end{columns}
+  
+\end{frame}
+
+
+\begin{frame}{The Max Planck Institute - Grand Ensemble \cite{maher_max_2019}}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \textcolor{teal}{\large \textbf{Simulation Models}}
+      \begin{itemize}
+        \item different simulation models for different areas: land, ocean, \textbf{atmosphere} \dots
+        \item my focus: atmospheric parts
+      \end{itemize}
+      
+      
+    \end{column}
+    \begin{column}{0.5\textwidth}
+
+     \begin{forest}
+      for tree={
+        font=\ttfamily,
+        grow'=0,
+        child anchor=west,
+        parent anchor=south,
+        anchor=west,
+        calign=first,
+        edge path={
+          \noexpand\path [draw, \forestoption{edge}]
+          (!u.south west) +(7.5pt,0) |- node[fill,inner sep=1.25pt] {} (.child anchor)\forestoption{edge label};
+        },
+        before typesetting nodes={
+          if n=1
+            {insert before={[,phantom]}}
+            {}
+        },
+        fit=band,
+        before computing xy={l=15pt},
+      }
+    [MPI-GE
+    [ \textcolor{red}{\$RCP-SENARIO}  
+    [\textcolor{teal}{\$SIMULATION-TYPE}
+        [\textcolor{purple}{\$FIELD-TYPE}
+        [\textcolor{blue}{\$MEMBER}
+              [\$VERSION
+                [field.nc]
+              ]
+            ]
+          ]
+        ]
+      ]
+      [\textcolor{red}{historical}]
+    ]
+    \end{forest}     
+      
+    \end{column}
+    
+  \end{columns}
+  
+\end{frame}
+
+
+\begin{frame}{The Max Planck Institute - Grand Ensemble \cite{maher_max_2019}}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \textcolor{blue}{\large \textbf{Simulation Members}}
+      \begin{itemize}
+        \item 100 Members per field $\to$ 100 different simulations 
+        \item tries to catch the chaotic nature of climate 
+      \end{itemize}
+      
+      
+    \end{column}
+    \begin{column}{0.5\textwidth}
+
+     \begin{forest}
+      for tree={
+        font=\ttfamily,
+        grow'=0,
+        child anchor=west,
+        parent anchor=south,
+        anchor=west,
+        calign=first,
+        edge path={
+          \noexpand\path [draw, \forestoption{edge}]
+          (!u.south west) +(7.5pt,0) |- node[fill,inner sep=1.25pt] {} (.child anchor)\forestoption{edge label};
+        },
+        before typesetting nodes={
+          if n=1
+            {insert before={[,phantom]}}
+            {}
+        },
+        fit=band,
+        before computing xy={l=15pt},
+      }
+    [MPI-GE
+    [ \textcolor{red}{\$RCP-SENARIO}  
+    [\textcolor{teal}{\$SIMULATION-TYPE}
+        [\textcolor{purple}{\$FIELD-TYPE}
+        [\textcolor{blue}{\$MEMBER}
+              [\$VERSION
+                [field.nc]
+              ]
+            ]
+          ]
+        ]
+      ]
+      [\textcolor{red}{historical}]
+    ]
+    \end{forest}     
+      
+    \end{column}
+    
+  \end{columns}
   
 \end{frame}
