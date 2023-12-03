@@ -1,14 +1,23 @@
 \section{Visualisation}
 \begin{frame}{Visualizing Uncertain Fields}
-
-  \begin{itemize}
-    
-    \item Problem: 100 Ensemble Members $\to$ 100 different results
-    \item Uncertain Isocontours (Countour Boxplot etc., see first presentation)
-    \item reduce to mean 
-    \item use animated Perlin noise to visualize uncertainity \cite{coninx_visualization_2011}
-    \item Visualizing Time: probably just an animation
-    
-  \end{itemize}
+\begin{columns}
+      \begin{column}{.5 \textwidth}
+         \begin{itemize}
+           \item Problem: 100 Ensemble Members $\to$ 100 different results
+           \item reduce to mean 
+           \item Uncertain Isocontours (Countour Boxplot etc., see first presentation)
+           \item use animated Perlin noise to visualize uncertainity (see \citeauthor{coninx_visualization_2011} \cite{coninx_visualization_2011})
+           \item Visualizing Time: probably just an animation
+         \end{itemize}
+        
+      \end{column}
+      \begin{column}{.5 \textwidth}
+    \begin{figure}[t]
+      \centering
+      \includegraphics[width=.7 \columnwidth]{imglib/perlin_noise.png}
+    \end{figure}
+        
+      \end{column}
+    \end{columns}
 
 \end{frame}
