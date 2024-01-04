@@ -208,7 +208,7 @@
 
 \setkomafont{part}{\normalfont\huge\scshape}
 
-\setkomafont{sectioning}{\normalfont\scshape}
+\setkomafont{sectioning}{\sffamily\scshape}
 \setkomafont{descriptionlabel}{\normalfont\bfseries}
 
 \setkomafont{caption}{\small}
