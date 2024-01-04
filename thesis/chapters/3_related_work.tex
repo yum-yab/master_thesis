@@ -44,23 +44,26 @@ In \cite{maher_max_2019} there is much information available:
 
 
 
-\subsection{CMIP5 - Coupled Model Intercomparison Project}
+\section{Moisture Transport}
 
-In \cite{taylor_overview_2012}
+To computationally study the change of moisture transport it first needs to be quantified. 
+The vast majority of literature use some form of vertically integrated humidity, the variants will be explained in the following section.  \todo{Create a table showing how different quatifications were used in different algorithms}
+The main usage of these algorithms was to find a filamentary structure called \enquote{Atmospheric Rivers}, a prominent way of water vapor transportation in the extratropic regions \cite{gimeno_atmospheric_2014}. 
+
+See Section \ref{sec:atmo-rivers} for further explaination. 
 
 
-\section{Precipitation Literature}
+There are also some notable other algorithms, namely stable oxygen isotope investigation \cite{ma_atmospheric_nodate} and langragian backwards trajectories \cite{zhao_lagrangian_2021}, but both rather look for the origin of the WV instead of its destination and are therefor out of scope for this thesis.
 
+\subsection{Vertically Integrated Water Vapor (IWV)}
 
-\section{Means of moisture transport}
-
-\subsection{vertically integrated water vapor transport}
+\subsection{Vertically Integrated Water Vapor Transport (IVT)}
 
 As proposed by \citeauthor{zhu_proposed_1998} in \cite{zhu_proposed_1998}, one way of measuring moisture ($p$) transport is by vertically integrating over the different pressure levels the zonal and meridional fluxes $\overline{pu}$ and $\overline{pv}$. 
 
 An example of using this method can be found in \cite{ayantobo_integrated_2022} with many more references why this method is working well for these kinds of approaches. 
 
-Also this paper lists some other methods of moisture transportation which are also used:
+Also this paper lists some other methods of moisture transportation which are also used
 
 \begin{enumerate}
   \item integrated water vapor distributions
@@ -113,6 +116,11 @@ In the actual analysis they used mostly other metrics:
 \end{enumerate}
 
 Furthermore they evaluateded the correlation between the moisture transport and the precipitation variability, which correlate to a significant extent.
+
+\section{Atmospheric Rivers}
+\label{sec:atmo-rivers}
+
+
 
 \section{Pattern analysis}
 
