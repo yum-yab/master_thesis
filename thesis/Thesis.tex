@@ -14,7 +14,11 @@
 % correctly.
 \usepackage{etoolbox}
 
+% Add todonotes for writing process
+\usepackage{todonotes}
 
+% use libertinus font 
+\usepackage{libertinus}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Hyperlinks & bookmarks
@@ -59,8 +63,18 @@
 % Fonts
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% change font for headings 
 
-\setmainfont{Sitka}
+% set sans font to libertinus sans
+% \renewcommand{\sfdefault}{Libertinus Sans}
+% \titleformat*{\section}{\Large\sffamily}
+% \titleformat*{\subsection}{\large\sffamily}
+% \titleformat*{\subsubsection}{\normalsize\sffamily}
+
+
+% set main font to libertinus Serif
+% \setmainfont{Libertinus Serif}
+
 % \setsansfont{IBM Plex Sans}
 % \setmonofont{IBM Plex Mono}
 % \ifxetexorluatex
@@ -140,7 +154,7 @@
   \tableofcontents
 
 \mainmatter
-  
+\include{chapters/0_intro}
   \include{chapters/1_preliminaries}
   \include{chapters/2_analysis}
   \include{chapters/3_related_work}
