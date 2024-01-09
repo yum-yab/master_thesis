@@ -1,6 +1,10 @@
 \chapter{Related Work}
 \label{ch:related_work}
 
+This chapter builds on the foundation of Chapter \ref{ch:preliminaries}, explaining what dataset is actually used, the reason for this and its properties. 
+Furthermore, it summarizes the current state-of-science in quantifying and calculating (patterns of) moisture transport and the usage of it.  
+
+
 \section{Climate simulation datasets}
 
 
@@ -9,58 +13,15 @@ This section should explain what datasets are available and why I chose the MPI-
 Maybe but the comparison table from \cite{olonscheck_new_2023} here and expand it a bit. 
 
 
-
-% General infos from \cite{maher_max_2019}:
-% 
-% \begin{itemize}
-%   \item 
-% 	
-% \end{itemize}
-% 
-% \subsection{RCP Scenarios}
-% 
-% % \subsection{Questions arising about using climate simulation datasets}
-% % 
-% % \begin{itemize}
-% %   \item How many ensemble members are needed for a correct assessment?
-% %   \item How to sort them out? Random?
-% %   \item 
-% % \end{itemize}
-% 
-% \subsection{MPI-GE - The Max Planck Institute grand Ensemble}
-% 
-% General information about the future scenarios (all based on the \textit{rcp85} dataset available to me on the DKRZ cluster, I just assumed its the same for other scenarios. Maybe need to confirm this):
-% 
-% \begin{itemize}
-%   \item \textbf{Time}: The time axis is  compromised of 1128 values, which count the days since 01.01.2005. The first one is ~380, so it actually starts somewhere in 2006, and all of those values are roughly 30 days apart. This axis is part of every dataset, all stored as floats.
-%   \item \textbf{Lat}: Vector of 96 Float Elements ranging from roughly -88 to 88. Results in a resolution of 1.875° in North-South direction.
-%   \item \textbf{Lon}: Vector of 192 Float Elements ranging from roughly 0 to 358. Results in a resolution of 1.875° in East-West direction. 
-%   \item \textbf{Pressure Level} (plev): Is given for each dataset and consists of 26 Floats, ranging from 10 to 100,000. Unit is $Pa$.
-%   \item \textbf{Eastward/Northward Wind}: Given as Floats in the unit of $ms^{-1}$ per \textit{(lat, lon, time, plev)}. Each compromises the wind direction in one orthogonal direction. Eastward wind directory is named \textit{ua}, northward \textit{va}  
-%   \item \textbf{Specific Humidity}: Specific humidity is given as a float without value. Reason is the unit is actually kg moisture per kilogramm air, which cancels out in the end. Is given for each \textit{(lat, lon, time, plev)}. Directory name: \textit{hus}
-%   \item \textbf{Surface Wind Speed}: Given as float per \textit{(lat, lon, time, height)}, represents the wind speed in $ms^{-1}$ (no Vector!!) near the surface level. Directory Name: \textit{sfcWind}
-%   \item \textbf{Evaporation}: Given as a float and per \textit{(lat, lon, time)}, represents the evaporation flux. Unit is $\frac{kg}{m^2s}$, directory name \textit{evspsbl}
-%   \item \textbf{Preciptation}: Given either as normal or convective flux ($\frac{kg}{m^2s}$) per \textit{(lat, lon, time)}. Directory name \textit{pr, prc}.
-%   \item \textbf{Water Vapor Content}: Integrated over the colum, given per \textit{(lat, lon, time)}, just the water vapor content, no wind(vector) involved. Directory name: \textit{prw}.
-% 	
-% \end{itemize}
-% 
-% 
-% 
-% In \cite{maher_max_2019} there is much information available:
-
-
-
-
 \section{Moisture Transport}
 
 This section should explain in what ways moisture transport can be quantified and used, give a few examples for each and maybe motivate  why we do it like we want to. 
 
 To computationally study the change of moisture transport it first needs to be quantified. 
-The vast majority of literature use some form of vertically integrated humidity, the variants will be explained in the following section.  \todo{Create a table showing how different quatifications were used in different algorithms}
+The vast majority of literature use some form of vertically integrated humidity, the variants will be explained in the following section.  \todo{Create a table showing how different quantification were used in different algorithms}
 The main usage of these algorithms was to find a filamentary structure called \enquote{Atmospheric Rivers}, a prominent way of water vapor transportation in the extratropic regions \cite{gimeno_atmospheric_2014}. 
 
-See Section \ref{sec:atmo-rivers} for further explaination. 
+See Section \ref{sec:atmo-rivers} for further explanation. 
 
 
 There are also some notable other algorithms, namely stable oxygen isotope investigation \cite{ma_atmospheric_nodate} and langragian backwards trajectories \cite{zhao_lagrangian_2021}, but both rather look for the origin of the WV instead of its destination and are therefor out of scope for this thesis.
@@ -73,7 +34,7 @@ As proposed by \citeauthor{zhu_proposed_1998} in \cite{zhu_proposed_1998}, one w
 
 An example of using this method can be found in \cite{ayantobo_integrated_2022} with many more references why this method is working well for these kinds of approaches. 
 
-Also this paper lists some other methods of moisture transportation which are also used
+Also, this paper lists some other methods of moisture transportation which are also used
 
 \begin{enumerate}
   \item integrated water vapor distributions
@@ -125,14 +86,14 @@ In the actual analysis they used mostly other metrics:
   \item $E$ is the evaporation
 \end{enumerate}
 
-Furthermore they evaluateded the correlation between the moisture transport and the precipitation variability, which correlate to a significant extent.
+Furthermore, they evaluated the correlation between the moisture transport and the precipitation variability, which correlate to a significant extent.
 
 \section{Atmospheric Rivers}
 \label{sec:atmo-rivers}
 
-\todo{I dont know where to put this, maybe it should go into the preliminaries}
+\todo{I don't know where to put this, maybe it should go into the preliminaries}
 
-This section should explain atmospheric rivers, but since we dont know if they are even relevant so i write it in the end. 
+This section should explain atmospheric rivers, but since we don't know if they are even relevant so i write it in the end. 
 
 \section{Pattern analysis}
 
@@ -142,5 +103,5 @@ Explain some usages of EOF in data, but extremely important: Explain what \cite{
 
 See \cite{hannachi_empirical_2007} for a big overview of EOF in atmospheric science.
 
-See \cite{ayantobo_integrated_2022} for an similar approach as we plan it, except it only focuses on the past.
+See \cite{ayantobo_integrated_2022} for a similar approach as we plan it, except it only focuses on the past.
 They 
