@@ -56,9 +56,9 @@ def merge_relevant_datasets(data_base_path: str, scenario_id: str, target_base_p
 
         variable_paths = [os.path.join(member_path, time_res_id, variable, "gn", version_id) for variable in field_ids]
         # zips together each timestep from each variable for merging
-        files_to_merge = zip(ncfiles_in_dir(variable_paths[0]), ncfiles_in_dir(variable_paths[1]), ncfiles_in_dir(variable_paths[2]))
+        files_to_merge = list(zip(ncfiles_in_dir(variable_paths[0]), ncfiles_in_dir(variable_paths[1]), ncfiles_in_dir(variable_paths[2])))
         
-        print(f"Files to merge {len(list(files_to_merge))}")
+        print(f"Files to merge {files_to_merge}")
         variable_merge_list_check(files_to_merge)
 
         for filelist in files_to_merge:
@@ -73,11 +73,12 @@ def merge_relevant_datasets(data_base_path: str, scenario_id: str, target_base_p
 
             target_file = os.path.join(target_path, f"merged-fields_ua-va-hus_{scenario_id}_{member_id}_{timestamp}.nc")
 
-            command = ["cdo", "-A", "merge", f"[ {filepaths_str} ]", target_file] if dry_run else ["cdo", "merge", f"[ {filepaths_str} ]", target_file]
+            command = ["cdo", "-A", "merge", f"{filepaths_str}", target_file] if dry_run else ["cdo", "merge", f"{filepaths_str}", target_file]
             # now call the merge command for one timestep
-            print(f"CDO command: {command}")
+            print(f"CDO command: {' '.join(command)}")
             com_process = subprocess.run(command, encoding="utf-8", stderr=subprocess.STDOUT)
             
+            print(f"Process return code: {com_process.returncode}")
             print(com_process.stdout)
 
             com_process.check_returncode()
@@ -98,7 +99,7 @@ def main():
 
     target_dir = "/scratch/b/b382641/merged_mpige_cmip6_data/"
 
-    run_all_scps(dataset_dir, target_dir, dry_run=True)
+    run_all_scps(dataset_dir, target_dir, dry_run=False)
 
 if __name__ == "__main__":
     main()
