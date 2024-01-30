@@ -1,26 +1,11 @@
 \chapter{Related Work}
 \label{ch:related_work}
 
-This chapter builds on the foundation of Chapter \ref{ch:preliminaries}, explaining what dataset is actually used, the reason for this and its properties. 
+This chapter builds on the foundation of Chapter \ref{ch:basics}, explaining what dataset is actually used, the reason for this and its properties. 
 Furthermore, it summarizes the current state-of-science in quantifying and calculating (patterns of) moisture transport and the usage of it.  
 
 
-\section{Climate simulation datasets}
-
-The dataset chosen for this project is the \textit{Max Planck Institute Grand Ensemble CMIP6} (from now on MPI-GE CMIP6), presented by \citeauthor{olonscheck_new_2023} \cite{olonscheck_new_2023}. 
-The reasons for choosing this dataset are manifold:
-
-\begin{enumerate}
-  \item It uses the latest (6th) phase of the Coupled Model Intercomparison Project (CMIP6)
-  \item Compared to its predecessor (MPI-GE \cite{maher_max_2019}) it provides high frequency output (6 hour intervals vs. monthly means), which enables finding short-lived weather events and structures (e.g. atmospheric rivers)
-  \item 
-\end{enumerate}
-
-
-This section should explain what datasets are available and why I chose the MPI-GE CMIP6 \cite{olonscheck_new_2023}
-
-Maybe but the comparison table from \cite{olonscheck_new_2023} here and expand it a bit. 
-
+\section{Uncertainty Visualisation}
 
 \section{Moisture Transport}
 
@@ -30,14 +15,14 @@ To computationally study the change of moisture transport it first needs to be q
 The vast majority of literature use some form of vertically integrated humidity, the variants will be explained in the following section.  \todo{Create a table showing how different quantification were used in different algorithms}
 The main usage of these algorithms was to find a filamentary structure called \enquote{Atmospheric Rivers}, a prominent way of water vapor transportation in the extratropic regions \cite{gimeno_atmospheric_2014}. 
 
-See Section \ref{sec:atmo-rivers} for further explanation. 
+% See Section \ref{sec:atmo-rivers} for further explanation. 
 
 
 There are also some notable other algorithms, namely stable oxygen isotope investigation \cite{ma_atmospheric_nodate} and langragian backwards trajectories \cite{zhao_lagrangian_2021}, but both rather look for the origin of the WV instead of its destination and are therefor out of scope for this thesis.
 
-\subsection{Vertically Integrated Water Vapor (IWV)}
+% \subsection{Vertically Integrated Water Vapor (IWV)}
 
-\subsection{Vertically Integrated Water Vapor Transport (IVT)}
+% \subsection{Vertically Integrated Water Vapor Transport (IVT)}
 
 As proposed by \citeauthor{zhu_proposed_1998} in \cite{zhu_proposed_1998}, one way of measuring moisture ($p$) transport is by vertically integrating over the different pressure levels the zonal and meridional fluxes $\overline{pu}$ and $\overline{pv}$. 
 
@@ -62,7 +47,7 @@ In \cite{ayantobo_integrated_2022} they also used the euclidian norm on a simila
 % They used it to measure the moisture and displayed the first graphics of the work, illustrating how an IVT map looks at a drought and during a flood.
 % Also maps of the mean IVT during each months, displaying the intense raining/wet summers and dry winters
 
-\subsection{Moisture Budget}
+% \subsection{Moisture Budget}
 
 \citeauthor{yang_moisture_2022} showed in their report \cite{yang_moisture_2022} the directions of moisture flux on the continent borders based on the big ERA5 reanalysis.
 They measure the moisture based on a equation called the \textit{Moisture Budget}, which is based on multiple Faktors: 
@@ -97,8 +82,8 @@ In the actual analysis they used mostly other metrics:
 
 Furthermore, they evaluated the correlation between the moisture transport and the precipitation variability, which correlate to a significant extent.
 
-\section{Atmospheric Rivers}
-\label{sec:atmo-rivers}
+%\section{Atmospheric Rivers}
+%\label{sec:atmo-rivers}
 
 \todo{I don't know where to put this, maybe it should go into the preliminaries}
 
@@ -108,7 +93,7 @@ This section should explain atmospheric rivers, but since we don't know if they 
 
 Explain some usages of EOF in data, but extremely important: Explain what \cite{ayantobo_integrated_2022} did since its quite similar. 
 
-\subsection{Empirical Orthogonal Functions}
+% \subsection{Empirical Orthogonal Functions}
 
 See \cite{hannachi_empirical_2007} for a big overview of EOF in atmospheric science.
 
