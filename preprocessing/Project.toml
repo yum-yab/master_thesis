@@ -1,3 +1,4 @@
 [deps]
+Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 DotEnv = "4dc1fcf4-5e3b-5448-94ab-0c38ec0385c1"
-NetCDF = "30363a11-5582-574a-97bb-aa9a979735b9"
+NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
