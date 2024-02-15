@@ -9,7 +9,7 @@ module IVT
     p::Float64
   end
   
-  function ivt_of_column(column_data::Vector{PressureLevelData})::Float32
+  function ivt_of_column(column_data::Vector{PressureLevelData})::Union{Float32, Missing}
 
     nmax = size(column_data, 1) + 1
     
@@ -26,7 +26,7 @@ module IVT
       end
     end
   
-    function calculate_layer_values(i::Int)::Tuple{Float32, Float32}
+    function calculate_layer_values(i::Int)::Tuple{Union{Float32, Missing}, Union{Float32, Missing}}
       dp = ph(i + 1) - ph(i)
       dm = dp/g
       # now here we strive from the description and multiply it also with the wind component
