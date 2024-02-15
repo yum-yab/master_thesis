@@ -1,6 +1,12 @@
+using NCDatasets
 using Distributed
 using NCDatasets
 using Threads
+using DataStructures
+
+include("IVT.jl")
+using IVT
+
 
 """
     prepare_merged_file(input_files::Vector{String}, output_file::String)::String
@@ -48,11 +54,11 @@ end
 
 
 
-function generate_ivt_field(merged_fields_path::String)::Nothing
+function generate_ivt_field(merged_fields_path::String, output_path::String)::Nothing
 
   merged_dataset = NCDataset(merged_fields_path)
 
-  lon_dims = size(merged_dataset[:lon], 1)
+  lon_size = size(merged_dataset[:lon], 1)
 
   time_size = size(merged_dataset[:time], 1)
   
@@ -62,24 +68,48 @@ function generate_ivt_field(merged_fields_path::String)::Nothing
   hus_data = merged_dataset[:hus][:, :, :, :]
   ua_data = merged_dataset[:hus][:, :, :, :]
   va_data = merged_dataset[:hus][:, :, :, :]
+
+  result_data::Array{Union{Float32, Missing}, 3} = zeros(Float32, lon_size, lat_size, time_size)
   
-  for lat in 1:lat_size
-    hus_data = merged_dataset[:hus][:, :, time]
+  Threads.@threads for time in 1:time_size
+    for lat in 1:lat_size
+      for lon in 1:lon_size
+        
+        hus_column = hus_data[lon, lat, :, time]
+        ua_column = ua_data[lon, lat, :, time]
+        va_column = va_data[lon, lat, :, time]
 
-    Threads.@threads for time in 1:time_size
-    # load the data of one timestep
+        plev_data = map(t -> PressureLevelData(t...), zip(hus_column, ua_column, va_column, plevs))
 
-      for lon in 1:lon_dims
-
+        result_data[lon, lat, time] = ivt_of_column(plev_data)
 
       end
     end
   end
 
+  NCDataset(output_path, "c") do ds
 
+    # first copy the attribs as CDO would
+    attribs = merged_dataset.attrib 
+    
+    # then rewrite some fields
+    attribs["history"] = "Used an IVT julia script found here: https://github.com/yum-yab/master_thesis/tree/main/preprocessing" * attribs["history"]
+    attribs["title"] = "IVT field of europe and the north-east Atlantic"
 
+    ds.attrib = attribs
+
+    defVar(ds, "ivt", result_data, ("lon", "lat", "time"), attrib = OrderedDict(
+      "units" => "kg/ms",
+      "comments" => "This field is NOT normalized over time or temperature or whatever"
+    ))
+    
+  end
+
+  
 
   close(merged_dataset)
+
+  
 end
 
 
