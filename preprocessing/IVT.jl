@@ -22,7 +22,7 @@ module IVT
       elseif i == nmax
         return ps
       else
-        return (column_data[i].p + column_data[i-1])/2
+        return (column_data[i].p + column_data[i-1].p)/2
       end
     end
   
