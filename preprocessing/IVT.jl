@@ -3,16 +3,17 @@ module IVT
   export ivt_of_column, PressureLevelData
 
   struct PressureLevelData
-    hus::Float32
-    ua::Float32
-    va::Float32
+    hus::Union{Float32, Missing}
+    ua::Union{Float32, Missing}
+    va::Union{Float32, Missing}
     p::Float64
   end
   
-  function ivt_of_column(column_data::Vector{PressureLevelData}, ps::Float32)::Float32
+  function ivt_of_column(column_data::Vector{PressureLevelData})::Float32
 
     nmax = size(column_data, 1) + 1
-  
+    
+    ps = maximum(map(pld -> pld.p, column_data))
     g = 9.806
   
     function ph(i::Int)::Float32
