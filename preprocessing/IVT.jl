@@ -1,28 +1,30 @@
 module IVT
 
-  export ivt_of_column, PressureLevelData
+  export ivt_of_column, VerticalColumnData
 
-  struct PressureLevelData
-    hus::Union{Float32, Missing}
-    ua::Union{Float32, Missing}
-    va::Union{Float32, Missing}
-    p::Float64
+  struct VerticalColumnData
+  """Struct for one vertical column of atmospheric data. Containing the vertical column of specific humidity (hus), """
+    specific_humidity::Vector{Union{Float32, Missing}}
+    eastward_wind::Vector{Union{Float32, Missing}}
+    southward_wind::Vector{Union{Float32, Missing}}
+    surface_pressure::Float32
   end
   
-  function ivt_of_column(column_data::Vector{PressureLevelData})::Union{Float32, Missing}
+  function ivt_of_column(column_data::VerticalColumnData, pressure_levels::Vector{Float64})::Union{Float32, Missing}
 
-    nmax = size(column_data, 1) + 1
+    nmax = size(pressure_levels, 1) + 1
     
-    ps = maximum(map(pld -> pld.p, column_data))
     g = 9.806
+
+    ps = column_data.surface_pressure
   
     function ph(i::Int)::Float32
-      if i == 0
+      if i == 1
         return 0 
       elseif i == nmax
         return ps
       else
-        return (column_data[i].p + column_data[i-1].p)/2
+      return ((pressure_levels[i] * ps) + (pressure_levels[i-1] * ps))/2
       end
     end
   
@@ -31,8 +33,8 @@ module IVT
       dm = dp/g
       # now here we strive from the description and multiply it also with the wind component
       
-      va_dq = column_data[i].hus * dm * column_data[i].va 
-      ua_dq = column_data[i].hus * dm * column_data[i].ua 
+      va_dq = column_data.specific_humidity[i] * dm * column_data.southward_wind[i]
+      ua_dq = column_data.specific_humidity[i] * dm * column_data.eastward_wind[i]
   
       return va_dq, ua_dq
     end

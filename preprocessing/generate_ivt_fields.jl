@@ -11,7 +11,33 @@ module preprocessing
 
 
   export generate_ivt_field, generate_ivt_fields_for_ssp  
+  
+  struct GeographicBounds
+    """This struct sets the geographic boundaries of the datasets. """
+    lon_bounds::Tuple{<:Real, <:Real}
+    lat_bounds::Tuple{<:Real, <:Real}
+  end
+  
 
+  function get_range_of_bounds(geo_bnds::GeographicBounds, values::Vector{<:Real}, bound_type::Symbol)
+    if bound_type == :lon
+      bounds = geo_bnds.lon_bounds
+    elseif bound_type == :lat
+      bounds = geo_bnds.lat_bounds
+    else
+      throw(ErrorException("Can't use symbol $bound_type, please use :lon or :lat"))
+    end
+    
+    if bounds[1] < bounds[2]
+      first_id = findfirst(x -> x >= bounds[1], values)
+      last_id = findlast(x -> x <= bounds[2], values)
+      return first_id:last_id
+    else
+      
+      return values[(values .>= bounds[1]) .| (values .<= bounds[2])]  
+    end
+  end
+  
 
   """
       prepare_merged_file(input_files::Vector{String}, output_file::String)::String
@@ -59,9 +85,9 @@ module preprocessing
   
   
   
-  function generate_ivt_field(merged_fields_path::String, output_path::String)::Nothing
+  function generate_ivt_field(merged_dataset_path::String, output_path::String)::Nothing
   
-    merged_dataset = NCDataset(merged_fields_path)
+    merged_dataset = NCDataset(merged_dataset_path)
   
     lon_size = size(merged_dataset[:lon], 1)
   
@@ -69,10 +95,11 @@ module preprocessing
     
     lat_size = size(merged_dataset[:lat], 1)
   
-    plevs = merged_dataset[:plev][:]
+    levs = merged_dataset[:lev][:]
     hus_data = merged_dataset[:hus][:, :, :, :]
-    ua_data = merged_dataset[:hus][:, :, :, :]
-    va_data = merged_dataset[:hus][:, :, :, :]
+    ua_data = merged_dataset[:ua][:, :, :, :]
+    va_data = merged_dataset[:va][:, :, :, :]
+    ps_data = merged_dataset[:ps][:, :, :]
   
     result_data::Array{Union{Float32, Missing}, 3} = zeros(Float32, lon_size, lat_size, time_size)
     
@@ -80,28 +107,31 @@ module preprocessing
       for lat in 1:lat_size
         for lon in 1:lon_size
           
-          hus_column = hus_data[lon, lat, :, time]
-          ua_column = ua_data[lon, lat, :, time]
-          va_column = va_data[lon, lat, :, time]
+          hus_column::Vector{Union{Float32, Missing}} = hus_data[lon, lat, :, time]
+          ua_column::Vector{Union{Float32, Missing}} = ua_data[lon, lat, :, time]
+          va_column::Vector{Union{Float32, Missing}} = va_data[lon, lat, :, time]
+
+          ps::Float32 = ps_data[lon, lat, time]
   
-          plev_data = map(t -> PressureLevelData(t...), zip(hus_column, ua_column, va_column, plevs))
+          vertical_column_data = VerticalColumnData(hus_column, ua_column, va_column, ps)
   
-          result_data[lon, lat, time] = ivt_of_column(plev_data)
+          result_data[lon, lat, time] = ivt_of_column(vertical_column_data, levs)
   
         end
       end
     end
-  
-    NCDataset(output_path, "c") do ds
-  
-      # first copy the attribs as CDO would
-      attribs = merged_dataset.attrib 
+    new_attrib = OrderedDict()
+
+    for (k, v) in merged_dataset.attrib
+      new_attrib[k] = v 
+    end
+        
       
       # then rewrite some fields
-      attribs["history"] = "Used an IVT julia script found here: https://github.com/yum-yab/master_thesis/tree/main/preprocessing" * attribs["history"]
-      attribs["title"] = "IVT field of europe and the north-east Atlantic"
+    new_attrib["history"] = "Used an IVT julia script found here: https://github.com/yum-yab/master_thesis/tree/main/preprocessing" * new_attrib["history"]
+    new_attrib["title"] = "IVT field of europe and the north-east Atlantic"
   
-      ds.attrib = attribs
+    NCDataset(output_path, "c", attrib = new_attrib) do ds
   
       defVar(ds, "ivt", result_data, ("lon", "lat", "time"), attrib = OrderedDict(
         "units" => "kg/ms",
