@@ -2,8 +2,10 @@ module IVT
 
   export ivt_of_column, VerticalColumnData
 
+  """
+  Struct for one vertical column of atmospheric data. Containing the vertical column of specific humidity (hus), eastward_wind (ua), northward wind (va) and the pressure levels the data is available at. Additionally the surface pressure at the given grid point is required as a boundary
+  """
   struct VerticalColumnData
-  """Struct for one vertical column of atmospheric data. Containing the vertical column of specific humidity (hus), eastward_wind ()"""
     specific_humidity::Vector{Union{Float32, Missing}}
     eastward_wind::Vector{Union{Float32, Missing}}
     southward_wind::Vector{Union{Float32, Missing}}
@@ -36,7 +38,7 @@ module IVT
       
       va_dq = column_data.specific_humidity[i] * dm * column_data.southward_wind[i]
       ua_dq = column_data.specific_humidity[i] * dm * column_data.eastward_wind[i]
-  
+      
       return ua_dq, va_dq
     end
   
