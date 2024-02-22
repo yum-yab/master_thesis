@@ -38,12 +38,11 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
   field_ids = ["hus", "ua", "va"]
 
   member_paths = filter(p -> isdir(p), readdir(scenario_path, join=true))
-  
-
 
   for member_path in member_paths
-
+  
     member_id = basename(member_path)
+    println("Running IVT field generation for member $member_id")
 
     common_version = find_common_versions(member_path, field_ids, time_res_id)
 
