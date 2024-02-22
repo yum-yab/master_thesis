@@ -67,7 +67,8 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
         println("Would have run IVT generation on files: $(necessary_file_paths) with output being: $target_file")
       else
         if overwrite_existing | !isfile(target_file)
-          @time "Time it took for the whole ivt field generation of memeber $member_id and timeslice $timestamp" generate_ivt_field(necessary_file_paths, target_file, lon_bnds, lat_bnds)
+          println("Time it took for the whole ivt field generation of memeber $member_id and timeslice $timestamp :")
+          @time generate_ivt_field(necessary_file_paths, target_file, lon_bnds, lat_bnds)
         else
           println("Skipped creation of file $target_file: Already existing!") 
         end
