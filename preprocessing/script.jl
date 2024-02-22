@@ -8,7 +8,7 @@ function find_common_versions(member_path::String, field_ids::Vector{String}, ti
 
   available_versions = [Set(readdir(joinpath(member_path, time_res_id, fid, "gn"))) for fid in field_ids]
 
-  common_versions = Vector(intersect(available_versions...))
+  common_versions = collect(intersect(available_versions...))
   
   
   if isempty(common_versions)
