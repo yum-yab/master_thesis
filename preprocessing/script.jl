@@ -31,7 +31,7 @@ function nc_files_in_directory(directory_path::String)::Vector{String}
 end 
 
 
-function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_base_path::String, lon_bnds::Tuple{<:Real, <:Real}, lat_bnds::Tuple{<:Real, <:Real}, time_res_id::String = "6hrLev", overwrite_existing::Bool = true, dry_run::Bool = true)::Nothing
+function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_base_path::String, lon_bnds::Tuple{<:Real, <:Real}, lat_bnds::Tuple{<:Real, <:Real}; time_res_id::String = "6hrLev", overwrite_existing::Bool = true, dry_run::Bool = true)::Nothing
   
   scenario_path = joinpath(base_path, ssp_id)
 
@@ -91,7 +91,7 @@ function main(cfg::Dict{String, Any})
   dry_run = cfg["process"]["dry_run"]
 
   for ssp in scenario_ssps
-    generate_ivt_fields_for_ssp(scenrio_base_path, ssp, target_base_path, lon_bounds, lat_bounds, time_res_id = time_res_id, overwrite_existing = overwrite_existing, dry_run = dry_run)
+    generate_ivt_fields_for_ssp(scenrio_base_path, ssp, target_base_path, lon_bounds, lat_bounds; time_res_id = time_res_id, overwrite_existing = overwrite_existing, dry_run = dry_run)
   end
   
 end
