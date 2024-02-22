@@ -1,0 +1,13 @@
+[dataset]
+lon_bounds = [270, 40]
+lat_bounds = [20, 80]
+
+[source_selection]
+time_resolution_id = "6hrLev"
+ssps = ["ssp585"]
+
+
+[process]
+scenario_path = ""
+output_path = ""
+overwrite_existing = true
