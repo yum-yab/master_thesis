@@ -97,8 +97,8 @@ end
   
      
     geo_bnds = GeographicBounds(lon_bounds, lat_bounds, dataset)
-    
-    @time "Time used for loading the data: " begin
+    println("Time used for loading the data: ") 
+    @time begin
       hus_data = load_data_in_geo_bounds(dataset, :hus, geo_bnds, :, :)
       ua_data = load_data_in_geo_bounds(dataset, :ua, geo_bnds, :, :)
       va_data = load_data_in_geo_bounds(dataset, :va, geo_bnds, :, :)
@@ -115,8 +115,8 @@ end
     end
 
     result_data::Array{Union{Float64, Missing}, 3} = zeros(lon_size, lat_size, time_size)
-    
-    @time "Time used for calculating the IVT field: " begin
+    println("Time used for calculating the IVT field: ")
+    @time begin
       Threads.@threads for time in 1:time_size
         for lat in 1:lat_size
           for lon in 1:lon_size
