@@ -87,8 +87,10 @@ function main(cfg::Dict{String, Any})
   target_base_path = cfg["process"]["output_path"]
   overwrite_existing = cfg["process"]["overwrite_exising"]
 
+  dry_run = cfg["process"]["dry_run"]
+
   for ssp in scenario_ssps
-    generate_ivt_fields_for_ssp(scenrio_base_path, ssp, target_base_path, lon_bounds, lat_bounds, time_res_id = time_res_id, overwrite_existing = overwrite_existing)
+    generate_ivt_fields_for_ssp(scenrio_base_path, ssp, target_base_path, lon_bounds, lat_bounds, time_res_id = time_res_id, overwrite_existing = overwrite_existing, dry_run = dry_run)
   end
   
 end
