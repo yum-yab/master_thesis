@@ -11,3 +11,4 @@ ssps = ["ssp585"]
 scenario_path = ""
 output_path = ""
 overwrite_existing = true
+dry_run = true
