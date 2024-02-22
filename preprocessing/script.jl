@@ -94,3 +94,7 @@ function main(cfg::Dict{String, Any})
   end
   
 end
+
+using TOML 
+
+main(TOML.parsefile("./cfg.toml"))
