@@ -86,7 +86,7 @@ function main(cfg::Dict{String, Any})
   lat_bounds = Tuple(cfg["dataset"]["lat_bounds"])
   scenrio_base_path = cfg["process"]["scenario_path"]
   target_base_path = cfg["process"]["output_path"]
-  overwrite_existing = cfg["process"]["overwrite_exising"]
+  overwrite_existing = cfg["process"]["overwrite_existing"]
 
   dry_run = cfg["process"]["dry_run"]
 
