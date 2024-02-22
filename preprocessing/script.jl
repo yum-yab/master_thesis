@@ -58,6 +58,7 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
     all_files_to_merge = collect(zip(nc_files_in_directory.(variable_paths)...))
     
     target_path = joinpath(target_base_path, ssp_id, member_id)
+    mkpath(target_path)
     
     for necessary_file_paths in all_files_to_merge
       timestamp = timestamp_from_nc_file(basename(necessary_file_paths[1]))
