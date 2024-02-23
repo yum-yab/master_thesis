@@ -42,7 +42,7 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
   for member_path in member_paths
   
     member_id = basename(member_path)
-    println("Running IVT field generation for member $member_id")
+    println("Running IVT field generatioIt is possible to redirect job output to somewhere other than the default location with the --error and --output directives:n for member $member_id")
 
     common_version = find_common_versions(member_path, field_ids, time_res_id)
 
@@ -74,6 +74,7 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
           println("Skipped creation of file $target_file: Already existing!") 
         end
       end
+      flush(stdout)
     end
   end
 end
