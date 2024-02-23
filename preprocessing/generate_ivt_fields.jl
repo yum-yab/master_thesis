@@ -97,35 +97,36 @@ end
   
      
     geo_bnds = GeographicBounds(lon_bounds, lat_bounds, dataset)
-    println("Time used for loading the data: ") 
-    @time begin
-      hus_data = load_data_in_geo_bounds(dataset, :hus, geo_bnds, :, :)
-      ua_data = load_data_in_geo_bounds(dataset, :ua, geo_bnds, :, :)
-      va_data = load_data_in_geo_bounds(dataset, :va, geo_bnds, :, :)
-      ps_data = load_data_in_geo_bounds(dataset, :ps, geo_bnds, :)
       
-      lon_size = size(hus_data, 1)
-      lat_size = size(hus_data, 2)
+    lon_size = size(geo_bnds.remaining_lon_values, 1)
+    lat_size = size(geo_bnds.remaining_lat_values, 1)
 
-      # these variables are used for calculation of pressure levels at each specific lat, lon, time coordinate: p = ap + b * ps
-      ap = dataset[:ap][:]
-      b = dataset[:b][:]
-      time_size = size(dataset[:time], 1)
+    # these variables are used for calculation of pressure levels at each specific lat, lon, time coordinate: p = ap + b * ps
+    ap = dataset[:ap][:]
+    b = dataset[:b][:]
+    time_size = size(dataset[:time], 1)
         
-    end
 
     result_data::Array{Union{Float64, Missing}, 3} = zeros(lon_size, lat_size, time_size)
     println("Time used for calculating the IVT field: ")
     @time begin
-      Threads.@threads for time in 1:time_size
-        for lat in 1:lat_size
+      for time in 1:time_size
+
+        hus_data = load_data_in_geo_bounds(dataset, :hus, geo_bnds, :, time)
+        ua_data = load_data_in_geo_bounds(dataset, :ua, geo_bnds, :, time)
+        va_data = load_data_in_geo_bounds(dataset, :va, geo_bnds, :, time)
+        ps_data = load_data_in_geo_bounds(dataset, :ps, geo_bnds, time)
+
+        
+        
+        Threads.@threads for lat in 1:lat_size
           for lon in 1:lon_size
             
-            hus_column::Vector{Union{Float32, Missing}} = hus_data[lon, lat, :, time]
-            ua_column::Vector{Union{Float32, Missing}} = ua_data[lon, lat, :, time]
-            va_column::Vector{Union{Float32, Missing}} = va_data[lon, lat, :, time]
+            hus_column::Vector{Union{Float32, Missing}} = hus_data[lon, lat, :]
+            ua_column::Vector{Union{Float32, Missing}} = ua_data[lon, lat, :]
+            va_column::Vector{Union{Float32, Missing}} = va_data[lon, lat, :]
 
-            ps = ps_data[lon, lat, time]
+            ps = ps_data[lon, lat]
             pressure_levels = ap + b * ps
   
             vertical_column_data = VerticalColumnData(hus_column, ua_column, va_column, pressure_levels, ps)
