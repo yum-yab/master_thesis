@@ -42,8 +42,8 @@ module IVT
       return ua_dq, va_dq
     end
   
-    sum_va_hus = 0
-    sum_ua_hus = 0
+    sum_va_hus = 0.
+    sum_ua_hus = 0.
   
   
     for i in 1:nmax-1
