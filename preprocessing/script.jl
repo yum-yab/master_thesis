@@ -69,7 +69,7 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
       else
         if overwrite_existing | !isfile(target_file)
           println("Time it took for the whole ivt field generation of memeber $member_id and timeslice $timestamp :")
-          @time generate_ivt_field(necessary_file_paths, target_file, lon_bnds, lat_bnds)
+          @time generate_ivt_field(collect(necessary_file_paths), target_file, lon_bnds, lat_bnds)
         else
           println("Skipped creation of file $target_file: Already existing!") 
         end
@@ -80,7 +80,7 @@ end
 
 
 function main(cfg::Dict{String, Any})
-  
+  println("Number of threads available: $(Threads.nthreads())")  
   scenario_ssps = cfg["source_selection"]["ssps"]
   time_res_id = cfg["source_selection"]["time_resolution_id"]
   lon_bounds = Tuple(cfg["dataset"]["lon_bounds"])
