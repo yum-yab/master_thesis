@@ -10,7 +10,7 @@ module preprocessing
   using .IVT
 
 
-  export generate_ivt_field
+  export generate_ivt_field, GeographicBounds, load_data_in_geo_bounds
   
   struct GeographicBounds
     """This struct sets the geographic boundaries of the datasets. """
@@ -33,7 +33,7 @@ module preprocessing
       if value_bounds[1] < value_bounds[2]
         remaining_values = values[index_bounds[1]:index_bounds[2]]
       else
-        remaining_values = vcat(values[index_bounds[1]:end], values[1:index_bounds[2]]) 
+        remaining_values = vcat(values[index_bounds[1]:end], values[1:index_bounds[2]])
       end
       return index_bounds, remaining_values
     end
