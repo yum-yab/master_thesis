@@ -55,7 +55,7 @@ module IVT
     return sqrt(sum_ua_hus^2 + sum_va_hus^2)
   end
 
-  function ivt_of_column_vectors(ps::Float64, plevs::Vector{Float64}, hus_data::Vector{Union{Float32, Missing}}, ua_data::Vector{Union{Float32, Missing}}, va_data::Vector{Union{Float32, Missing}})::Union{Float64, Missing}
+  function ivt_of_column_vectors(ps::Float32, plevs::Vector{Float64}, hus_data::Vector{Float32}, ua_data::Vector{Float32}, va_data::Vector{Float32})::Float32
 
     nmax = size(plevs, 1) + 1
     
@@ -71,7 +71,7 @@ module IVT
       end
     end
   
-    function calculate_layer_values(i::Int)::Float32
+    function calculate_layer_values(i::Int)::Tuple{Float64, Float64}
       dp = ph(i + 1) - ph(i)
       dm = dp/g
       # now here we strive from the description and multiply it also with the wind component
