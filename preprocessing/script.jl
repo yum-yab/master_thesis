@@ -70,7 +70,7 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
       else
         if overwrite_existing | !isfile(target_file)
           println("Time it took for the whole ivt field generation of memeber $member_id and timeslice $timestamp :")
-          data = generate_ivt_field(id_to_file_mapping, target_file, lon_bnds, lat_bnds)
+          data = generate_ivt_field(id_to_file_mapping, lon_bnds, lat_bnds)
           println("Time it takes saving the data to disk: ")
           @time write_ivt_dataset(id_to_file_mapping[field_ids[1]], target_file, data)
         else
