@@ -55,7 +55,7 @@ module IVT
     return sqrt(sum_ua_hus^2 + sum_va_hus^2)
   end
 
-  function ivt_of_column_vectors(ps::Float32, plevs::Vector{Float64}, hus_data::Vector{Float32}, ua_data::Vector{Float32}, va_data::Vector{Float32})::Float32
+  function ivt_of_column_vectors(ps::Float32, plevs::Vector{Float64}, hus_data::Vector{Float32}, ua_data::Vector{Float32}, va_data::Vector{Float32})
 
     nmax = size(plevs, 1) + 1
     
@@ -95,7 +95,7 @@ module IVT
     return sqrt(sum_ua_hus^2 + sum_va_hus^2)
   end
 
-  function ivt_of_column_vectors(ps::Float64, data::Matrix{Union{Float32, Missing}})::Union{Float32, Missing}
+  function ivt_of_column_vectors(ps::Float64, data::Matrix{Union{Float32, Missing}})
 
     # corresponds in order with VerticalColumnData
     nmax = size(data[4, :], 1) + 1
