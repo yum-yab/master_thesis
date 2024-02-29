@@ -16,9 +16,7 @@ export generate_ivt_field, write_ivt_dataset
 
 
 
-function generate_ivt_field(id_to_file_mapping::Dict{String, String}, lon_bounds::Tuple{<:Real,<:Real}, lat_bounds::Tuple{<:Real,<:Real}, T::Type = Float64)
-
-  geo_bnds = GeographicBounds(lon_bounds, lat_bounds, id_to_file_mapping["hus"])
+function generate_ivt_field(id_to_file_mapping::Dict{String, String}, geo_bnds::GeographicBounds, T::Type = Float64)
 
 
   println("Time used for loading the data: ")
@@ -60,7 +58,7 @@ function generate_ivt_field(id_to_file_mapping::Dict{String, String}, lon_bounds
   return result_data
 end
 
-function write_ivt_dataset(old_dataset_path::String, target_path::String, data)::Nothing
+function write_ivt_dataset(old_dataset_path::String, geo_bnds::GeographicBounds, target_path::String, data)::Nothing
   NCDataset(old_dataset_path) do old_ds
     # copy the data to a new Ordered Dict since a direct pass would only pass the reference to the old atrrib dict -> ERROR!
     new_attrib = OrderedDict()
