@@ -92,8 +92,10 @@ function write_ivt_dataset(old_dataset_path::String, geo_bnds::GeographicBounds,
       ))
 
 
+        return
     end
   end
+  return
 end
 
 end
