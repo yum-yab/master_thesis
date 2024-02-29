@@ -2,8 +2,6 @@ include("generate_ivt_fields.jl")
 
 using .preprocessing
 
-include("data_loading.jl")
-using .DataLoading
 
 
 function find_common_versions(member_path::String, field_ids::Vector{String}, time_res_id::String)::Union{String, Nothing}
@@ -71,11 +69,11 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
         println("Would have run IVT generation on files: $(id_to_file_mapping) with output being: $target_file")
       else
         if overwrite_existing | !isfile(target_file)
-          geo_bounds = GeographicBounds(lon_bnds, lat_bnds, id_to_file_mapping["hus"])
+          geo_bounds = preprocessing.DataLoading.GeographicBounds(lon_bnds, lat_bnds, id_to_file_mapping["hus"])
           println("Time it took for the whole ivt field generation of memeber $member_id and timeslice $timestamp :")
           data = generate_ivt_field(id_to_file_mapping, geo_bounds)
           println("Time it takes saving the data to disk: ")
-          @time write_ivt_dataset(id_to_file_mapping[field_ids[1]], target_file, data)
+          @time write_ivt_dataset(id_to_file_mapping[field_ids[1]], geo_bounds, target_file, data)
         else
           println("Skipped creation of file $target_file: Already existing!") 
         end
