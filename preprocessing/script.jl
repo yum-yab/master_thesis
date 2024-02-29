@@ -35,7 +35,7 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
   
   scenario_path = joinpath(base_path, ssp_id)
 
-  field_ids = ["hus", "ua", "va"]
+  field_ids = ["hus", "ua", "va", "ps"]
 
   member_paths = filter(p -> isdir(p), readdir(scenario_path, join=true))
 
@@ -53,23 +53,26 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
 
     # now here we create the fields 
 
-    variable_paths = [joinpath(member_path, time_res_id, variable, "gn", common_version) for variable in field_ids]
+    variable_to_member_files = Dict(variable => nc_files_in_directory.(joinpath(member_path, time_res_id, variable, "gn", common_version)) for variable in field_ids)
 
-    all_files_to_merge = collect(zip(nc_files_in_directory.(variable_paths)...))
+    # it is assumed no file is missing or this breaks
+    all_mappings_for_member = Dict.(zip([[variable => file for file in files] for (variable, files) in variable_to_member_files]...))
     
     target_path = joinpath(target_base_path, ssp_id, member_id)
     mkpath(target_path)
     
-    for necessary_file_paths in all_files_to_merge
+    for id_to_file_mapping in all_mappings_for_member
       timestamp = timestamp_from_nc_file(basename(necessary_file_paths[1]))
       target_file = joinpath(target_path, "ivt_$(ssp_id)_$(member_id)_$timestamp.nc")
 
       if dry_run
-        println("Would have run IVT generation on files: $(necessary_file_paths) with output being: $target_file")
+        println("Would have run IVT generation on files: $(id_to_file_mapping) with output being: $target_file")
       else
         if overwrite_existing | !isfile(target_file)
           println("Time it took for the whole ivt field generation of memeber $member_id and timeslice $timestamp :")
-          @time generate_ivt_field(collect(necessary_file_paths), target_file, lon_bnds, lat_bnds)
+          data = generate_ivt_field(id_to_file_mapping, target_file, lon_bnds, lat_bnds)
+          println("Time it takes saving the data to disk: ")
+          @time write_ivt_dataset(id_to_file_mapping[field_ids[1]], target_file, data)
         else
           println("Skipped creation of file $target_file: Already existing!") 
         end
