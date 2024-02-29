@@ -16,7 +16,7 @@ export generate_ivt_field, write_ivt_dataset
 
 
 
-function generate_ivt_field(id_to_file_mapping::Dict{String, String}, lon_bounds::Tuple{<:Real,<:Real}, lat_bounds::Tuple{<:Real,<:Real}, T::Type = Float64)::Array{T, N}
+function generate_ivt_field(id_to_file_mapping::Dict{String, String}, lon_bounds::Tuple{<:Real,<:Real}, lat_bounds::Tuple{<:Real,<:Real}, T::Type = Float64)
 
   geo_bnds = GeographicBounds(lon_bounds, lat_bounds, id_to_file_mapping["hus"])
 
@@ -33,8 +33,8 @@ function generate_ivt_field(id_to_file_mapping::Dict{String, String}, lon_bounds
 
     # these variables are used for calculation of pressure levels at each specific lat, lon, time coordinate: p = ap + b * ps
     # using netcdf lib here since it will be quite fast
-    ap = ncread(hus_field_path, "ap")
-    b = ncread(hus_field_path, "b")
+    ap = ncread(id_to_file_mapping["hus"], "ap")
+    b = ncread(id_to_file_mapping["hus"], "b")
     time_size = size(hus_data, 4)
 
   end
