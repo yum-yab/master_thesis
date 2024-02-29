@@ -62,7 +62,7 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
     mkpath(target_path)
     
     for id_to_file_mapping in all_mappings_for_member
-      timestamp = timestamp_from_nc_file(basename(necessary_file_paths[1]))
+      timestamp = timestamp_from_nc_file(basename(id_to_file_mapping[field_ids[1]]))
       target_file = joinpath(target_path, "ivt_$(ssp_id)_$(member_id)_$timestamp.nc")
 
       if dry_run
