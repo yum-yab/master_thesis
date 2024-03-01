@@ -1,12 +1,13 @@
 #!/bin/bash
 #SBATCH --job-name=generate_ivt_fields
 #SBATCH --account=kv0728
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=128
-#SBATCH --time=05:00:00
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=256
+#SBATCH --time=08:00:00
 #SBATCH --partition=compute
 #SBATCH --output=output.log
 #SBATCH --error=error.log
+#SBATCH --mem=200G
 
 module load netcdf-c
 module load cdo
