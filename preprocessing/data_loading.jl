@@ -87,15 +87,32 @@ function load_variable_data_in_bounds(T, dataset_path::String, field_id::String,
 
   function concat_ranges(range1, range2, dimension)
 
-    data1 = zeros(T, length.(range1)...)
-    data2 = zeros(T, length.(range2)...)
+    # generate the full dataset
+    full_dims = length.(range1)
+    # at dimension the values shuld be added
+    full_dims[dimension] = full_dims[dimension] + length(range2[dimension])
+
+    full_data = zeros(T, full_dims...)
+
+    splitting_point = length(range1[dimension])
+
+    first_view = Vector{Union{Colon, UnitRange}}()
+    append!(first_view, [Colon() for _ in 1:length(full_dims)])
+    first_view[dimension] = 1:length(range1[dimension])
+
+    second_view = Vector{Union{Colon, UnitRange}}()
+    append!(second_view, [Colon() for _ in 1:length(full_dims)])
+    second_view[dimension] = splitting_point+1:splitting_point+length(range2[dimension])
+
+    data1 = view(full_data, first_view...)
+    data2 = view(full_data, second_view...)
 
     NCDataset(dataset_path) do ds
       NCDatasets.load!(variable(ds, field_id), data1, range1...)
       NCDatasets.load!(variable(ds, field_id), data2, range2...)
     end
 
-    return cat(data1, data2; dims = dimension)
+    return full_data
   end
 
 
