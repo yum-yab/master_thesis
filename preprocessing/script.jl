@@ -48,7 +48,7 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
 
     if isnothing(common_version)
       print("No common version found for scenario $ssp_id and member $member_id")
-      return nothing
+      continue
     end
 
     # now here we create the fields 
