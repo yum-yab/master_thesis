@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=generate_ivt_fields
 #SBATCH --account=kv0728
-#SBATCH --nodes=2
+#SBATCH --nodes=1
 #SBATCH --ntasks-per-node=256
 #SBATCH --time=08:00:00
 #SBATCH --partition=compute
