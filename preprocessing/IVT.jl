@@ -95,7 +95,7 @@ module IVT
     return sqrt(sum_ua_hus^2 + sum_va_hus^2)
   end
 
-  function ivt_of_column_vectors(ps::Float64, data::Matrix{Union{Float32, Missing}})
+  function ivt_of_column(ps::Float64, data::Matrix{Union{Float32, Missing}})
 
     # corresponds in order with VerticalColumnData
     nmax = size(data[4, :], 1) + 1
