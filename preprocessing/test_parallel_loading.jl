@@ -13,9 +13,9 @@ function parallel_reading_at_start(id_to_file_mapping, geo_bounds)::Nothing
 
     ids = ["hus", "ua", "va", "ps"]
 
-    acc = [[geo_bounds.lon_indices[1]:geo_bounds.lon_indices[1], geo_bounds.lat_indices[1]:geo_bounds.lat_indices[1], Colon(), Colon()] for _ in 1:3]
+    acc = [[geo_bounds.lon_indices[1]:geo_bounds.lon_indices[2], geo_bounds.lat_indices[1]:geo_bounds.lat_indices[2], Colon(), Colon()] for _ in 1:3]
 
-    push!(acc, [geo_bounds.lon_indices[1]:geo_bounds.lon_indices[1], geo_bounds.lat_indices[1]:geo_bounds.lat_indices[1], Colon()])
+    push!(acc, [geo_bounds.lon_indices[1]:geo_bounds.lon_indices[2], geo_bounds.lat_indices[1]:geo_bounds.lat_indices[2], Colon()])
 
     data_lookup = Dict()
 
@@ -26,15 +26,24 @@ function parallel_reading_at_start(id_to_file_mapping, geo_bounds)::Nothing
         path = id_to_file_mapping[id]
         h5open(path, "r") do h5ds
             data = h5ds[id][acc[i]...]
+            println("datatype $id: $(typeof(data)) \tdims: $(size(data))")
             lock(lk) do
                 data_lookup[id] = data
             end
         end
     end
 
-    ap = h5read(id_to_file_mapping["hus"], "ap")
-    b = h5read(id_to_file_mapping["hus"], "b")
+    dimfile = h5open(id_to_file_mapping["hus"])
+    ap = dimfile["ap"][:]
+    b = dimfile["ap"][:]    
+    close(dimfile)
+    
+    dims = size(data_lookup["hus"])
+    time_length = dims[4]
 
+    lon_length = dims[1]
+
+    lat_length = dims[2]
     result_data = zeros(Float32, lon_length, lat_length, time_length)
 
 
@@ -45,7 +54,7 @@ function parallel_reading_at_start(id_to_file_mapping, geo_bounds)::Nothing
                 ps = data_lookup["ps"][lon, lat, time]
                 pressure_levels = ap + b * ps
 
-                result_data[lon, lat, time] = IVT.ivt_of_column_vectors(
+                result_data[lon, lat, time] = preprocessing.IVT.ivt_of_column_vectors(
                     ps,
                     pressure_levels,
                     data_lookup["hus"][lon, lat, :, time],
@@ -62,7 +71,11 @@ end
 
 function parallel_reading_each_timestep(id_to_file_mapping, geo_bounds)::Nothing
     file_dict = Dict([id => h5open(path, "r") for (id, path) in id_to_file_mapping])
+    
+    time_length = size(file_dict["hus"]["hus"], 4)
 
+    lon_length = length(geo_bounds.remaining_lon_values)
+    lat_length = length(geo_bounds.remaining_lat_values)
 
     ap = file_dict["hus"]["ap"][:]
     b = file_dict["hus"]["b"][:]
@@ -71,32 +84,51 @@ function parallel_reading_each_timestep(id_to_file_mapping, geo_bounds)::Nothing
 
 
 
-    Threads.@threads for time in 1:$time_length
-        hus_data = file_dict["hus"]["hus"][geo_bounds.lon_indices[1]:geo_bounds.lon_indices[1], geo_bounds.lat_indices[1]:geo_bounds.lat_indices[1], :, time]
-        ua_data = file_dict["ua"]["ua"][geo_bounds.lon_indices[1]:geo_bounds.lon_indices[1], geo_bounds.lat_indices[1]:geo_bounds.lat_indices[1], :, time]
-        va_data = file_dict["va"]["va"][geo_bounds.lon_indices[1]:geo_bounds.lon_indices[1], geo_bounds.lat_indices[1]:geo_bounds.lat_indices[1], :, time]
-        ps_data = file_dict["ps"]["ps"][geo_bounds.lon_indices[1]:geo_bounds.lon_indices[1], geo_bounds.lat_indices[1]:geo_bounds.lat_indices[1], time]
+    Threads.@threads for time in 1:time_length
+        hus_data = file_dict["hus"]["hus"][geo_bounds.lon_indices[1]:geo_bounds.lon_indices[2], geo_bounds.lat_indices[1]:geo_bounds.lat_indices[2], :, time]
+        ua_data = file_dict["ua"]["ua"][geo_bounds.lon_indices[1]:geo_bounds.lon_indices[2], geo_bounds.lat_indices[1]:geo_bounds.lat_indices[2], :, time]
+        va_data = file_dict["va"]["va"][geo_bounds.lon_indices[1]:geo_bounds.lon_indices[2], geo_bounds.lat_indices[1]:geo_bounds.lat_indices[2], :, time]
+        ps_data = file_dict["ps"]["ps"][geo_bounds.lon_indices[1]:geo_bounds.lon_indices[2], geo_bounds.lat_indices[1]:geo_bounds.lat_indices[2], time]
 
         for lon in 1:lon_length
             for lat in 1:lat_length
                 ps = ps_data[lon, lat]
                 pressure_levels = ap + b * ps
 
-                result_data[lon, lat, time] = IVT.ivt_of_column_vectors(ps, pressure_levels, hus_data[lon, lat, :], ua_data[lon, lat, :], va_data[lon, lat, :])
+                result_data[lon, lat, time] = preprocessing.IVT.ivt_of_column_vectors(ps, pressure_levels, hus_data[lon, lat, :], ua_data[lon, lat, :], va_data[lon, lat, :])
             end
         end
     end
-    for id in ids
+    for id in file_dict
         close(file_dict[id])
     end
     return
 end
 
+function print_and_test(fun, name, args...)
+  
+  println("Time it took for $name: ")
+  @time fun(args...)
+end
+
 function main()
     
-    geo_bnds = 
+  lon_bnds = (0,130)
+  lat_bnds = (20, 80)
+  
+  id_to_file_mapping = Dict(
+    "hus" => "sample_data/sample_hus_dataset_200_timesteps.nc",
+    "ua" => "sample_data/sample_ua_dataset_200_timesteps.nc",
+    "va" => "sample_data/sample_va_dataset_200_timesteps.nc",
+    "ps" => "sample_data/sample_ps_dataset_200_timesteps.nc",
+  )
 
-    println("Time it took for parallel reading at start: ")
-
+  geo_bounds = preprocessing.DataLoading.GeographicBounds(lon_bnds, lat_bnds, id_to_file_mapping["hus"])
+  
+  print_and_test(parallel_reading_at_start, "parallel reading at start", id_to_file_mapping, geo_bounds) 
+  print_and_test(old_normal_generation, "old normal generation", id_to_file_mapping, geo_bounds) 
+  print_and_test(parallel_reading_each_timestep, "parallel reading each timestep", id_to_file_mapping, geo_bounds) 
 
 end
+
+main()
