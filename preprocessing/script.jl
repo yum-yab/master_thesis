@@ -30,6 +30,48 @@ function nc_files_in_directory(directory_path::String)::Vector{String}
   return filter(path -> endswith(path, ".nc"), readdir(directory_path, join = true))
 end 
 
+function handle_member(ssp_id::String, member_path::String, field_ids::Vector{String}, target_base_path::String, lon_bnds::Tuple{<:Real, <:Real}, lat_bnds::Tuple{<:Real, <:Real}; time_res_id::String = "6hrLev", overwrite_existing::Bool = true, dry_run::Bool = true)
+  
+    member_id = basename(member_path)
+    println("Running IVT field generation scenario $ssp_id for member $member_id")
+
+    common_version = find_common_versions(member_path, field_ids, time_res_id)
+
+    if isnothing(common_version)
+      print("No common version found for scenario $ssp_id and member $member_id")
+      return 
+    end
+
+    # now here we create the fields 
+
+    variable_to_member_files = Dict(variable => nc_files_in_directory.(joinpath(member_path, time_res_id, variable, "gn", common_version)) for variable in field_ids)
+
+    # it is assumed no file is missing or this breaks
+    all_mappings_for_member = Dict.(zip([[variable => file for file in files] for (variable, files) in variable_to_member_files]...))
+    
+    target_path = joinpath(target_base_path, ssp_id, member_id)
+    mkpath(target_path)
+    
+    for id_to_file_mapping in all_mappings_for_member
+      timestamp = timestamp_from_nc_file(basename(id_to_file_mapping[field_ids[1]]))
+      target_file = joinpath(target_path, "ivt_$(ssp_id)_$(member_id)_$timestamp.nc")
+
+      if dry_run
+        println("Would have run IVT generation on files: $(id_to_file_mapping) with output being: $target_file")
+      else
+        if overwrite_existing | !isfile(target_file)
+          geo_bounds = preprocessing.DataLoading.GeographicBounds(lon_bnds, lat_bnds, id_to_file_mapping["hus"])
+          println("Time it took for the whole ivt field generation of memeber $member_id and timeslice $timestamp :")
+          data = generate_ivt_field(id_to_file_mapping, geo_bounds)
+          println("Time it takes saving the data to disk: ")
+          @time write_ivt_dataset(id_to_file_mapping[field_ids[1]], geo_bounds, target_file, data)
+        else
+          println("Skipped creation of file $target_file: Already existing!") 
+        end
+      end
+      flush(stdout)
+    end
+end
 
 function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_base_path::String, lon_bnds::Tuple{<:Real, <:Real}, lat_bnds::Tuple{<:Real, <:Real}; time_res_id::String = "6hrLev", overwrite_existing::Bool = true, dry_run::Bool = true)::Nothing
   

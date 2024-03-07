@@ -66,20 +66,19 @@ function load_variable_data_in_bounds(T, dataset_path::String, field_id::String,
 
   end
 
+  other_ranges = [isa(indices[i], Colon) ? UnitRange(1,dims[2+i]) : indices[i] for i in eachindex(indices)]
 
   function build_unnormal_ranges(normal_bounds::Tuple{<:Int,<:Int}, unnormal_bounds::Tuple{<:Int,<:Int}, unnormal_index)::Tuple{Vector{UnitRange},Vector{UnitRange}}
 
     range1 = Vector{UnitRange{Int}}()
     range2 = Vector{UnitRange{Int}}()
 
-    other_dims = [isa(indices[i], Colon) ? UnitRange(1:dims[2+i]) : indices[i] for i in eachindex(indices)]
-
     if unnormal_index == 1
-      push!(range1, unnormal_bounds[1]:dims[unnormal_index], normal_bounds[1]:normal_bounds[2], other_dims...)
-      push!(range2, 1:unnormal_bounds[2], normal_bounds[1]:normal_bounds[2], other_dims...)
+      push!(range1, unnormal_bounds[1]:dims[unnormal_index], normal_bounds[1]:normal_bounds[2], other_ranges...)
+      push!(range2, 1:unnormal_bounds[2], normal_bounds[1]:normal_bounds[2], other_ranges...)
     else
-      push!(range1, normal_bounds[1]:normal_bounds[2], unnormal_bounds[1]:dims[unnormal_index], other_dims...)
-      push!(range2, normal_bounds[1]:normal_bounds[2], 1:unnormal_bounds[2], other_dims...)
+      push!(range1, normal_bounds[1]:normal_bounds[2], unnormal_bounds[1]:dims[unnormal_index], other_ranges...)
+      push!(range2, normal_bounds[1]:normal_bounds[2], 1:unnormal_bounds[2], other_ranges...)
     end
 
     return range1, range2
@@ -117,8 +116,11 @@ function load_variable_data_in_bounds(T, dataset_path::String, field_id::String,
 
 
   if lon_normal_range & lat_normal_range
-    ranges = [geo_bnds.lon_indices[1]:geo_bnds.lon_indices[2], geo_bnds.lat_indices[1]:geo_bnds.lat_indices[2], indices...]
-    data = zeros(T, ranges...)
+    
+    other_ranges = [isa(indices[i], Colon) ? UnitRange(1,dims[2+i]) : indices[i] for i in eachindex(indices)]
+
+    ranges = [geo_bnds.lon_indices[1]:geo_bnds.lon_indices[2], geo_bnds.lat_indices[1]:geo_bnds.lat_indices[2], other_ranges...]
+    data = zeros(T, length.(ranges)...)
 
     NCDataset(dataset_path) do ds
       NCDatasets.load!(variable(ds, field_id), data, ranges...)
