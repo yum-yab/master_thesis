@@ -111,15 +111,15 @@ function print_and_test(fun, name, args...)
 end
 
 function main()
-    
+  println("Available Threads: $(Threads.nthreads())")    
   lon_bnds = (0,130)
   lat_bnds = (20, 80)
   
   id_to_file_mapping = Dict(
-    "hus" => "sample_data/sample_hus_dataset_200_timesteps.nc",
-    "ua" => "sample_data/sample_ua_dataset_200_timesteps.nc",
-    "va" => "sample_data/sample_va_dataset_200_timesteps.nc",
-    "ps" => "sample_data/sample_ps_dataset_200_timesteps.nc",
+    "hus" => "/work/ik1017/CMIP6/data/CMIP6/ScenarioMIP/MPI-M/MPI-ESM1-2-LR/ssp585/r1i1p1f1/6hrLev/hus/gn/v20190710/hus_6hrLev_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_201501010600-203501010000.nc",
+    "ua" => "/work/ik1017/CMIP6/data/CMIP6/ScenarioMIP/MPI-M/MPI-ESM1-2-LR/ssp585/r1i1p1f1/6hrLev/ua/gn/v20190710/ua_6hrLev_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_201501010600-203501010000.nc",
+    "va" => "/work/ik1017/CMIP6/data/CMIP6/ScenarioMIP/MPI-M/MPI-ESM1-2-LR/ssp585/r1i1p1f1/6hrLev/va/gn/v20190710/va_6hrLev_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_201501010600-203501010000.nc",
+    "ps" => "/work/ik1017/CMIP6/data/CMIP6/ScenarioMIP/MPI-M/MPI-ESM1-2-LR/ssp585/r1i1p1f1/6hrLev/ps/gn/v20190710/ps_6hrLev_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_201501010600-203501010000.nc",
   )
 
   geo_bounds = preprocessing.DataLoading.GeographicBounds(lon_bnds, lat_bnds, id_to_file_mapping["hus"])
