@@ -17,56 +17,56 @@ function parallel_reading_at_start(id_to_file_mapping, geo_bounds)::Nothing
 
     push!(acc, [geo_bounds.lon_indices[1]:geo_bounds.lon_indices[2], geo_bounds.lat_indices[1]:geo_bounds.lat_indices[2], Colon()])
 
-    data_lookup = Dict()
+    data_lookup = Vector{Array{Float32}}(undef, 4)
 
     lk = Threads.ReentrantLock()
-
-    Threads.@threads for i in eachindex(ids)
+    println("Time used for loading the data:")
+    @time begin 
+    	Threads.@threads for i in eachindex(ids)
         id = ids[i]
         path = id_to_file_mapping[id]
         h5open(path, "r") do h5ds
             data = h5ds[id][acc[i]...]
             lock(lk) do
-                data_lookup[id] = data
+              data_lookup[i] = data
             end
         end
-    end
-    
-    for (id, data) in data_lookup
-      println("Size in memory of $id: $(sizeof(data)/(10^9)) GB")
+      end
     end 
-
+    
     dimfile = h5open(id_to_file_mapping["hus"])
     ap = dimfile["ap"][:]
-    b = dimfile["ap"][:]    
+    b = dimfile["b"][:]    
     close(dimfile)
     
-    dims = size(data_lookup["hus"])
+    dims = size(data_lookup[1])
     time_length = dims[4]
 
     lon_length = dims[1]
 
     lat_length = dims[2]
     result_data = zeros(Float32, lon_length, lat_length, time_length)
+    
+    println("Time used for calculating the IVT field: ")
+    @time begin
+      Threads.@threads for time in 1:time_length
 
+          for lon in 1:lon_length
+              for lat in 1:lat_length
+                  ps = data_lookup[4][lon, lat, time]
+                  pressure_levels = ap + b * ps
 
-    Threads.@threads for time in 1:time_length
-
-        for lon in 1:lon_length
-            for lat in 1:lat_length
-                ps = data_lookup["ps"][lon, lat, time]
-                pressure_levels = ap + b * ps
-
-                result_data[lon, lat, time] = preprocessing.IVT.ivt_of_column_vectors(
-                    ps,
-                    pressure_levels,
-                    data_lookup["hus"][lon, lat, :, time],
-                    data_lookup["ua"][lon, lat, :, time],
-                    data_lookup["va"][lon, lat, :, time]
-                )
-            end
-        end
-    end
+                  result_data[lon, lat, time] = preprocessing.IVT.ivt_of_column_vectors(
+                      ps,
+                      pressure_levels,
+                      data_lookup[1][lon, lat, :, time],
+                      data_lookup[2][lon, lat, :, time],
+                      data_lookup[3][lon, lat, :, time]
+                  )
+              end
+          end
+      end
+  end
 
     return
 end
@@ -127,14 +127,20 @@ function main()
     "ps" => "/work/ik1017/CMIP6/data/CMIP6/ScenarioMIP/MPI-M/MPI-ESM1-2-LR/ssp585/r1i1p1f1/6hrLev/ps/gn/v20190710/ps_6hrLev_MPI-ESM1-2-LR_ssp585_r1i1p1f1_gn_201501010600-203501010000.nc",
   )
 
+  # id_to_file_mapping = Dict(
+  #   "hus" => "sample_data/sample_hus_dataset_200_timesteps.nc",
+  #   "ua" => "sample_data/sample_ua_dataset_200_timesteps.nc",
+  #   "va" => "sample_data/sample_va_dataset_200_timesteps.nc",
+  #   "ps" => "sample_data/sample_ps_dataset_200_timesteps.nc",
+  # )
   geo_bounds = preprocessing.DataLoading.GeographicBounds(lon_bnds, lat_bnds, id_to_file_mapping["hus"])
 
   # println("Running the old way once to compile it:")
   # old_normal_generation(id_to_file_mapping, geo_bounds)
   
+  print_and_test(old_normal_generation, "old normal generation", id_to_file_mapping, geo_bounds) 
   print_and_test(parallel_reading_each_timestep, "parallel reading each timestep", id_to_file_mapping, geo_bounds) 
   print_and_test(parallel_reading_at_start, "parallel reading at start", id_to_file_mapping, geo_bounds) 
-  print_and_test(old_normal_generation, "old normal generation", id_to_file_mapping, geo_bounds) 
 
 end
 
