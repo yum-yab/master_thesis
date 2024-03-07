@@ -112,6 +112,7 @@ function print_and_test(fun, name, args...)
   
   println("Time it took for $name: ")
   @time fun(args...)
+  flush(stdout)
 end
 
 function main()
