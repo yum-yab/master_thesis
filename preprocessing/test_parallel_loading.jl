@@ -26,7 +26,6 @@ function parallel_reading_at_start(id_to_file_mapping, geo_bounds)::Nothing
         path = id_to_file_mapping[id]
         h5open(path, "r") do h5ds
             data = h5ds[id][acc[i]...]
-            println("datatype $id: $(typeof(data)) \tdims: $(size(data))")
             lock(lk) do
                 data_lookup[id] = data
             end
@@ -99,8 +98,8 @@ function parallel_reading_each_timestep(id_to_file_mapping, geo_bounds)::Nothing
             end
         end
     end
-    for id in file_dict
-        close(file_dict[id])
+    for (_, fileid) in file_dict
+        close(fileid)
     end
     return
 end
@@ -124,10 +123,13 @@ function main()
   )
 
   geo_bounds = preprocessing.DataLoading.GeographicBounds(lon_bnds, lat_bnds, id_to_file_mapping["hus"])
+
+  # println("Running the old way once to compile it:")
+  # old_normal_generation(id_to_file_mapping, geo_bounds)
   
+  print_and_test(parallel_reading_each_timestep, "parallel reading each timestep", id_to_file_mapping, geo_bounds) 
   print_and_test(parallel_reading_at_start, "parallel reading at start", id_to_file_mapping, geo_bounds) 
   print_and_test(old_normal_generation, "old normal generation", id_to_file_mapping, geo_bounds) 
-  print_and_test(parallel_reading_each_timestep, "parallel reading each timestep", id_to_file_mapping, geo_bounds) 
 
 end
 
