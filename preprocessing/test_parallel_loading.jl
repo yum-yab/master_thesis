@@ -31,6 +31,10 @@ function parallel_reading_at_start(id_to_file_mapping, geo_bounds)::Nothing
             end
         end
     end
+    
+    for (id, data) in data_lookup
+      println("Size in memory of $id: $(sizeof(data)/(10^9)) GB")
+    end 
 
     dimfile = h5open(id_to_file_mapping["hus"])
     ap = dimfile["ap"][:]
