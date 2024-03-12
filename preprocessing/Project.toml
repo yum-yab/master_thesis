@@ -8,6 +8,7 @@ DotEnv = "4dc1fcf4-5e3b-5448-94ab-0c38ec0385c1"
 NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
 NetCDF = "30363a11-5582-574a-97bb-aa9a979735b9"
 TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 NCDatasets = "0.14.2"

@@ -47,7 +47,7 @@ function generate_ivt_field(id_to_file_mapping::Dict{String, String}, geo_bnds::
           ps = ps_data[lon, lat, time]
           pressure_levels = ap + b * ps
 
-          result_data[lon, lat, time] = IVT.ivt_of_column_vectors(ps, pressure_levels, hus_data[lon, lat, :, time], ua_data[lon, lat, :, time], va_data[lon, lat, :, time])
+          result_data[lon, lat, time] = IVT.ivt_of_column(ps, pressure_levels, hus_data[lon, lat, :, time], ua_data[lon, lat, :, time], va_data[lon, lat, :, time])
 
         end
       end
