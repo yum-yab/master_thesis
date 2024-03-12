@@ -134,13 +134,14 @@ function main()
   #   "ps" => "sample_data/sample_ps_dataset_200_timesteps.nc",
   # )
   geo_bounds = preprocessing.DataLoading.GeographicBounds(lon_bnds, lat_bnds, id_to_file_mapping["hus"])
+  geo_bounds_overflowing = preprocessing.DataLoading.GeographicBounds((270, 40), lat_bnds, id_to_file_mapping["hus"])
 
   # println("Running the old way once to compile it:")
   # old_normal_generation(id_to_file_mapping, geo_bounds)
   
   print_and_test(old_normal_generation, "old normal generation", id_to_file_mapping, geo_bounds) 
-  print_and_test(parallel_reading_each_timestep, "parallel reading each timestep", id_to_file_mapping, geo_bounds) 
   print_and_test(parallel_reading_at_start, "parallel reading at start", id_to_file_mapping, geo_bounds) 
+  print_and_test(old_normal_generation, "old normal over bounds", id_to_file_mapping, geo_bounds_overflowing)
 
 end
 
