@@ -12,6 +12,29 @@ module IVT
     pressure_levels::Vector{Float64}
     surface_pressure::Float32
   end
+
+  function ph(i::Int, pressure_levels::AbstractArray{<:AbstractFloat, 1}, surface_pressure::Float64)
+    if i == 1
+      return surface_pressure
+    elseif i == length(pressure_levels) + 1
+      return 0
+    else
+      return (pressure_levels[i] + pressure_levels[i-1])/2
+    end
+    
+  end
+  
+  function calculate_layer_values(i::Int, pressure_levels::AbstractArray{<:AbstractFloat, 1}, surface_pressure::Float64, specific_humidity::AbstractArray{<:AbstractFloat, 1}, southward_wind::AbstractArray{<:AbstractFloat, 1}, eastward_wind::AbstractArray{<:AbstractFloat, 1}, g::Float64 = 9.806)::Tuple{Float32, Float32}
+      dp = ph(i + 1, pressure_levels, surface_pressure) - ph(i, pressure_levels, surface_pressure)
+      dm = dp/g
+      # now here we strive from the description and multiply it also with the wind component
+      
+      va_dq = specific_humidity[i] * dm * southward_wind[i]
+      ua_dq = specific_humidity[i] * dm * eastward_wind[i]
+      
+      return ua_dq, va_dq
+    
+  end
   
   function ivt_of_column(column_data::VerticalColumnData)::Union{Float64, Missing}
 
@@ -21,18 +44,8 @@ module IVT
 
     ps = column_data.surface_pressure
   
-    function ph(i::Int)
-      if i == 1
-        return 0 
-      elseif i == nmax
-        return ps
-      else
-      return (column_data.pressure_levels[i] + column_data.pressure_levels[i-1])/2
-      end
-    end
-  
     function calculate_layer_values(i::Int)
-      dp = ph(i + 1) - ph(i)
+      dp = ph(i + 1, column_data.pressure_levels, ps) - ph(i, column_data.pressure_levels, ps)
       dm = dp/g
       # now here we strive from the description and multiply it also with the wind component
       
@@ -55,7 +68,7 @@ module IVT
     return sqrt(sum_ua_hus^2 + sum_va_hus^2)
   end
 
-  function ivt_of_column_vectors(ps::Float32, plevs::Vector{Float64}, hus_data::Vector{Float32}, ua_data::Vector{Float32}, va_data::Vector{Float32})
+  function ivt_of_column(ps::Float32, plevs::Vector{Float64}, hus_data::Vector{Float32}, ua_data::Vector{Float32}, va_data::Vector{Float32})
 
     nmax = size(plevs, 1) + 1
     
@@ -63,7 +76,7 @@ module IVT
   
     function ph(i::Int)::Float32
       if i == 1
-        return 0 
+        return 0
       elseif i == nmax
         return ps
       else
@@ -136,6 +149,25 @@ module IVT
     return sqrt(sum_ua_hus^2 + sum_va_hus^2)
   end
   
+  function ivt_of_column(plevs::Vector{Float64}, hus_data::Vector{Float32}, ua_data::Vector{Float32}, va_data::Vector{Float32})
+    
+    pressure_levels = view(plevs, 2:length(plevs))
+    
+    ps = plevs[1]
+    nmax = size(plevs, 1) + 1
+    
+    sum_va_hus = 0.
+    sum_ua_hus = 0.
+  
+  
+    for i in 1:nmax-1
+      (ua_layer_value, va_layer_value) = calculate_layer_values(i, pressure_levels, ps, hus_data, va_data, ua_data)
+      sum_va_hus += va_layer_value
+      sum_ua_hus += ua_layer_value
+    end
+    
+    return sqrt(sum_ua_hus^2 + sum_va_hus^2)
+  end
 end
 
 
