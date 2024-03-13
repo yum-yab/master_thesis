@@ -1,5 +1,5 @@
 
-module preprocessing
+module Preprocessing 
 
 using NCDatasets
 using DataStructures
@@ -11,7 +11,7 @@ using .IVT
 include("data_loading.jl")
 using .DataLoading
 
-export generate_ivt_field, write_ivt_dataset
+export generate_ivt_field, write_ivt_dataset, IVT
 
 
 
