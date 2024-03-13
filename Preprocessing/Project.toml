@@ -1,4 +1,7 @@
-julia_version = "1.7.0"
+name = "Preprocessing"
+uuid = "7109b9f8-1373-470a-97b1-9b17c9366b9a"
+authors = ["Denis <yum-yab-dev@pm.me>"]
+version = "0.1.0"
 
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
@@ -9,6 +12,3 @@ NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
 NetCDF = "30363a11-5582-574a-97bb-aa9a979735b9"
 TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[compat]
-NCDatasets = "0.14.2"
