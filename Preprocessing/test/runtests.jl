@@ -61,7 +61,11 @@ function calculate_avg_difference_of_iwv(iwv_data, hus_data, pressure_levels)
   
 end
 
+function test_trapez_interpolation(pressure_levels, hus_data)
 
+  integrate(pressure_levels, hus_data)
+  
+end
 
 
 @testset "IVT function test" begin
