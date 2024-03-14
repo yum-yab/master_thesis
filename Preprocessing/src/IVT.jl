@@ -1,5 +1,6 @@
 module IVT
-
+  
+  import NumericalIntegration
   export ivt_of_column, VerticalColumnData, IVTResult
 
   """
@@ -34,14 +35,14 @@ module IVT
   
   function calculate_layer_values(i::Int, pressure_levels::AbstractArray{<:AbstractFloat, 1}, surface_pressure::Float64, specific_humidity::AbstractArray{<:AbstractFloat, 1}, northward_wind::AbstractArray{<:AbstractFloat, 1}, eastward_wind::AbstractArray{<:AbstractFloat, 1}, g::Float64 = 9.806)::Tuple{Float32, Float32}
       dp = ph(i, pressure_levels, surface_pressure) - ph(i + 1, pressure_levels, surface_pressure)
-      println("PH Values Index $i:\t$(ph(i, pressure_levels, surface_pressure))\t$(ph(i + 1, pressure_levels, surface_pressure)) = $dp")
+      # println("PH Values Index $i:\t$(ph(i, pressure_levels, surface_pressure))\t$(ph(i + 1, pressure_levels, surface_pressure)) = $dp")
       dm = dp/g
       # now here we strive from the description and multiply it also with the wind component
       
       va_dq = specific_humidity[i] * dm * northward_wind[i]
       ua_dq = specific_humidity[i] * dm * eastward_wind[i]
       
-      println("Multiplied Vals Index $i:\t$ua_dq")
+      # println("Multiplied Vals Index $i:\t$ua_dq")
       
       return ua_dq, va_dq
     
@@ -122,22 +123,9 @@ module IVT
   
   function ivt_of_column(plevs::Vector{<: AbstractFloat}, hus_data::Vector{<: AbstractFloat}, ua_data::Vector{<: AbstractFloat}, va_data::Vector{<: AbstractFloat})::IVTResult{<: AbstractFloat}
     
-    pressure_levels = view(plevs, 2:length(plevs))
+    res = NumericalIntegration.cumul_integrate(plevs, [va_data, ua_data])
     
-    ps = plevs[1]
-    
-    sum_va_hus = 0.
-    sum_ua_hus = 0.
-  
-  
-    for i ∈ eachindex(pressure_levels)
-      (ua_layer_value, va_layer_value) = calculate_layer_values(i, pressure_levels, ps, hus_data, va_data, ua_data)
-      sum_va_hus += va_layer_value
-      sum_ua_hus += ua_layer_value
-      println("Sums Index $i:\t$sum_ua_hus")
-    end
-    
-    return IVTResult(sum_ua_hus, sum_va_hus)
+    return IVTResult(res...)
   end
 end
 
