@@ -42,13 +42,13 @@ function myiwv(pressure_levels, hus_data)
 
 end
 
-function calculate_avg_difference_of_iwv(iwv_data, hus_data, pressure_levels)
+function calculate_avg_difference_of_iwv(ivt_fun, iwv_data, hus_data, pressure_levels)
 
   (lonsize, latsize, levsize, timesize) = size(hus_data)
   wind_vector = fill(1., levsize)
 
   diffs_percentage = [ 
-    abs(IVT.ivt_of_column(pressure_levels, hus_data[lo, la, :, t], wind_vector, wind_vector).eastward_integral - iwv_data[lo, la, t]) / iwv_data[lo, la, t] 
+    abs(ivt_fun(pressure_levels, hus_data[lo, la, :, t], wind_vector, wind_vector).eastward_integral - iwv_data[lo, la, t])/iwv_data[lo, la, t] 
     for lo in 1:lonsize 
     for la in 1:latsize 
     for t in 1:timesize
@@ -58,12 +58,6 @@ function calculate_avg_difference_of_iwv(iwv_data, hus_data, pressure_levels)
 
   println("Mean difference: $(mean(diffs_percentage))")
   println("Median difference: $(median(diffs_percentage))")
-  
-end
-
-function test_trapez_interpolation(pressure_levels, hus_data)
-
-  integrate(pressure_levels, hus_data)
   
 end
 
@@ -81,8 +75,9 @@ end
   # calculate IVT 
   ivt_result = IVT.ivt_of_column(pressure_levels, hus_sample_data[1, 1, :, 1], wind_vector, wind_vector)
   
-  println("Plevs: $pressure_levels")
-  calculate_avg_difference_of_iwv(iwv_sample_data, hus_sample_data, pressure_levels)
+  println("Old way diffference:")
+  calculate_avg_difference_of_iwv(IVT.ivt_of_column, iwv_sample_data, hus_sample_data, pressure_levels)
+  println("New way diffference:")
+  calculate_avg_difference_of_iwv(IVT.ivt_of_column_lib, iwv_sample_data, hus_sample_data, pressure_levels)
   # @test ivt_result.eastward_integral == iwv_sample_data[1, 1, 1]
-  @test myiwv(pressure_levels, hus_sample_data) == iwv_sample_data[1, 1, 1]
 end

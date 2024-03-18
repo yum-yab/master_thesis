@@ -121,11 +121,36 @@ module IVT
     return sqrt(sum_ua_hus^2 + sum_va_hus^2)
   end
   
+function ivt_of_column_lib(plevs::Vector{<: AbstractFloat}, hus_data::Vector{<: AbstractFloat}, ua_data::Vector{<: AbstractFloat}, va_data::Vector{<: AbstractFloat}, g::Float32 = Float32(9.806))::IVTResult{<: AbstractFloat}
+    
+    if plevs[1] < plevs[end]
+      northward_integral = NumericalIntegration.integrate(plevs, hus_data .* va_data)/g
+      eastward_integral = NumericalIntegration.integrate(plevs, hus_data .* ua_data)/g
+    else
+      northward_integral = NumericalIntegration.integrate(reverse(plevs), reverse(hus_data .* va_data))/g
+      eastward_integral = NumericalIntegration.integrate(reverse(plevs), reverse(hus_data .* ua_data))/g
+    end 
+    return IVTResult(eastward_integral, northward_integral)
+  end 
+
+
   function ivt_of_column(plevs::Vector{<: AbstractFloat}, hus_data::Vector{<: AbstractFloat}, ua_data::Vector{<: AbstractFloat}, va_data::Vector{<: AbstractFloat})::IVTResult{<: AbstractFloat}
     
-    res = NumericalIntegration.cumul_integrate(plevs, [va_data, ua_data])
+    pressure_levels = view(plevs, 2:length(plevs))
     
-    return IVTResult(res...)
+    ps = plevs[1]
+    
+    sum_va_hus = 0.
+    sum_ua_hus = 0.
+  
+  
+    for i ∈ eachindex(pressure_levels)
+      (ua_layer_value, va_layer_value) = calculate_layer_values(i, pressure_levels, ps, hus_data, va_data, ua_data)
+      sum_va_hus += va_layer_value
+      sum_ua_hus += ua_layer_value
+    end
+    
+    return IVTResult(sum_ua_hus, sum_va_hus)
   end
 end
 
