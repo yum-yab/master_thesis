@@ -1,6 +1,5 @@
-include("generate_ivt_fields.jl")
 
-using .preprocessing
+using Preprocessing
 
 
 
@@ -24,7 +23,7 @@ function nc_files_in_directory(directory_path::String)::Vector{String}
   return filter(path -> endswith(path, ".nc"), readdir(directory_path, join = true, sort = true))
 end 
 
-function get_id_to_path_mapping(member_path::String, field_ids::Vector{String}, time_res_id::String)::Union{Dict{String, String}, Nothing}
+function get_id_to_path_mapping(member_path::String, field_ids::Vector{String}, time_res_id::String)::Union{Vector{Dict{String, String}}, Nothing}
   
   id_to_files = Dict([fid => nc_files_in_directory(readdir(joinpath(member_path, time_res_id, fid, "gn"), join = true)[1]) for fid in field_ids])
   
@@ -76,10 +75,10 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
         println("Would have run IVT generation on files: $(id_to_file_mapping) with output being: $target_file")
       else
         if overwrite_existing | !isfile(target_file)
-          geo_bounds = preprocessing.DataLoading.GeographicBounds(lon_bnds, lat_bnds, id_to_file_mapping["hus"])
-          data = generate_ivt_field(id_to_file_mapping, geo_bounds)
+          geo_bounds = DataLoading.GeographicBounds(lon_bnds, lat_bnds, id_to_file_mapping["hus"])
+          data_eastwards, data_northwards, data_norm = generate_ivt_field(id_to_file_mapping, geo_bounds)
           println("Time it takes saving the data to disk: ")
-          @time write_ivt_dataset(id_to_file_mapping[field_ids[1]], geo_bounds, target_file, data)
+          @time write_ivt_dataset(id_to_file_mapping[field_ids[1]], geo_bounds, target_file, data_eastwards, data_northwards, data_norm)
         else
           println("Skipped creation of file $target_file: Already existing!") 
         end
@@ -87,6 +86,33 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
       flush(stdout)
     
   end
+end
+
+function generate_cdo_preprocessing_commands(base_path::String, ssp_id::String, target_base_path::String, lon_bnds::Tuple{<:Real, <:Real}, lat_bnds::Tuple{<:Real, <:Real}; time_res_id::String = "6hrLev", silent::Bool = false, overwrite_existing::Bool = true, cdo_flags::Vector{String} = Vector{String}())
+
+  field_ids = ["hus", "ua", "va", "ps"]
+  field_id_selection = join(field_ids, ",")
+  
+  cdo_commands = Vector{Cmd}()
+
+  process_members(base_path, ssp_id, field_ids; time_res_id = time_res_id, silent = silent) do member_id, id_to_file_mapping 
+    
+    timestamp = timestamp_from_nc_file(basename(id_to_file_mapping[field_ids[1]]))
+
+    target_file = joinpath(target_base_path, ssp_id, member_id, "merged-preprocessed-data_$(ssp_id)_$(member_id)_$timestamp.nc")
+    mkpath(dirname(target_file))
+
+    source_files = [filepath for (_, filepath) in id_to_file_mapping]
+    
+    cdo_cmd = `cdo $cdo_flags -selvar,$field_id_selection -sellonlatbox,$(lon_bnds[1]),$(lon_bnds[2]),$(lat_bnds[1]),$(lat_bnds[2]) -merge $source_files $target_file`
+
+    if !overwrite_existing || !isfile(target_file)
+      push!(cdo_commands, cdo_cmd)
+    end
+  
+  end
+
+  return cdo_commands
 end
 
 
@@ -103,7 +129,11 @@ function main(cfg::Dict{String, Any})
   dry_run = cfg["process"]["dry_run"]
 
   for ssp in scenario_ssps
-    generate_ivt_fields_for_ssp(scenrio_base_path, ssp, target_base_path, lon_bounds, lat_bounds; time_res_id = time_res_id, overwrite_existing = overwrite_existing, dry_run = dry_run)
+    commands = generate_cdo_preprocessing_commands(scenrio_base_path, ssp, target_base_path, lon_bounds, lat_bounds; time_res_id = time_res_id, overwrite_existing = overwrite_existing, silent = true)
+
+    for cmd in commands
+      println(string(cmd))
+    end
   end
   
 end

@@ -1,0 +1,14 @@
+[dataset]
+lon_bounds = [270, 40]
+lat_bounds = [20, 80]
+
+[source_selection]
+time_resolution_id = "6hrLev"
+ssps = ["ssp585"]
+
+
+[process]
+scenario_path = "/home/denis/workspace/data/levante_cmip6"
+output_path = "/home/denis/workspace/data/cdo_preprocessing"
+overwrite_existing = false
+dry_run = true 

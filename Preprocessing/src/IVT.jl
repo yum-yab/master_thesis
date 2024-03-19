@@ -65,63 +65,63 @@ module IVT
     return IVTResult(sum_ua_hus, sum_va_hus)
   end
 
-  function ivt_of_column(ps::Float32, plevs::Vector{Float64}, hus_data::Vector{Float32}, ua_data::Vector{Float32}, va_data::Vector{Float32})::IVTResult{Float32}
-
-    sum_va_hus = 0.
-    sum_ua_hus = 0.
+  # function ivt_of_column(ps::Float32, plevs::Vector{Float64}, hus_data::Vector{Float32}, ua_data::Vector{Float32}, va_data::Vector{Float32})::IVTResult{Float32}
+  #
+  #   sum_va_hus = 0.
+  #   sum_ua_hus = 0.
+  # 
+  # 
+  #   for i ∈ eachindex(plevs)
+  #     (ua_layer_value, va_layer_value) = calculate_layer_values(i, plevs, ps, hus_data, va_data, ua_data)
+  #     sum_va_hus += va_layer_value
+  #     sum_ua_hus += ua_layer_value
+  #   end
+  #   
+  #   return IVTResult(sum_ua_hus, sum_va_hus)
+  # end
+  #
+  # function ivt_of_column(ps::Float64, data::Matrix{Union{Float32, Missing}})
+  #
+  #   # corresponds in order with VerticalColumnData
+  #   nmax = size(data[4, :], 1) + 1
+  #   
+  #   g = 9.806
+  # 
+  #   function ph(i::Int)::Float32
+  #     if i == 1
+  #       return 0 
+  #     elseif i == nmax
+  #       return ps
+  #     else
+  #     return (data[4, :] + data[i-1, :])/2
+  #     end
+  #   end
+  # 
+  #   function calculate_layer_values(i::Int)::Float32
+  #     dp = ph(i + 1) - ph(i)
+  #     dm = dp/g
+  #     # now here we strive from the description and multiply it also with the wind component
+  #     
+  #     va_dq = data[1, i] * dm * data[3, i]
+  #     ua_dq = data[1, i] * dm * data[2, i]
+  #     
+  #     return ua_dq, va_dq
+  #   end
+  # 
+  #   sum_va_hus = 0.
+  #   sum_ua_hus = 0.
+  # 
+  # 
+  #   for i in 1:nmax-1
+  #     (ua_layer_value, va_layer_value) = calculate_layer_values(i)
+  #     sum_va_hus += va_layer_value
+  #     sum_ua_hus += ua_layer_value
+  #   end
+  #   
+  #   return sqrt(sum_ua_hus^2 + sum_va_hus^2)
+  # end
   
-  
-    for i ∈ eachindex(plevs)
-      (ua_layer_value, va_layer_value) = calculate_layer_values(i, plevs, ps, hus_data, va_data, ua_data)
-      sum_va_hus += va_layer_value
-      sum_ua_hus += ua_layer_value
-    end
-    
-    return IVTResult(sum_ua_hus, sum_va_hus)
-  end
-
-  function ivt_of_column(ps::Float64, data::Matrix{Union{Float32, Missing}})
-
-    # corresponds in order with VerticalColumnData
-    nmax = size(data[4, :], 1) + 1
-    
-    g = 9.806
-  
-    function ph(i::Int)::Float32
-      if i == 1
-        return 0 
-      elseif i == nmax
-        return ps
-      else
-      return (data[4, :] + data[i-1, :])/2
-      end
-    end
-  
-    function calculate_layer_values(i::Int)::Float32
-      dp = ph(i + 1) - ph(i)
-      dm = dp/g
-      # now here we strive from the description and multiply it also with the wind component
-      
-      va_dq = data[1, i] * dm * data[3, i]
-      ua_dq = data[1, i] * dm * data[2, i]
-      
-      return ua_dq, va_dq
-    end
-  
-    sum_va_hus = 0.
-    sum_ua_hus = 0.
-  
-  
-    for i in 1:nmax-1
-      (ua_layer_value, va_layer_value) = calculate_layer_values(i)
-      sum_va_hus += va_layer_value
-      sum_ua_hus += ua_layer_value
-    end
-    
-    return sqrt(sum_ua_hus^2 + sum_va_hus^2)
-  end
-  
-function ivt_of_column_lib(plevs::Vector{<: AbstractFloat}, hus_data::Vector{<: AbstractFloat}, ua_data::Vector{<: AbstractFloat}, va_data::Vector{<: AbstractFloat}, g::Float32 = Float32(9.806))::IVTResult{<: AbstractFloat}
+function ivt_of_column(plevs::Vector{<: AbstractFloat}, hus_data::Vector{<: AbstractFloat}, ua_data::Vector{<: AbstractFloat}, va_data::Vector{<: AbstractFloat}, g::Float32 = Float32(9.806))::IVTResult{<: AbstractFloat}
     
     if plevs[1] < plevs[end]
       northward_integral = NumericalIntegration.integrate(plevs, hus_data .* va_data)/g
@@ -134,7 +134,7 @@ function ivt_of_column_lib(plevs::Vector{<: AbstractFloat}, hus_data::Vector{<: 
   end 
 
 
-  function ivt_of_column(plevs::Vector{<: AbstractFloat}, hus_data::Vector{<: AbstractFloat}, ua_data::Vector{<: AbstractFloat}, va_data::Vector{<: AbstractFloat})::IVTResult{<: AbstractFloat}
+  function ivt_of_column_old(plevs::Vector{<: AbstractFloat}, hus_data::Vector{<: AbstractFloat}, ua_data::Vector{<: AbstractFloat}, va_data::Vector{<: AbstractFloat})::IVTResult{<: AbstractFloat}
     
     pressure_levels = view(plevs, 2:length(plevs))
     
@@ -142,8 +142,8 @@ function ivt_of_column_lib(plevs::Vector{<: AbstractFloat}, hus_data::Vector{<: 
     
     sum_va_hus = 0.
     sum_ua_hus = 0.
-  
-  
+
+
     for i ∈ eachindex(pressure_levels)
       (ua_layer_value, va_layer_value) = calculate_layer_values(i, pressure_levels, ps, hus_data, va_data, ua_data)
       sum_va_hus += va_layer_value

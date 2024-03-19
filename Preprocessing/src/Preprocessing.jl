@@ -11,7 +11,7 @@ using .IVT
 include("data_loading.jl")
 using .DataLoading
 
-export generate_ivt_field, write_ivt_dataset, IVT
+export generate_ivt_field, write_ivt_dataset, IVT, DataLoading
 
 
 
@@ -37,7 +37,9 @@ function generate_ivt_field(id_to_file_mapping::Dict{String, String}, geo_bnds::
 
   end
 
-  result_data = zeros(T, lon_size, lat_size, time_size)
+  result_data_eastwards = zeros(T, lon_size, lat_size, time_size)
+  result_data_northwards = zeros(T, lon_size, lat_size, time_size)
+  result_data_norm = zeros(T, lon_size, lat_size, time_size)
   println("Time used for calculating the IVT field: ")
   @time begin
     Threads.@threads for time in 1:time_size
@@ -47,7 +49,18 @@ function generate_ivt_field(id_to_file_mapping::Dict{String, String}, geo_bnds::
           ps = ps_data[lon, lat, time]
           pressure_levels = ap + b * ps
 
-          result_data[lon, lat, time] = IVT.ivt_of_column(ps, pressure_levels, hus_data[lon, lat, :, time], ua_data[lon, lat, :, time], va_data[lon, lat, :, time])
+          result = IVT.ivt_of_column(
+            pressure_levels, 
+            hus_data[lon, lat, :, time], 
+            ua_data[lon, lat, :, time], 
+            va_data[lon, lat, :, time]
+          )
+
+          result_data_eastwards[lon, lat, time] = result.eastward_integral
+          result_data_northwards[lon, lat, time] = result.northward_integral
+          result_data_norm[lon, lat, time] = sqrt(result.northward_integral^2 + result.eastward_integral^2)
+
+
 
         end
       end
@@ -55,10 +68,10 @@ function generate_ivt_field(id_to_file_mapping::Dict{String, String}, geo_bnds::
 
   end
 
-  return result_data
+  return result_data_eastwards, result_data_northwards, result_data_norm 
 end
 
-function write_ivt_dataset(old_dataset_path::String, geo_bnds::GeographicBounds, target_path::String, data)::Nothing
+function write_ivt_dataset(old_dataset_path::String, geo_bnds::GeographicBounds, target_path::String, data_eastwards, data_northwards, data_norm)::Nothing
   NCDataset(old_dataset_path) do old_ds
     # copy the data to a new Ordered Dict since a direct pass would only pass the reference to the old atrrib dict -> ERROR!
     new_attrib = OrderedDict()
@@ -86,9 +99,17 @@ function write_ivt_dataset(old_dataset_path::String, geo_bnds::GeographicBounds,
         "units" => "days since 1850-1-1 00:00:00",
         "standard_name" => "time"
       ))
-      defVar(ds, "ivt", data, ("lon", "lat", "time"), attrib=OrderedDict(
+      defVar(ds, "ivtnorm", data_norm, ("lon", "lat", "time"), attrib=OrderedDict(
         "units" => "kg/ms",
-        "comments" => "This field is NOT normalized over time or temperature or whatever"
+        "comments" => "Euclidian norm of the water vapor flux vector. Calculated by (ivteast^2+ivtnorth^2)^0.5. This field is not normalized."
+      ))
+      defVar(ds, "ivteast", data_eastwards, ("lon", "lat", "time"), attrib=OrderedDict(
+        "units" => "kg/ms",
+        "comments" => "Eastward water vapor flux. Calculated by integrating over hus * ua fields. This field is not normalized."
+      ))
+      defVar(ds, "ivtnorth", data_northwards, ("lon", "lat", "time"), attrib=OrderedDict(
+        "units" => "kg/ms",
+        "comments" => "Northward water vapor flux. Calculated by integrating over hus * va fields. This field is not normalized."
       ))
 
 
