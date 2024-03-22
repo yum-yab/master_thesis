@@ -76,7 +76,7 @@ function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_b
       else
         if overwrite_existing | !isfile(target_file)
           geo_bounds = DataLoading.GeographicBounds(lon_bnds, lat_bnds, id_to_file_mapping["hus"])
-          data_eastwards, data_northwards, data_norm = generate_ivt_field(id_to_file_mapping, geo_bounds)
+          (data_eastwards, data_northwards, data_norm) = generate_ivt_field(id_to_file_mapping, geo_bounds)
           println("Time it takes saving the data to disk: ")
           @time write_ivt_dataset(id_to_file_mapping[field_ids[1]], geo_bounds, target_file, data_eastwards, data_northwards, data_norm)
         else
@@ -90,7 +90,7 @@ end
 
 function generate_cdo_preprocessing_commands(base_path::String, ssp_id::String, target_base_path::String, lon_bnds::Tuple{<:Real, <:Real}, lat_bnds::Tuple{<:Real, <:Real}; time_res_id::String = "6hrLev", silent::Bool = false, overwrite_existing::Bool = true, cdo_flags::Vector{String} = Vector{String}())
 
-  field_ids = ["hus", "ua", "va", "ps"]
+  field_ids = ["hus", "ua", "va"]
   field_id_selection = join(field_ids, ",")
   
   cdo_commands = Vector{Cmd}()
@@ -116,6 +116,36 @@ function generate_cdo_preprocessing_commands(base_path::String, ssp_id::String, 
 end
 
 
+function generate_ivt_from_preprocessed_files(base_path::String, ssp_id::String, target_base_path::String; overwrite_existing::Bool = true)
+
+  member_paths = filter(p -> isdir(p), readdir(joinpath(base_path, ssp_id), join=true))
+  field_ids = ["hus", "ua", "va", "ps"]
+  for member_path in member_paths
+
+    member_id = basename(member_path)
+
+    merge_member_files = filter(p -> isfile(p), readdir(member_path, join=true))
+    
+    for merged_file in merge_member_files
+
+      id_to_path_dict = Dict([fid => merged_file for fid in field_ids])
+      timestamp = timestamp_from_nc_file(basename(merged_file))
+      target_file = joinpath(target_base_path, ssp_id, member_id, "ivt_$(ssp_id)_$(member_id)_$timestamp.nc")
+
+      
+
+      (data_east, data_north, data_norm) = generate_ivt_field(id_to_path_dict)
+
+      println("Time it takes saving the data to disk: ")
+      @time write_ivt_dataset(merged_file, target_file, data_east, data_north, data_norm)
+
+      
+    end      
+
+  
+end
+
+
 function main(cfg::Dict{String, Any})
   println("Number of threads available: $(Threads.nthreads())")  
   scenario_ssps = cfg["source_selection"]["ssps"]
@@ -132,7 +162,7 @@ function main(cfg::Dict{String, Any})
     commands = generate_cdo_preprocessing_commands(scenrio_base_path, ssp, target_base_path, lon_bounds, lat_bounds; time_res_id = time_res_id, overwrite_existing = overwrite_existing, silent = true)
 
     for cmd in commands
-      println(string(cmd))
+        println(replace(string(cmd), "`" => ""))
     end
   end
   

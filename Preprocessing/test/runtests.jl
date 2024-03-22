@@ -1,3 +1,4 @@
+using Base: return_types
 using Test
 using Preprocessing
 
@@ -42,7 +43,7 @@ function myiwv(pressure_levels, hus_data)
 
 end
 
-function calculate_avg_difference_of_iwv(ivt_fun, iwv_data, hus_data, pressure_levels)
+function calculate_stats_on_difference(ivt_fun, iwv_data, hus_data, pressure_levels, stat_funs...)
 
   (lonsize, latsize, levsize, timesize) = size(hus_data)
   wind_vector = fill(1., levsize)
@@ -54,11 +55,13 @@ function calculate_avg_difference_of_iwv(ivt_fun, iwv_data, hus_data, pressure_l
     for t in 1:timesize
   ]
 
-  println(typeof(diffs_percentage))
+  results = zeros(length(stat_funs))
 
-  println("Mean difference: $(mean(diffs_percentage))")
-  println("Median difference: $(median(diffs_percentage))")
-  
+  for (i, stat_fun) in enumerate(stat_funs)
+    results[i] = stat_fun(diffs_percentage)
+  end
+
+  return  results
 end
 
 
@@ -75,9 +78,11 @@ end
   # calculate IVT 
   ivt_result = IVT.ivt_of_column(pressure_levels, hus_sample_data[1, 1, :, 1], wind_vector, wind_vector)
   
-  println("Old way diffference:")
-  calculate_avg_difference_of_iwv(IVT.ivt_of_column, iwv_sample_data, hus_sample_data, pressure_levels)
-  println("New way diffference:")
-  calculate_avg_difference_of_iwv(IVT.ivt_of_column_lib, iwv_sample_data, hus_sample_data, pressure_levels)
+  (median_diff, mean_diff) = calculate_stats_on_difference(IVT.ivt_of_column, iwv_sample_data, hus_sample_data, pressure_levels, median, mean) 
+  println("Statistics of differnences of simulation iwv and my own integral of the same humidity data")
+  println("Median diff: $median_diff\tMean Diff: $mean_diff")
+  @test median_diff < .1
+  @test mean_diff < .2
+
   # @test ivt_result.eastward_integral == iwv_sample_data[1, 1, 1]
 end
