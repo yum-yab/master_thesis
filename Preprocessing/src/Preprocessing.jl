@@ -11,6 +11,9 @@ using .IVT
 include("data_loading.jl")
 using .DataLoading
 
+include("xarray_data_loading.jl")
+using .XarrayDataLoading
+
 export generate_ivt_field, write_ivt_dataset, IVT, DataLoading
 
 
@@ -53,6 +56,53 @@ function generate_ivt_field(id_to_file_mapping::Dict{String, String}, T::Type = 
             hus_data[lon, lat, :, time], 
             ua_data[lon, lat, :, time], 
             va_data[lon, lat, :, time]
+          )
+
+          result_data_eastwards[lon, lat, time] = result.eastward_integral
+          result_data_northwards[lon, lat, time] = result.northward_integral
+          result_data_norm[lon, lat, time] = sqrt(result.northward_integral^2 + result.eastward_integral^2)
+
+
+
+        end
+      end
+    end
+
+  end
+
+  return result_data_eastwards, result_data_northwards, result_data_norm 
+end
+
+function generate_ivt_field_xarray_loading(id_to_file_mapping::Dict{String, String}, T::Type = Float64)
+  println("Time it took for loading the data with xarray:")
+  @time begin
+    
+    id_to_data = remap_and_load_data_with_xarray([path for (_, path) in id_to_file_mapping])
+  end
+
+  return generate_ivt_field(id_to_data)
+end
+
+function generate_ivt_field(id_to_data_mapping::Dict{String, Array{<:AbstractFloat}}, T::Type = Float64)
+  
+  (lon_size, lat_size, lev_size, time_size) = size(id_to_data_mapping["hus"])
+  result_data_eastwards = zeros(T, lon_size, lat_size, time_size)
+  result_data_northwards = zeros(T, lon_size, lat_size, time_size)
+  result_data_norm = zeros(T, lon_size, lat_size, time_size)
+  println("Time used for calculating the IVT field: ")
+  @time begin
+    Threads.@threads for time in 1:time_size
+      for lat in 1:lat_size
+        for lon in 1:lon_size
+
+          ps = id_to_data_mapping["ps"][lon, lat, time]
+          pressure_levels = id_to_data_mapping["ap"] + id_to_data_mapping["b"] * ps
+
+          result = IVT.ivt_of_column(
+            pressure_levels, 
+            id_to_data_mapping["hus"][lon, lat, :, time], 
+            id_to_data_mapping["ua"][lon, lat, :, time], 
+            id_to_data_mapping["va"][lon, lat, :, time]
           )
 
           result_data_eastwards[lon, lat, time] = result.eastward_integral

@@ -62,6 +62,15 @@ function process_members(process_fun::Function, base_path::String, ssp_id::Strin
   
 end
 
+function get_id_to_file_mappings(base_path::String, ssp_id::String, field_ids::Vector{String}; time_res_id::String = "6hrLev", silent::Bool = false)::Vector{Dict{String, String}}
+  
+  result = Vector{String}()
+  process_members(base_path, ssp_id, field_ids; time_res_id = time_res_id, silent = silent) do id_to_file_mapping
+    push!(result, id_to_file_mapping) 
+  end
+  return result 
+end
+
 function generate_ivt_fields_for_ssp(base_path::String, ssp_id::String, target_base_path::String, lon_bnds::Tuple{<:Real, <:Real}, lat_bnds::Tuple{<:Real, <:Real}; time_res_id::String = "6hrLev", overwrite_existing::Bool = true, dry_run::Bool = true)::Nothing
   
 
@@ -159,11 +168,21 @@ function main(cfg::Dict{String, Any})
   dry_run = cfg["process"]["dry_run"]
 
   for ssp in scenario_ssps
-    commands = generate_cdo_preprocessing_commands(scenrio_base_path, ssp, target_base_path, lon_bounds, lat_bounds; time_res_id = time_res_id, overwrite_existing = overwrite_existing, silent = true)
+    id_to_file_mappings = get_id_to_file_mappings(scenrio_base_path, ssp, ["hus", "ua", "va"]; silent = true)
+    
+    target_file = joinpath(target_base_path, "test_xarray_loading.nc") 
+    test_files = id_to_file_mappings[1]
+    geo_bounds = DataLoading.GeographicBounds(lon_bounds, lat_bounds, test_files["hus"]) 
+    println("Generating ivt for files: $test_files")
+    (data_east, data_north, data_norm) = generate_ivt_field_xarray_loading(test_files)
+    println("Time it takes saving the data to disk: ")
+    @time write_ivt_dataset(test_files["hus"], geo_bounds, target_file, data_east, data_north, data_norm)
+    # commands = generate_cdo_preprocessing_commands(scenrio_base_path, ssp, target_base_path, lon_bounds, lat_bounds; time_res_id = time_res_id, overwrite_existing = overwrite_existing, silent = true)
 
-    for cmd in commands
-        println(replace(string(cmd), "`" => ""))
-    end
+    # for cmd in commands
+    #     println(replace(string(cmd), "`" => ""))
+    # end
+
   end
   
 end
