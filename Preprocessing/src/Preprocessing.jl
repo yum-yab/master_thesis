@@ -14,7 +14,7 @@ using .DataLoading
 include("xarray_data_loading.jl")
 using .XarrayDataLoading
 
-export generate_ivt_field, write_ivt_dataset, IVT, DataLoading
+export generate_ivt_field, write_ivt_dataset, IVT, DataLoading, generate_ivt_field_xarray_loading
 
 
 

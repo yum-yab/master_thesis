@@ -8,7 +8,7 @@ ssps = ["ssp585"]
 
 
 [process]
-scenario_path = "/home/denis/workspace/data/levante_cmip6"
-output_path = "/home/denis/workspace/data/cdo_preprocessing"
+scenario_path = "/work/ik1017/CMIP6/data/CMIP6/ScenarioMIP/MPI-M/MPI-ESM1-2-LR"
+output_path = "/scratch/b/b382641/testdata"
 overwrite_existing = false
 dry_run = true 
