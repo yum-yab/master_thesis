@@ -4,10 +4,13 @@ module XarrayDataLoading
 ENV["PYCALL_JL_RUNTIME_PYTHON"] = Sys.which("python3")
 
 using PyCall 
-
-xr = pyimport("xarray")
+xr = PyNULL()
 
 export remap_and_load_data_with_xarray
+
+function __init__()
+  copy!(xr, pyimport("xarray"))
+end
 
 function remap_and_load_data_with_xarray(files::Vector{String})::Dict{String, Array{<: AbstractFloat}}
   
