@@ -65,7 +65,7 @@ end
 function get_id_to_file_mappings(base_path::String, ssp_id::String, field_ids::Vector{String}; time_res_id::String = "6hrLev", silent::Bool = false)::Vector{Dict{String, String}}
   
   result = Vector{String}()
-  process_members(base_path, ssp_id, field_ids; time_res_id = time_res_id, silent = silent) do id_to_file_mapping
+  process_members(base_path, ssp_id, field_ids; time_res_id = time_res_id, silent = silent) do member_id, id_to_file_mapping
     push!(result, id_to_file_mapping) 
   end
   return result 
