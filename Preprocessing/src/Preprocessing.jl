@@ -14,7 +14,7 @@ using .DataLoading
 include("xarray_data_loading.jl")
 using .XarrayDataLoading
 
-export generate_ivt_field, write_ivt_dataset, IVT, DataLoading, generate_ivt_field_xarray_loading
+export generate_ivt_field, write_ivt_dataset, IVT, DataLoading, generate_ivt_field_xarray_loading, XarrayDataLoading
 
 
 
@@ -85,7 +85,7 @@ end
 
 function generate_ivt_field(id_to_data_mapping::Dict{String, Array{<:AbstractFloat}}, T::Type = Float64)
   
-  (lon_size, lat_size, lev_size, time_size) = size(id_to_data_mapping["hus"])
+  (lon_size, lat_size, _, time_size) = size(id_to_data_mapping["hus"])
   result_data_eastwards = zeros(T, lon_size, lat_size, time_size)
   result_data_northwards = zeros(T, lon_size, lat_size, time_size)
   result_data_norm = zeros(T, lon_size, lat_size, time_size)

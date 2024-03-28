@@ -1,0 +1,4 @@
+[deps]
+netcdf4 = ""
+dask = ""
+xarray = ""
