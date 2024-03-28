@@ -10,7 +10,7 @@ function remap_and_load_data_with_xarray(files::Vector{String})::Dict{String, Ar
   
   xr = pyimport("xarray")
   println("Opening the dataset")
-  @time ds = xr.open_mfdataset(files, chunks=py"dict(time=256, lev= 47, lat= 96, lon= 192)", compat="override")
+  @time ds = xr.open_mfdataset(files, chunks=Dict("lon" => 192, "lat" => 96, "lev" => 47, "time" => 256), compat="override")
   
   ds.assign_coords(Dict("lon" => (ds.lon.values .+ 180) .% 360 .- 180))
   relevant_subset = ds.sortby(ds.lon).sel(lon=pyslice(-90, 40), lat=pyslice(20, 80))
