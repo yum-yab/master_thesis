@@ -73,19 +73,10 @@ function generate_ivt_field(id_to_file_mapping::Dict{String, String}, T::Type = 
   return result_data_eastwards, result_data_northwards, result_data_norm 
 end
 
-function generate_ivt_field_xarray_loading(id_to_file_mapping::Dict{String, String}, T::Type = Float64)
-  println("Time it took for loading the data with xarray:")
-  @time begin
-    
-    id_to_data = remap_and_load_data_with_xarray([path for (_, path) in id_to_file_mapping])
-  end
-
-  return generate_ivt_field(id_to_data)
-end
 
 function generate_ivt_field(id_to_data_mapping::Dict{String, Array{<:AbstractFloat}}, T::Type = Float64)
   
-  (lon_size, lat_size, _, time_size) = size(id_to_data_mapping["hus"])
+  (time_size, _, lat_size, lon_size) = size(id_to_data_mapping["hus"])
   result_data_eastwards = zeros(T, lon_size, lat_size, time_size)
   result_data_northwards = zeros(T, lon_size, lat_size, time_size)
   result_data_norm = zeros(T, lon_size, lat_size, time_size)
