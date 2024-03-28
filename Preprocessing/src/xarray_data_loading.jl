@@ -40,7 +40,7 @@ end
 @everywhere function load_one_dataset_xarray(path::String, id::String)::AbstractArray{<: AbstractFloat}
   
   println("Hello from worker $id")
-  @everywhere xr = pyimport("xarray")
+  xr = pyimport("xarray")
   ds = xr.open_dataset(path, chunks=Dict("lon" => 192, "lat" => 96, "lev" => 47, "time" => 256))
 
   ds.assign_coords(Dict("lon" => (ds.lon.values .+ 180) .% 360 .- 180))
