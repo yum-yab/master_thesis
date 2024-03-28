@@ -113,8 +113,10 @@ function generate_ivt_fields_xarray(base_path::String, ssp_id::String, target_ba
       else
         if overwrite_existing | !isfile(target_file)
           full_mapping_dict = merge(id_to_file_mapping, Dict("ap" => id_to_file_mapping["hus"], "b" => id_to_file_mapping["hus"]))
-
-          data_dict = XarrayDataLoading.parallel_loading_of_datasets(full_mapping_dict)
+          
+          println("Time it took loading the data:")
+          
+          @time data_dict = XarrayDataLoading.parallel_loading_of_datasets(full_mapping_dict)
           geo_bounds = DataLoading.GeographicBounds(lon_bnds, lat_bnds, id_to_file_mapping["hus"])
           (data_eastwards, data_northwards, data_norm) = generate_ivt_field(data_dict)
           println("Time it takes saving the data to disk: ")
