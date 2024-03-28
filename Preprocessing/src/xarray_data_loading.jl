@@ -2,12 +2,12 @@
 module XarrayDataLoading
   
 
+using PythonCall
 using Distributed
 export remap_and_load_data_with_xarray
-@everywhere using PythonCall
+
 
 function remap_and_load_data_with_xarray(files::Vector{String})::Dict{String, Array{<: AbstractFloat}}
-  
   xr = pyimport("xarray")
   println("Opening the dataset")
   @time ds = xr.open_mfdataset(files, chunks=Dict("lon" => 192, "lat" => 96, "lev" => 47, "time" => 256), compat="override")
@@ -26,33 +26,40 @@ end
 function parallel_loading_of_datasets(id_to_file_mapping::Dict{String, String})::Dict{String, Array{<: AbstractFloat}}
   result_dict = Dict{String, AbstractArray}()
   arguments = zip([(id, path) for (id, path) in id_to_file_mapping]...) 
-  addprocs(length(id_to_file_mapping))
+  
+  if length(procs()) == 1 addprocs(length(id_to_file_mapping)) end
+  @everywhere begin
+
+    function load_one_dataset_xarray(path::String, id::String)::AbstractArray{<: AbstractFloat}
+      
+      println("Hello from worker $id")
+      xr = pyimport("xarray")
+      ds = xr.open_dataset(path, chunks=Dict("lon" => 192, "lat" => 96, "lev" => 47, "time" => 256))
+    
+      ds.assign_coords(Dict("lon" => (ds.lon.values .+ 180) .% 360 .- 180))
+      relevant_subset = ds.sortby(ds.lon).sel(lon=pyslice(-90, 40), lat=pyslice(20, 80))
+      
+      println("Actually loading the data")
+      @time data = relevant_subset[id].to_numpy() 
+    
+      ds.close()
+    
+      return data
+      
+    end
+  end    
   barrier = ReentrantLock()
+  
   pmap(arguments...) do id, path
     data = load_one_dataset_xarray(path, id)
     lock(barrier)
     result_dict[id] = data
     unlock(barrier)
   end
+  
+  rmprocs(workers())
   return result_dict
 end
 
-@everywhere function load_one_dataset_xarray(path::String, id::String)::AbstractArray{<: AbstractFloat}
-  
-  println("Hello from worker $id")
-  xr = pyimport("xarray")
-  ds = xr.open_dataset(path, chunks=Dict("lon" => 192, "lat" => 96, "lev" => 47, "time" => 256))
-
-  ds.assign_coords(Dict("lon" => (ds.lon.values .+ 180) .% 360 .- 180))
-  relevant_subset = ds.sortby(ds.lon).sel(lon=pyslice(-90, 40), lat=pyslice(20, 80))
-  
-  println("Actually loading the data")
-  @time data = relevant_subset[id].to_numpy() 
-
-  ds.close()
-
-  return data
-  
-end
 end
 
