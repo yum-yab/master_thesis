@@ -230,7 +230,7 @@ function main(cfg::Dict{String, Any})
   for ssp in scenario_ssps
     id_to_file_mappings = get_id_to_file_mappings(scenrio_base_path, ssp, ["hus", "ua", "va"]; silent = true)
     target_file = joinpath(target_base_path, "test_xarray_full_script.nc") 
-    id_to_file_mapping = id_to_file_mappings[1]
+    @everywhere id_to_file_mapping = id_to_file_mappings[1]
     
     @everywhere geo_bounds = DataLoading.GeographicBounds(lon_bounds, lat_bounds, id_to_file_mapping["hus"])
     println("Time for loading data:")
