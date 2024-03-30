@@ -91,9 +91,9 @@ function generate_ivt_field(id_to_data_mapping::Dict{String, Array{<:AbstractFlo
 
           result = IVT.ivt_of_column(
             pressure_levels, 
-            id_to_data_mapping["hus"][lon, lat, :, time], 
-            id_to_data_mapping["ua"][lon, lat, :, time], 
-            id_to_data_mapping["va"][lon, lat, :, time]
+            id_to_data_mapping["hus"][time, :, lat, lon], 
+            id_to_data_mapping["ua"][time, :, lat, lon], 
+            id_to_data_mapping["va"][time, :, lat, lon]
           )
 
           result_data_eastwards[lon, lat, time] = result.eastward_integral

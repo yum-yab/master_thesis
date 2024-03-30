@@ -1,4 +1,7 @@
+
 module DataLoading
+
+using Distributed
 using NCDatasets
 using NetCDF
 
@@ -105,7 +108,8 @@ function load_variable_data_in_bounds(T, dataset_path::String, field_id::String,
 
     data1 = view(full_data, first_view...)
     data2 = view(full_data, second_view...)
-
+    println("Range1: $range1")
+    println("Range2: $range2")
     NCDataset(dataset_path) do ds
       NCDatasets.load!(variable(ds, field_id), data1, range1...)
       NCDatasets.load!(variable(ds, field_id), data2, range2...)
@@ -186,6 +190,17 @@ function load_data_in_geo_bounds(dataset, field_id::Union{String,Symbol,Missing}
   end
 end
 
+function parallel_loading_of_datasets(id_to_file_mapping::Dict{String, String}, geo_bnds::GeographicBounds)::Dict{String, Array{<: AbstractFloat}}
+  
+  arguments = zip([(id, path) for (id, path) in id_to_file_mapping]...) 
+  
+  results = pmap(arguments...) do id, path
+    data = load_variable_data_in_bounds(Float32, path, id, geo_bnds, :, :)
+    return id => data
+  end
+  
+  return Dict(results)
+end
 
 end
 
