@@ -231,10 +231,11 @@ function main(cfg::Dict{String, Any})
     id_to_file_mappings = get_id_to_file_mappings(scenrio_base_path, ssp, ["hus", "ua", "va"]; silent = true)
     target_file = joinpath(target_base_path, "test_xarray_full_script.nc") 
     id_to_file_mapping = id_to_file_mappings[1]
-    full_mapping_dict = merge(id_to_file_mapping, Dict("ap" => id_to_file_mapping["hus"], "b" => id_to_file_mapping["hus"]))
     
+    @everywhere geo_bounds = DataLoading.GeographicBounds(lon_bounds, lat_bounds, id_to_file_mapping["hus"])
     println("Time for loading data:")
-    @time data_dict = XarrayDataLoading.parallel_loading_of_datasets(full_mapping_dict)
+    @time data_dict = XarrayDataLoading.parallel_loading_of_datasets(id_to_file_mapping)
+    # @time data_dict = DataLoading.parallel_loading_of_datasets(full_mapping_dict)
     rmprocs(workers())
     NCDataset(id_to_file_mapping["hus"]) do ds
 
@@ -244,7 +245,6 @@ function main(cfg::Dict{String, Any})
       
       
     end
-    geo_bounds = DataLoading.GeographicBounds(lon_bounds, lat_bounds, id_to_file_mapping["hus"])
     (data_eastwards, data_northwards, data_norm) = generate_ivt_field(data_dict)
     println("Time it takes saving the data to disk: ")
     @time write_ivt_dataset(id_to_file_mapping["hus"], geo_bounds, target_file, data_eastwards, data_northwards, data_norm)
