@@ -74,7 +74,7 @@ function generate_ivt_field(id_to_file_mapping::Dict{String, String}, T::Type = 
 end
 
 
-function generate_ivt_field(id_to_data_mapping::Dict{String, Array}, T::Type = Float64)
+function generate_ivt_field(id_to_data_mapping::Dict{String,<: Array}, T::Type = Float64)
   
   (time_size, _, lat_size, lon_size) = size(id_to_data_mapping["hus"])
   result_data_eastwards = zeros(T, lon_size, lat_size, time_size)
@@ -86,7 +86,7 @@ function generate_ivt_field(id_to_data_mapping::Dict{String, Array}, T::Type = F
       for lat in 1:lat_size
         for lon in 1:lon_size
 
-          ps = id_to_data_mapping["ps"][lon, lat, time]
+          ps = id_to_data_mapping["ps"][time, lat, lon]
           pressure_levels = id_to_data_mapping["ap"] + id_to_data_mapping["b"] * ps
 
           result = IVT.ivt_of_column(
