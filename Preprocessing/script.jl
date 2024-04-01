@@ -1,7 +1,7 @@
-using Distributed
+# using Distributed
 using NCDatasets
-addprocs(3, exeflags="--project=$(Base.active_project())")
-@everywhere using Preprocessing
+# addprocs(3, exeflags="--project=$(Base.active_project())")
+using Preprocessing
 
 
 function find_common_versions(member_path::String, field_ids::Vector{String}, time_res_id::String)::Union{String, Nothing}
