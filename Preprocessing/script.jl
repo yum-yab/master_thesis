@@ -234,16 +234,16 @@ function main(cfg::Dict{String, Any})
     full_mapping_dict = merge(id_to_file_mapping, Dict("ap" => id_to_file_mapping["hus"], "b" => id_to_file_mapping["hus"]))
     
     println("Time for loading data:")
-    @time data_dict = XarrayDataLoading.iterative_loading_of_datasets(id_to_file_mapping)
+    @time data_dict = XarrayDataLoading.iterative_loading_of_datasets(full_mapping_dict)
     # rmprocs(workers())
-    NCDataset(id_to_file_mapping["hus"]) do ds
-
-      data_dict["ps"] = ds["ps"][:, :, :]
-      data_dict["ap"] = ds["ap"][:]
-      data_dict["b"] = ds["b"][:]
-      
-      
-    end
+    # NCDataset(id_to_file_mapping["hus"]) do ds
+    #
+    #   data_dict["ps"] = ds["ps"][:, :, :]
+    #   data_dict["ap"] = ds["ap"][:]
+    #   data_dict["b"] = ds["b"][:]
+    #   
+    #   
+    # end
     geo_bounds = DataLoading.GeographicBounds(lon_bounds, lat_bounds, id_to_file_mapping["hus"])
     (data_eastwards, data_northwards, data_norm) = generate_ivt_field(data_dict)
     println("Time it takes saving the data to disk: ")
