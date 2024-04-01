@@ -235,7 +235,7 @@ function main(cfg::Dict{String, Any})
     
     println("Time for loading data:")
     @time data_dict = XarrayDataLoading.iterative_loading_of_datasets(id_to_file_mapping)
-    rmprocs(workers())
+    # rmprocs(workers())
     NCDataset(id_to_file_mapping["hus"]) do ds
 
       data_dict["ps"] = ds["ps"][:, :, :]
