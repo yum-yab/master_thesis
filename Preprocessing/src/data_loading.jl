@@ -202,5 +202,17 @@ function parallel_loading_of_datasets(id_to_file_mapping::Dict{String, String}, 
   return Dict(results)
 end
 
+function multithreaded_loading_of_datasets(id_to_file_mapping::Dict{String, String}, geo_bnds::GeographicBounds)::Dict{String, Array{<: AbstractFloat}}
+  
+  res = Dict{String, AbstractArray}()
+
+  arguments = [(id, path) for (id, path) in id_to_file_mapping] 
+  Threads.@threads for i in eachindex(arguments)
+    id = arguments[i][1]
+    path = arguments[i][1]
+    res[id] = load_variable_data_in_bounds(Float32, path, id, geo_bnds, :, :)
+  end  
+  return res 
+end
 end
 

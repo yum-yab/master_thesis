@@ -7,6 +7,19 @@ using PythonCall
 export parallel_loading_of_datasets
 
 
+function shared_loading_of_datasets(id_to_file_mapping::Dict{String, String}, dims)::Dict{String, Array{<: AbstractFloat}}
+  
+  arguments = zip([(id, path, SharedArray{Float32}(dims)) for (id, path) in id_to_file_mapping]...) 
+  
+
+  results = pmap(arguments...) do id, path
+    data = load_one_dataset_xarray(path, id)
+    return id => data
+  end
+  
+  return Dict(results)
+end
+
 function parallel_loading_of_datasets(id_to_file_mapping::Dict{String, String})::Dict{String, Array{<: AbstractFloat}}
   
   arguments = zip([(id, path) for (id, path) in id_to_file_mapping]...) 
@@ -18,6 +31,13 @@ function parallel_loading_of_datasets(id_to_file_mapping::Dict{String, String}):
   
   return Dict(results)
 end
+
+function iterative_loading_of_datasets(id_to_file_mapping::Dict{String, String})
+
+  return Dict([id => load_one_dataset_xarray(path, id) for (id, path) in id_to_file_mapping])
+  
+end
+
 function load_one_dataset_xarray(path::String, id::String)::AbstractArray{<: AbstractFloat}
     
     println("Started loading data $id from $path")
@@ -33,5 +53,18 @@ function load_one_dataset_xarray(path::String, id::String)::AbstractArray{<: Abs
     return pyconvert(Array, data)
     
   end
+
+function multithreaded_loading_of_datasets(id_to_file_mapping::Dict{String, String})::Dict{String, Array{<: AbstractFloat}}
+  
+  res = Dict{String, AbstractArray}()
+
+  arguments = [(id, path) for (id, path) in id_to_file_mapping] 
+  Threads.@threads for i in eachindex(arguments)
+    id = arguments[i][1]
+    path = arguments[i][2]
+    res[id] = load_one_dataset_xarray(path, id)
+  end  
+  return res 
+end
 end
 
