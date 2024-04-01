@@ -234,7 +234,7 @@ function main(cfg::Dict{String, Any})
     full_mapping_dict = merge(id_to_file_mapping, Dict("ap" => id_to_file_mapping["hus"], "b" => id_to_file_mapping["hus"]))
     
     println("Time for loading data:")
-    @time data_dict = XarrayDataLoading.parallel_loading_of_datasets(id_to_file_mapping)
+    @time data_dict = XarrayDataLoading.iterative_loading_of_datasets(id_to_file_mapping)
     rmprocs(workers())
     NCDataset(id_to_file_mapping["hus"]) do ds
 
