@@ -2,15 +2,14 @@
 module XarrayDataLoading
   
 using Distributed
-
+using SharedArrays
 using PythonCall
 export parallel_loading_of_datasets
-
+using TranscodingStreams
 
 function shared_loading_of_datasets(id_to_file_mapping::Dict{String, String}, dims)::Dict{String, Array{<: AbstractFloat}}
   
-  arguments = zip([(id, path, SharedArray{Float32}(dims)) for (id, path) in id_to_file_mapping]...) 
-  
+  hus_array = SharedArray{Float32}(dims...)
 
   results = pmap(arguments...) do id, path
     data = load_one_dataset_xarray(path, id)
@@ -28,8 +27,12 @@ function parallel_loading_of_datasets(id_to_file_mapping::Dict{String, String}):
     data = load_one_dataset_xarray(path, id)
     return id => data
   end
+
+  for pair in results
+    println("Size of compressed $(pair[1]) data: $(sizeof(pair[2]) / 10^6) MB")
+  end
   
-  return Dict(results)
+  return Dict([p[1] => decompress_data(p[2]) for p in results])
 end
 
 function iterative_loading_of_datasets(id_to_file_mapping::Dict{String, String})
