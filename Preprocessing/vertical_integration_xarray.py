@@ -2,10 +2,10 @@ import xarray as xr
 import numpy as np
 import time
 
-paths = ["/home/denis/Documents/Uni/Master/MA/preprocessing/sample_data/sample_hus_dataset_200_timesteps.nc", "/home/denis/Documents/Uni/Master/MA/preprocessing/sample_data/sample_va_dataset_200_timesteps.nc", "/home/denis/Documents/Uni/Master/MA/preprocessing/sample_data/sample_ua_dataset_200_timesteps.nc"]
+paths = ["/work/ik1017/CMIP6/data/CMIP6/ScenarioMIP/MPI-M/MPI-ESM1-2-LR/ssp585/r10i1p1f1/6hrLev/hus/gn/v20190710/hus_6hrLev_MPI-ESM1-2-LR_ssp585_r10i1p1f1_gn_201501010600-203501010000.nc", "/work/ik1017/CMIP6/data/CMIP6/ScenarioMIP/MPI-M/MPI-ESM1-2-LR/ssp585/r10i1p1f1/6hrLev/va/gn/v20190815/va_6hrLev_MPI-ESM1-2-LR_ssp585_r10i1p1f1_gn_201501010600-203501010000.nc", "/work/ik1017/CMIP6/data/CMIP6/ScenarioMIP/MPI-M/MPI-ESM1-2-LR/ssp585/r10i1p1f1/6hrLev/ua/gn/v20190815/ua_6hrLev_MPI-ESM1-2-LR_ssp585_r10i1p1f1_gn_201501010600-203501010000.nc"]
 
 
-target_path = "./test_xarray_impl.nc"
+target_path = "/scratch/b/b382641/test_xarray_impl_slurm.nc"
 
 
 def integrate_trapz(array, x):
@@ -24,7 +24,8 @@ def integrate_over_data_array(y_values, x_values, integration_dim = 'lev'):
     
 start_time = time.perf_counter()
 
-ds = xr.open_mfdataset(paths, compat="override", parallel=True, decode_cf=False, chunks=dict(time=256, lev= 47, lat= 96, lon= 192))
+# ds = xr.open_mfdataset(paths, compat="override", parallel=True, chunks=dict(time=256, lev= 47, lat= 96, lon= 192))
+ds = xr.open_mfdataset(paths, compat="override",  decode_cf=False, chunks=dict(time=256, lev= 47, lat= 96, lon= 192))
 
 opened_datasets = time.perf_counter()
 print(f"Time used for loading dataset: {opened_datasets - start_time} s")
