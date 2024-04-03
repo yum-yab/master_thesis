@@ -6,6 +6,8 @@ paths = ["/home/denis/Documents/Uni/Master/MA/preprocessing/sample_data/sample_h
 
 
 target_path = "./test_xarray_impl.nc"
+
+
 def integrate_trapz(array, x):
     return np.trapz(array, x, axis=-1) / 9.806
 
