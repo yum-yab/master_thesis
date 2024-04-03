@@ -234,23 +234,23 @@ function main(cfg::Dict{String, Any})
     full_mapping_dict = merge(id_to_file_mapping, Dict("ap" => id_to_file_mapping["hus"], "b" => id_to_file_mapping["hus"], "ps" => id_to_file_mapping["hus"]))
     
     println("Time for loading data:")
-    @time data_dict = XarrayDataLoading.iterative_loading_of_datasets(full_mapping_dict)
-    # NCDataset(id_to_file_mapping["hus"]) do ds
-    #
-    #   data_dict["ps"] = ds["ps"][:, :, :]
-    #   data_dict["ap"] = ds["ap"][:]
-    #   data_dict["b"] = ds["b"][:]
-    #   
-    #   return      
-    # end
-    for (id, data) in data_dict
-      println("Type for $id: $(typeof(data))")
+    @time begin
+      
+      (metadata_dict, geo_bounds, ds_attribs) = NCDataset(id_to_file_mapping["hus"]) do ds
+        geo_bounds = DataLoading.GeographicBounds(lon_bounds, lat_bounds, ds)
+        return Dict("ps" => DataLoading.load_data_in_geo_bounds(ds, "ps", geo_bounds, :), "ap" => ds["ap"][:],  "b" => ds["b"][:], "time" => ds["time"][:]), geo_bounds, copy(ds.attrib)     
+      end
+      data_dict = XarrayDataLoading.iterative_loading_of_datasets(id_to_file_mapping)
+
+      data_dict = merge(data_dict, metadata_dict)
+      for (id, data) in data_dict
+        println("Type for $id: $(typeof(data))")
+      end
     end
     # rmprocs(workers())
-    geo_bounds = DataLoading.GeographicBounds(lon_bounds, lat_bounds, id_to_file_mapping["hus"])
     (data_eastwards, data_northwards, data_norm) = generate_ivt_field(data_dict)
     println("Time it takes saving the data to disk: ")
-    @time write_ivt_dataset(id_to_file_mapping["hus"], geo_bounds, target_file, data_eastwards, data_northwards, data_norm)
+    @time write_ivt_dataset(ds_attribs, geo_bounds, data_dict["time"], target_file, data_eastwards, data_northwards, data_norm)
  
     # commands = generate_cdo_preprocessing_commands(scenrio_base_path, ssp, target_base_path, lon_bounds, lat_bounds; time_res_id = time_res_id, overwrite_existing = overwrite_existing, silent = true)
 

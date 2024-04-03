@@ -7,6 +7,7 @@ using NetCDF
 
 export load_variable_data_in_bounds, GeographicBounds, load_data_in_geo_bounds
 
+
 struct GeographicBounds
   """This struct sets the geographic boundaries of the datasets. """
   lon_bounds::Tuple{<:Real,<:Real}
@@ -16,6 +17,7 @@ struct GeographicBounds
   lat_indices::Tuple{<:Int,<:Int}
   remaining_lat_values::Vector{<:Real}
 end
+
 
 function GeographicBounds(lon_bounds::Tuple{<:Real,<:Real}, lat_bounds::Tuple{<:Real,<:Real}, lon_values::Vector{<:Real}, lat_values::Vector{<:Real})
 
@@ -53,25 +55,7 @@ function GeographicBounds(lon_bounds::Tuple{<:Real,<:Real}, lat_bounds::Tuple{<:
   return GeographicBounds(lon_bounds, lat_bounds, lon_vals, lat_vals)
 end
 
-"""This function loads data in given geographic bounds. It supports loading values going 'over the end' like the lon rage from 270-40 NOTE: It is expected that the longitude is given in values from 0-360 deg and lat in range from -90:90"""
-# function load_variable_data_in_bounds{T,N}(dataset_path::String, field_id::String, geo_bnds::GeographicBounds, indices...)::Array{T,N} where {T<:AbstractFloat,N<:Int}
-function load_variable_data_in_bounds(T, dataset_path::String, field_id::String, geo_bnds::GeographicBounds, indices::Union{Integer, UnitRange, StepRange, Colon}...)
-
-  lon_normal_range = geo_bnds.lon_bounds[1] < geo_bnds.lon_bounds[2]
-  lat_normal_range = geo_bnds.lat_bounds[1] < geo_bnds.lat_bounds[2]
-
-  # first load the file information
-  dims = Vector{Int}()
-
-  NCDataset(dataset_path) do ds
-
-    append!(dims, collect(size(ds[field_id])))
-
-  end
-
-  other_ranges = [isa(indices[i], Colon) ? UnitRange(1,dims[2+i]) : indices[i] for i in eachindex(indices)]
-
-  function build_unnormal_ranges(normal_bounds::Tuple{<:Int,<:Int}, unnormal_bounds::Tuple{<:Int,<:Int}, unnormal_index)::Tuple{Vector{UnitRange},Vector{UnitRange}}
+  function build_unnormal_ranges(normal_bounds::Tuple{<:Int,<:Int}, unnormal_bounds::Tuple{<:Int,<:Int}, dims, unnormal_index, other_ranges)::Tuple{Vector{UnitRange},Vector{UnitRange}}
 
     range1 = Vector{UnitRange{Int}}()
     range2 = Vector{UnitRange{Int}}()
@@ -87,7 +71,7 @@ function load_variable_data_in_bounds(T, dataset_path::String, field_id::String,
     return range1, range2
   end
 
-  function concat_ranges(range1, range2, dimension)
+  function concat_ranges(T, ds, field_id, range1, range2, dimension)
 
     # generate the full dataset
     full_dims = length.(range1)
@@ -110,13 +94,23 @@ function load_variable_data_in_bounds(T, dataset_path::String, field_id::String,
     data2 = view(full_data, second_view...)
     println("Range1: $range1")
     println("Range2: $range2")
-    NCDataset(dataset_path) do ds
-      NCDatasets.load!(variable(ds, field_id), data1, range1...)
-      NCDatasets.load!(variable(ds, field_id), data2, range2...)
-    end
+    NCDatasets.load!(variable(ds, field_id), data1, range1...)
+    NCDatasets.load!(variable(ds, field_id), data2, range2...)
 
     return full_data
   end
+"""This function loads data in given geographic bounds. It supports loading values going 'over the end' like the lon rage from 270-40 NOTE: It is expected that the longitude is given in values from 0-360 deg and lat in range from -90:90"""
+# function load_variable_data_in_bounds{T,N}(dataset_path::String, field_id::String, geo_bnds::GeographicBounds, indices...)::Array{T,N} where {T<:AbstractFloat,N<:Int}
+function load_variable_data_in_bounds(T, ds, field_id::String, geo_bnds::GeographicBounds, indices::Union{Integer, UnitRange, StepRange, Colon}...)
+
+  lon_normal_range = geo_bnds.lon_bounds[1] < geo_bnds.lon_bounds[2]
+  lat_normal_range = geo_bnds.lat_bounds[1] < geo_bnds.lat_bounds[2]
+
+  # first load the file information
+  dims = size(ds[field_id])
+
+  other_ranges = [isa(indices[i], Colon) ? UnitRange(1,dims[2+i]) : indices[i] for i in eachindex(indices)]
+
 
 
   if lon_normal_range & lat_normal_range
@@ -126,31 +120,29 @@ function load_variable_data_in_bounds(T, dataset_path::String, field_id::String,
     ranges = [geo_bnds.lon_indices[1]:geo_bnds.lon_indices[2], geo_bnds.lat_indices[1]:geo_bnds.lat_indices[2], other_ranges...]
     data = zeros(T, length.(ranges)...)
 
-    NCDataset(dataset_path) do ds
-      NCDatasets.load!(variable(ds, field_id), data, ranges...)
-    end
+    NCDatasets.load!(variable(ds, field_id), data, ranges...)
     return data
 
   elseif !lon_normal_range & lat_normal_range
 
-    (range1, range2) = build_unnormal_ranges(geo_bnds.lat_indices, geo_bnds.lon_indices, 1)
+    (range1, range2) = build_unnormal_ranges(geo_bnds.lat_indices, geo_bnds.lon_indices, dims, 1, other_ranges)
 
-    return concat_ranges(range1, range2, 1)
+    return concat_ranges(T, ds, field_id, range1, range2, 1)
 
   elseif lon_normal_range & !lat_normal_range
 
-    (range1, range2) = build_unnormal_ranges(geo_bnds.lon_indices, geo_bnds.lat_indices, 2)
-    return concat_ranges(range1, range2, 2)
+    (range1, range2) = build_unnormal_ranges(geo_bnds.lon_indices, geo_bnds.lat_indices, dims, 2, other_ranges)
+    return concat_ranges(T, ds, field_id, range1, range2, 2)
   else
     # last case is both are over 
 
     # first the left side 
 
-    (range_left_1, range_left_2) = build_unnormal_ranges(geo_bnds.lon_indices[1]:dims[1], geo_bnds.lat_indices, 2)
-    left_side_data = concat_ranges(range_left_1, range_left_2, 2)
+    (range_left_1, range_left_2) = build_unnormal_ranges(geo_bnds.lon_indices[1]:dims[1], geo_bnds.lat_indices, dims, 2, other_ranges)
+    left_side_data = concat_ranges(T, ds, field_id,range_left_1, range_left_2, 2)
 
-    (range_right_1, range_right_2) = build_unnormal_ranges(1:geo_bnds.lon_indices[2], geo_bnds.lat_indices, 2)
-    right_side_data = concat_ranges(range_right_1, range_right_2, 2)
+    (range_right_1, range_right_2) = build_unnormal_ranges(1:geo_bnds.lon_indices[2], geo_bnds.lat_indices, dims, 2, other_ranges)
+    right_side_data = concat_ranges(T, ds, field_id,range_right_1, range_right_2, 2)
 
     return vcat(left_side_data, right_side_data)
   end
