@@ -231,18 +231,18 @@ function main(cfg::Dict{String, Any})
     id_to_file_mappings = get_id_to_file_mappings(scenrio_base_path, ssp, ["hus", "ua", "va"]; silent = true)
     target_file = joinpath(target_base_path, "test_xarray_full_script.nc") 
     id_to_file_mapping = id_to_file_mappings[1]
-    # full_mapping_dict = merge(id_to_file_mapping, Dict("ap" => id_to_file_mapping["hus"], "b" => id_to_file_mapping["hus"], "ps" => id_to_file_mapping["hus"]))
+    full_mapping_dict = merge(id_to_file_mapping, Dict("ap" => id_to_file_mapping["hus"], "b" => id_to_file_mapping["hus"], "ps" => id_to_file_mapping["hus"]))
     
     println("Time for loading data:")
-    @time data_dict = XarrayDataLoading.iterative_loading_of_datasets(id_to_file_mapping)::Dict{String, Array}
-    NCDataset(id_to_file_mapping["hus"]) do ds
-
-      data_dict["ps"] = ds["ps"][:, :, :]
-      data_dict["ap"] = ds["ap"][:]
-      data_dict["b"] = ds["b"][:]
-      
-      return      
-    end
+    @time data_dict = XarrayDataLoading.iterative_loading_of_datasets(full_mapping_dict)
+    # NCDataset(id_to_file_mapping["hus"]) do ds
+    #
+    #   data_dict["ps"] = ds["ps"][:, :, :]
+    #   data_dict["ap"] = ds["ap"][:]
+    #   data_dict["b"] = ds["b"][:]
+    #   
+    #   return      
+    # end
     for (id, data) in data_dict
       println("Type for $id: $(typeof(data))")
     end
