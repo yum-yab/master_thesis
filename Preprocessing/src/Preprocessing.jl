@@ -86,7 +86,7 @@ function generate_ivt_field(id_to_data_mapping::Dict{String,<: Array}, T::Type =
       for lat in 1:lat_size
         for lon in 1:lon_size
 
-          ps = id_to_data_mapping["ps"][lon, lat, time]
+          ps = id_to_data_mapping["ps"][time, lat, lon]
           pressure_levels = id_to_data_mapping["ap"] + id_to_data_mapping["b"] * ps
 
           result = IVT.ivt_of_column(
