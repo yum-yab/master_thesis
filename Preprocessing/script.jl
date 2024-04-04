@@ -248,7 +248,7 @@ function main(cfg::Dict{String, Any})
       end
     end
     # rmprocs(workers())
-    (data_eastwards, data_northwards, data_norm) = generate_ivt_field(data_dict)
+    (data_eastwards, data_northwards, data_norm) = generate_ivt_field(data_dict, Float32)
     println("Time it takes saving the data to disk: ")
     @time write_ivt_dataset(ds_attribs, geo_bounds, data_dict["time"], target_file, data_eastwards, data_northwards, data_norm)
  
