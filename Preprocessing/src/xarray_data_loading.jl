@@ -2,10 +2,8 @@
 module XarrayDataLoading
   
 using Distributed
-using SharedArrays
 using PythonCall
 export parallel_loading_of_datasets
-using TranscodingStreams
 
 function shared_loading_of_datasets(id_to_file_mapping::Dict{String, String}, dims)::Dict{String, Array{<: AbstractFloat}}
   
