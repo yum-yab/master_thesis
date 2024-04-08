@@ -78,9 +78,9 @@ end
   # calculate IVT 
   ivt_result = IVT.ivt_of_column(pressure_levels, hus_sample_data[1, 1, :, 1], wind_vector, wind_vector)
   
-  (median_diff, mean_diff) = calculate_stats_on_difference(IVT.ivt_of_column, iwv_sample_data, hus_sample_data, pressure_levels, median, mean) 
+  (median_diff, mean_diff, maximum_diff) = calculate_stats_on_difference(IVT.ivt_of_column, iwv_sample_data, hus_sample_data, pressure_levels, median, mean, maximum) 
   println("Statistics of differnences of simulation iwv and my own integral of the same humidity data")
-  println("Median diff: $median_diff\tMean Diff: $mean_diff")
+  println("Median diff: $median_diff\tMean Diff: $mean_diff\tMaximum diff: $maximum_diff")
   @test median_diff < .1
   @test mean_diff < .2
 
