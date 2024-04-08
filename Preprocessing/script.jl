@@ -57,9 +57,9 @@ end
 
 function register_sbatch_commands(scenario_base_path, target_base_path, logging_base_path, scenarios...)
   if isempty(PROGRAM_FILE)
-      working_dir="."
+    working_dir="."
   else
-      working_dir = abspath(PROGRAM_FILE)
+    working_dir = dirname(abspath(PROGRAM_FILE))
   end
   for scenario in scenarios
 
