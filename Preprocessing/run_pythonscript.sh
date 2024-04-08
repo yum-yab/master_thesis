@@ -5,12 +5,12 @@
 #SBATCH --ntasks-per-node=256
 #SBATCH --time=01:00:00
 #SBATCH --partition=compute
-#SBATCH --output=output_xr_impl.log
-#SBATCH --error=error_xr_impl.log
-#SBATCH --mem=80G
+#SBATCH --output=output_full_member_run.log
+#SBATCH --error=error_full_member_run.log
+#SBATCH --mem=100G
 module load netcdf-c
 module load python3
 
 source env/bin/activate
 
-python3 vertical_integration_xarray.py 
+python3 vertical_integration_xarray.py $1 $2
