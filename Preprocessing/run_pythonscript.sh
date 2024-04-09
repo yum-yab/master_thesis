@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=test_python_xarray_pure
+#SBATCH --job-name=ivt_gen_xr_dask
 #SBATCH --account=kv0728
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=256
