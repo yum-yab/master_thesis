@@ -7,7 +7,13 @@ from dask.distributed import Client
 import time
 import multiprocessing
 
-
+# In order to run, this script needs the following 3rd party libraries
+#
+# Requirements:
+#   xarray[complete]
+#   dask[complete]
+#   numpy
+#   multiprocessing
 
 
 
@@ -60,19 +66,25 @@ def generate_ivt_calculation(source_paths, target_path, chunks=dict(time=64, lev
     new_ds.attrs["variable_id"] = "ivt"
 
     new_ds["ivt_east_component"] = eastward_integral
-    new_ds["ivt_east_component"].assign_attrs(
+    new_ds["ivt_east_component"].attrs.update(
+        long_name="Integrated Water Vapor Transport Eastward Component",
         units="kg m^-1 s^-1",
-        comments="Eastward water vapor flux. Calculated by integrating over hus * ua fields. This field is not normalized."
+        comments="Eastward water vapor flux. Calculated by integrating over hus * ua fields. This field is not normalized.",
+        history="Genrated from MPI-M CMIP6 simulation by integrating with xarray+dask. See https://github.com/yum-yab/master_thesis"
     )
     new_ds["ivt_north_component"] = northward_integral
-    new_ds["ivt_north_component"].assign_attrs(
+    new_ds["ivt_north_component"].attrs.update(
+        long_name="Integrated Water Vapor Transport Northward Component",
         units= "kg m^-1 s^-1",
-        comments= "Northward water vapor flux. Calculated by integrating over hus * va fields. This field is not normalized."
+        comments= "Northward water vapor flux. Calculated by integrating over hus * va fields. This field is not normalized.",
+        history="Genrated from MPI-M CMIP6 simulation by integrating with xarray+dask. See https://github.com/yum-yab/master_thesis"
     )
     new_ds["ivt"] = ivt_norm
-    new_ds["ivt"].assign_attrs(
+    new_ds["ivt"].attrs.update(
+        long_name="Integrated Water Vapor Transport normalized",
         units="kg m^-1 s^-1",
-        comment="Euclidian norm of the water vapor flux vector. Calculated by (ivteast^2+ivtnorth^2)^0.5. This field is not normalized."
+        comment="Euclidian norm of the water vapor flux vector. Calculated by (ivteast^2+ivtnorth^2)^0.5. This field is not normalized.",
+        history="Genrated from MPI-M CMIP6 simulation by integrating with xarray+dask. See https://github.com/yum-yab/master_thesis"
     )
 
     all_lazy_calcs = time.perf_counter()
@@ -163,4 +175,4 @@ if __name__ == "__main__":
             target_file = os.path.join(target_path, f"ivt_{scenario_name}_{member_id}_{timestamp}.nc")
             
             print(f"Generates ivt for files {field_files} and target {target_file}")
-            # generate_ivt_calculation(field_files, target_file)
+            generate_ivt_calculation(field_files, target_file)
