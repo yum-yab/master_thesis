@@ -3,7 +3,7 @@
 #SBATCH --account=kv0728
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=256
-#SBATCH --time=01:00:00
+#SBATCH --time=01:15:00
 #SBATCH --partition=compute
 #SBATCH --output=output_full_member_run.log
 #SBATCH --error=error_full_member_run.log
