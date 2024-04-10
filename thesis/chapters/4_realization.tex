@@ -6,21 +6,58 @@
 Explain what I want to do using the CMIP6 simulations: Describe what the general plan is: Visualisation of the moisture transport in Europe with the help . 
 Also define what the goals of the visualisations are: Visualize different scenarios for comparison, visualize uncertainties of different members, visualize evolution over time, also try combining those. 
 Here should be a graphic that explains the workflow that transforms a simulation into some nice pictures
+
+
 \section{Preprocessing}
 
-This should explain how you get a proper IVT field from a CMIP6 simulation, what the caveats are and what calculations are done. 
+The goal of this step is to generate an IVT field (see Chapter \ref{ch:related_work}) from the MPI GE CMIP6 (see Chapter \ref{ch:dataset}). 
+The steps to complete this task are quite straight forward:
+
+\begin{enumerate}
+  \item Load four different fields for each time period in each member in each szenario: Specific humidity $hus$, eastward horizontal wind $ua$, northward horizontal wind $va$ and surface pressure $ps$. Here the geographical box around the area of interest is cut out: Europe and the North Atlantic (Longitude: $-90° \to 40°$, Latitude: $20° \to 80°$, based on \cite{vietinghoff_visual_2021})
+  \item For each geographical gridpoint ($lon$, $lat$) and timestep: Calculate the integrals of hte product of wind components and specific humidity over the vertical pressure levels $\frac{1}{g}\int_{p_S}^0 hus * ua$ and  $\frac{1}{g}\int_{p_S}^0 hus * va$, with $g$ being the gravitational acceleration ($9.806 \frac{m}{s}$) 
+  \item Save the results for each time period in each member in each szenario in a NetCDF file for the further steps. 
+  
+\end{enumerate}
+
+The calculations were performed on the high performance computing cluster\footnote{https://docs.dkrz.de/doc/levante/} of the German Climate Calculations Center (DKRZ), due to the MPI GE CMIP6 is saved there and downloading the data would take a lot of time. 
+This also result in the goal of this step to minimize the hours on the HPC system since they get billed by the time using nodes. 
+Although these steps seem easy, due to the large sizes of the datasets and other issues many challenges were met. 
+In the following those will be explained with regard to the step they ocurred in. 
+
+
+
+\textbf{1. Data Loading}
 
 \begin{itemize}
-  \item intitial implementation in julia $\rightarrow$ computation was fast, but the slow IO was a problem 
-  \item also very established tools (like CDO) fail 
-  \item multiple ideas of optimising the IO:
-    \begin{enumerate}
-      \item Multiple different libraries - similar results
-      \item Parallel reading of different fields - no success or segmentation fault
-    \end{enumerate}
-    
-  \item after asking the helpdesk $\rightarrow$ problem was discovered (few byte transmissions) but not the reason for it 
-  \item helpdesk says that large portions of the datasets were never used
-  \item after investigating: Turns out Pythons xarray+dask was quite performant
+  \item cutting out geobox
+  \item slow IO $\rightarrow$ started using dask+xarray 
 \end{itemize}
 
+\textbf{2. Vertical integration}
+
+\begin{itemize}
+  \item calculate hybrid  sigma pressure levels for each gridpoint and timestep to get the x values for integration
+  \item describe my idea of testing the integration
+  
+\end{itemize}
+
+
+% This should explain how you get a proper IVT field from a CMIP6 simulation, what the caveats are and what calculations are done. 
+%
+%
+%
+% \begin{itemize}
+%   \item intitial implementation in julia $\rightarrow$ computation was fast, but the slow IO was a problem 
+%   \item also very established tools (like CDO) fail 
+%   \item multiple ideas of optimising the IO:
+%     \begin{enumerate}
+%       \item Multiple different libraries - similar results
+%       \item Parallel reading of different fields - no success or segmentation fault
+%     \end{enumerate}
+%     
+%   \item after asking the helpdesk $\rightarrow$ problem was discovered (few byte transmissions) but not the reason for it 
+%   \item helpdesk says that large portions of the datasets were never used
+%   \item after investigating: Turns out Pythons xarray+dask was quite performant
+% \end{itemize}
+%
