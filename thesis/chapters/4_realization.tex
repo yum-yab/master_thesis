@@ -3,9 +3,24 @@
 
 \section{Overview}
 
+Explain what I want to do using the CMIP6 simulations: Describe what the general plan is: Visualisation of the moisture transport in Europe with the help . 
+Also define what the goals of the visualisations are: Visualize different scenarios for comparison, visualize uncertainties of different members, visualize evolution over time, also try combining those. 
+Here should be a graphic that explains the workflow that transforms a simulation into some nice pictures
 \section{Preprocessing}
 
 This should explain how you get a proper IVT field from a CMIP6 simulation, what the caveats are and what calculations are done. 
 
-
+\begin{itemize}
+  \item intitial implementation in julia $\rightarrow$ computation was fast, but the slow IO was a problem 
+  \item also very established tools (like CDO) fail 
+  \item multiple ideas of optimising the IO:
+    \begin{enumerate}
+      \item Multiple different libraries - similar results
+      \item Parallel reading of different fields - no success or segmentation fault
+    \end{enumerate}
+    
+  \item after asking the helpdesk $\rightarrow$ problem was discovered (few byte transmissions) but not the reason for it 
+  \item helpdesk says that large portions of the datasets were never used
+  \item after investigating: Turns out Pythons xarray+dask was quite performant
+\end{itemize}
 
