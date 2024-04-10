@@ -55,7 +55,7 @@ function get_id_to_file_mappings(base_path::String, ssp_id::String, field_ids::V
 end
 
 
-function register_sbatch_commands(scenario_base_path, target_base_path, logging_base_path, scenarios...)
+function register_sbatch_commands(scenario_base_path, target_base_path, logging_base_path, scenarios...; really_register = true)
   if isempty(PROGRAM_FILE)
     working_dir="."
   else
@@ -71,6 +71,7 @@ function register_sbatch_commands(scenario_base_path, target_base_path, logging_
       error_log = "$logging_base_path/error_logs/error_$(scenario)_$(member_id).log"
       sbatch_command=`sbatch --chdir=$working_dir --output=$output_log --error=$error_log run_pythonscript.sh $member_path $target_base_path`
       println(sbatch_command)
+      run(sbatch_command)
     end
   end
   
@@ -81,11 +82,11 @@ end
 
 function main()
   
-  target_base = ""
-  scenario_base = ""
-  logging_base_path = ""
+  target_base = "/scratch/b/b382641/ivt_fields_v1"
+  scenario_base = "/pool/data/CMIP6/data/ScenarioMIP/MPI-M/MPI-ESM1-2-LR"
+  logging_base_path = "/home/b/b382641/workspace/master_thesis/Preprocessing"
 
-  scenarios = ["ssp585"]
+  scenarios = ["ssp126"]
 
   register_sbatch_commands(scenario_base, target_base, logging_base_path, scenarios...)
 end

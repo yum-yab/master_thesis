@@ -175,4 +175,4 @@ if __name__ == "__main__":
             target_file = os.path.join(target_path, f"ivt_{scenario_name}_{member_id}_{timestamp}.nc")
             
             print(f"Generates ivt for files {field_files} and target {target_file}")
-            generate_ivt_calculation(field_files, target_file)
+            generate_ivt_calculation(field_files, target_file, chunks=dict(time=128, lev= 47, lat= 96, lon= 192))
