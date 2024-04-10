@@ -33,7 +33,7 @@ def integrate_over_data_array(y_values, x_values, integration_dim = 'lev'):
 
 
 
-def generate_ivt_calculation(source_paths, target_path, chunks=dict(time=64, lev= 47, lat= 96, lon= 192)):
+def generate_ivt_calculation(source_paths, target_path, chunks=dict(time=256, lev= 47, lat= 96, lon= 192)):
 
     start_time = time.perf_counter()
 
