@@ -67,9 +67,10 @@ function register_sbatch_commands(scenario_base_path, target_base_path, logging_
 
     for member_path in all_members
       member_id = basename(member_path)
+      jobname = "ivt_gen_$(scenario)_$(member_id)"
       output_log = "$logging_base_path/output_logs/output_$(scenario)_$(member_id).log"
       error_log = "$logging_base_path/error_logs/error_$(scenario)_$(member_id).log"
-      sbatch_command=`sbatch --chdir=$working_dir --output=$output_log --error=$error_log run_pythonscript.sh $member_path $target_base_path`
+      sbatch_command=`sbatch --job-name=$jobname --chdir=$working_dir --output=$output_log --error=$error_log run_pythonscript.sh $member_path $target_base_path`
       println(sbatch_command)
       run(sbatch_command)
     end
