@@ -61,6 +61,8 @@ def generate_ivt_calculation(source_paths, target_path, chunks=dict(time=256, le
 
     new_ds = xr.Dataset(coords={coord: relevant_subset[coord] for coord in relevant_subset.coords if coord != 'lev'})
 
+    new_ds["time"] = relevant_subset.time
+
     new_ds.attrs = relevant_subset.attrs
 
     new_ds.attrs["variable_id"] = "ivt"
