@@ -3,36 +3,40 @@ import xarray as xr
 import pandas as pd
 
 def transform_and_update_metadata(ds):
-    """Transform the time coordinate and update metadata for time, lon, and lat."""
     # Transform the time coordinate
     reference_date = pd.Timestamp('1850-01-01')
     ds['time'] = pd.to_datetime(ds['time'].values, unit='D', origin=reference_date)
-
-    # Metadata for time, longitude, and latitude
+    # Update metadata for time, removing conflicting keys if they exist
     time_metadata = {
-        "units": "days since 1850-1-1 00:00:00",
-        "calendar": "proleptic_gregorian",
         "axis": "T",
         "long_name": "time",
         "standard_name": "time"
     }
+    for key in ['units', 'calendar']:
+        ds['time'].attrs.pop(key, None)
+    ds['time'].attrs.update(time_metadata)
+    ds['time'].encoding['dtype'] = 'float64'
+    ds['time'].encoding['units'] = "days since 1850-1-1 00:00:00"
+    ds['time'].encoding['calendar'] = "proleptic_gregorian"
+
+    # Update metadata for lon and lat, removing conflicting keys if they exist
     lon_metadata = {
-        "units": "degrees_east",
         "axis": "X",
         "long_name": "Longitude",
         "standard_name": "longitude"
     }
     lat_metadata = {
-        "units": "degrees_north",
         "axis": "Y",
         "long_name": "Latitude",
         "standard_name": "latitude"
     }
-
-    # Update metadata
-    ds['time'].attrs.update(time_metadata)
+    for key in ['units']:
+        ds['lon'].attrs.pop(key, None)
+        ds['lat'].attrs.pop(key, None)
     ds['lon'].attrs.update(lon_metadata)
     ds['lat'].attrs.update(lat_metadata)
+    ds['lon'].encoding['units'] = "degrees_east"
+    ds['lat'].encoding['units'] = "degrees_north"
 
     return ds
 
@@ -40,10 +44,12 @@ def process_files(rootdir, rootdir_new):
     for dirpath, dirnames, filenames in os.walk(rootdir):
         for filename in filenames:
             if filename.endswith('.nc'):
+
                 # Construct the old and new file paths
                 old_file_path = os.path.join(dirpath, filename)
                 new_file_path = old_file_path.replace(rootdir, rootdir_new)
 
+                print(f"Handling file {old_file_path}")
                 # Ensure the new directory exists
                 os.makedirs(os.path.dirname(new_file_path), exist_ok=True)
 
@@ -54,6 +60,6 @@ def process_files(rootdir, rootdir_new):
                 ds.close()
 
 # Example usage
-rootdir = '/path/to/rootdir'
-rootdir_new = '/path/to/rootdir_new'
+rootdir = '/home/denis/workspace/data/ivt_fields_v1'
+rootdir_new = '/home/denis/workspace/data/ivt_fields_correct_time'
 process_files(rootdir, rootdir_new)
