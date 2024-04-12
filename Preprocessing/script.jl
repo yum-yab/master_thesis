@@ -72,7 +72,9 @@ function register_sbatch_commands(scenario_base_path, target_base_path, logging_
       error_log = "$logging_base_path/error_logs/error_$(scenario)_$(member_id).log"
       sbatch_command=`sbatch --job-name=$jobname --chdir=$working_dir --output=$output_log --error=$error_log run_pythonscript.sh $member_path $target_base_path`
       println(sbatch_command)
-      run(sbatch_command)
+      if really_register
+      	run(sbatch_command)
+      end
     end
   end
   
@@ -87,9 +89,9 @@ function main()
   scenario_base = "/pool/data/CMIP6/data/ScenarioMIP/MPI-M/MPI-ESM1-2-LR"
   logging_base_path = "/home/b/b382641/workspace/master_thesis/Preprocessing"
 
-  scenarios = ["ssp126"]
+  scenarios = ["ssp585"]
 
-  register_sbatch_commands(scenario_base, target_base, logging_base_path, scenarios...)
+  register_sbatch_commands(scenario_base, target_base, logging_base_path, scenarios...; really_register = false)
 end
 
 main()
