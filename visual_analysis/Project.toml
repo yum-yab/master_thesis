@@ -1,0 +1,6 @@
+[deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+EmpiricalOrthogonalFunctions = "63ff9c73-14d6-49bd-be05-5ad278f77d6a"
+GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
+GeoMakie = "db073c08-6b98-4ee5-b6a4-5efafb3259c6"
+NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
