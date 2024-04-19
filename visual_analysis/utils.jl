@@ -92,10 +92,48 @@ function filter_by_date(fun, timeline_data::TimelineData)::TimelineData
     return TimelineData(timeline_data.lons, timeline_data.lats, timeline_data.time[time_indices], transformed_scenarios)
 end
 
-function get_eof_of_datachunk(data)
-    eof = EmpiricalOrthogonalFunction(data; timedim=3)
+function get_eof_of_datachunk(datachunk; nmodes = nothing)
+    eof = EmpiricalOrthogonalFunction(datachunk; timedim=3)
+
+    if isnothing(nmodes)
+        nmodes = size(datachunk, 3)
+    end
 
     temporalsignal = pcs(eof)
-    spatialsignal = reshape(eofs(eof), (size(data)[1:2]..., :))
-    return temporalsignal, spatialsignal
+    spatialsignal = reshape(eofs(eof), (size(datachunk)[1:2]..., :))
+    modes_variability = eof.eigenvals ./ sum(eof.eigenvals) * 100
+    return spatialsignal[:, :, 1:nmodes], temporalsignal[:, 1:nmodes], modes_variability[1:nmodes]
+end
+
+
+function get_sliding_time_scopes_by_threshold(time_data, n, threshold = Day(100))
+    
+    all_starting_points = [1]
+
+    for i in 1:length(time_data)-1 
+        if time_data[i+1] - time_data[i] > threshold
+            push!(all_starting_points, i+1)
+        end
+    end
+
+    function get_next_stop(start)
+
+        counter = 1
+
+        for i in start:length(time_data)-1 
+            if time_data[i+1] - time_data[i] > threshold
+                if counter == n
+                    return i
+                else
+                    counter += 1
+                end
+            end
+        end
+
+        return 
+    end
+    
+    
+
+    return [sp:get_next_stop(sp) for sp in all_starting_points if !isnothing(get_next_stop(sp))]
 end
