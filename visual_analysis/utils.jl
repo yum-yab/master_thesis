@@ -2,6 +2,7 @@ using GLMakie
 using GeoMakie
 using EmpiricalOrthogonalFunctions
 using NCDatasets
+using NetCDF
 using Dates
 using BenchmarkTools
 using Statistics
@@ -23,7 +24,7 @@ function get_files_of_member(data_path, scenario_id, member_nr)
     return readdir(joinpath(data_path, scenario_id, "r$(member_nr)i1p1f1"), join=true)
 end
 
-function get_data(data_path, scenario_id, member_nr; file_range_selection=:, field_id=:ivt)
+function get_data(data_path, scenario_id, member_nr; file_range_selection=:, field_id="ivt")
 
     file_paths = get_files_of_member(data_path, scenario_id, member_nr)
 
@@ -32,9 +33,7 @@ function get_data(data_path, scenario_id, member_nr; file_range_selection=:, fie
 
 
     for file_path in file_paths[file_range_selection]
-        ivt_chunk = NCDataset(file_path) do ds
-            return ds[field_id][:, :, :]::Array{Union{Missing, Float32}, 3}
-        end
+        ivt_chunk = ncread(file_path, field_id)
         push!(ivt_data, ivt_chunk)
     end
 
@@ -45,11 +44,11 @@ function get_time_data(data_path, scenario_id, member_nr; file_range_selection=:
 
     file_paths = get_files_of_member(data_path, scenario_id, member_nr)
 
-    time_data = DateTime[]
+    time_data = Union{Missing, DateTime}[]
 
     for file_path in file_paths[file_range_selection]
         time_chunk = NCDataset(file_path) do ds
-            return ds[:time][:]::Array{DateTime,1}
+            return ds[:time][:]::Vector{Union{Missing, DateTime}}
         end
         append!(time_data, time_chunk)
     end
@@ -66,10 +65,10 @@ function get_field(path, field_id, T, selectors...)
     return data
 end
 
-function build_timeline_data(base_path, member, scenarios...; file_range_selection=:, data_field_id=:ivt)
+function build_timeline_data(base_path, member, scenarios...; file_range_selection=:, data_field_id="ivt")
 
-    lons = get_field(get_files_of_member(base_path, scenarios[1], member)[1], :lon, Vector{Float64}, :)
-    lats = get_field(get_files_of_member(base_path, scenarios[1], member)[1], :lat, Vector{Float64}, :)
+    lons = get_field(get_files_of_member(base_path, scenarios[1], member)[1], :lon, Vector{Union{Missing, Float64}}, :)
+    lats = get_field(get_files_of_member(base_path, scenarios[1], member)[1], :lat, Vector{Union{Missing, Float64}}, :)
 
     time = get_time_data(base_path, scenarios[1], member; file_range_selection=file_range_selection)
 
@@ -92,8 +91,21 @@ function filter_by_date(fun, timeline_data::TimelineData)::TimelineData
     return TimelineData(timeline_data.lons, timeline_data.lats, timeline_data.time[time_indices], transformed_scenarios)
 end
 
-function get_eof_of_datachunk(datachunk; nmodes = nothing)
-    eof = EmpiricalOrthogonalFunction(datachunk; timedim=3)
+function get_eof_of_datachunk(datachunk; nmodes = nothing, center = true)
+    eof = EmpiricalOrthogonalFunction(datachunk; timedim=3, center = center)
+
+    if isnothing(nmodes)
+        nmodes = size(datachunk, 3)
+    end
+
+    temporalsignal = pcs(eof)
+    spatialsignal = reshape(eofs(eof), (size(datachunk)[1:2]..., :))
+    modes_variability = eof.eigenvals ./ sum(eof.eigenvals) * 100
+    return spatialsignal[:, :, 1:nmodes], temporalsignal[:, 1:nmodes], modes_variability[1:nmodes]
+end
+
+function get_spatial_modes(datachunk; nmodes = nothing, center = true)
+    eof = EmpiricalOrthogonalFunction(datachunk; timedim=3, center = center)
 
     if isnothing(nmodes)
         nmodes = size(datachunk, 3)
