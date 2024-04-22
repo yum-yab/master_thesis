@@ -99,6 +99,7 @@ function show_eof_modes_of_timeline(
     nmodes::Int,
     n_seasons::Int,
     filename::String;
+    eof_center::Bool = true,
     framerate::Int = 30,
     colormap = :viridis,
     coastline_color = :white,
@@ -133,12 +134,10 @@ function show_eof_modes_of_timeline(
     
     for dataset in data.datasets
 
-        spatial_modes, temporal_modes, variability_percentage = @lift(get_eof_of_datachunk(dataset.data[:, :, $current_scope]; nmodes = nmodes))[]
+        eof_observable = @lift(get_eof_of_datachunk(dataset.data[:, :, $current_scope]; nmodes = nmodes))
         
-        println(extrema(spatial_modes))
-
         for mode in 1:nmodes
-            surface!(axis[dataset.name][mode], lon_bounds[1]..lon_bounds[2], lat_bounds[1]..lat_bounds[2], to_value(spatial_modes)[:, :, mode]; shading = shading, colormap = colormap)
+            surface!(axis[dataset.name][mode], lon_bounds[1]..lon_bounds[2], lat_bounds[1]..lat_bounds[2], @lift($eof_observable[1][:, :, mode]); shading = shading, colormap = colormap)
             lines!(axis[dataset.name][mode], GeoMakie.coastlines(); color = coastline_color, transformation = (; translation = (0, 0, 1000)))
         end
     end
