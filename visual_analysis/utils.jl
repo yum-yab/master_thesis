@@ -45,11 +45,11 @@ function get_time_data(data_path, scenario_id, member_nr; file_range_selection=:
 
     file_paths = get_files_of_member(data_path, scenario_id, member_nr)
 
-    time_data = Union{Missing,Dates.DateTime}[]
+    time_data = Dates.DateTime[]
 
     for file_path in file_paths[file_range_selection]
         time_chunk = NCDataset(file_path) do ds
-            return ds[:time][:]::Array{Union{Missing,Dates.DateTime},1}
+            return ds[:time][:]::Array{Dates.DateTime,1}
         end
         append!(time_data, time_chunk)
     end
@@ -68,8 +68,8 @@ end
 
 function build_timeline_data(base_path, member, scenarios...; file_range_selection=:)
 
-    lons = get_field(get_files_of_member(base_path, scenarios[1], member)[1], :lon, Vector{Union{Missing,Float64}}, :)
-    lats = get_field(get_files_of_member(base_path, scenarios[1], member)[1], :lat, Vector{Union{Missing,Float64}}, :)
+    lons = get_field(get_files_of_member(base_path, scenarios[1], member)[1], :lon, Vector{Float64}, :)
+    lats = get_field(get_files_of_member(base_path, scenarios[1], member)[1], :lat, Vector{Float64}, :)
 
     time = get_time_data(base_path, scenarios[1], member; file_range_selection=file_range_selection)
 
