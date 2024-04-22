@@ -27,13 +27,13 @@ function get_data(data_path, scenario_id, member_nr; file_range_selection=:, fie
 
     file_paths = get_files_of_member(data_path, scenario_id, member_nr)
 
-    ivt_data = Array{Union{Missing,Float64},3}[]
+    ivt_data = Array{Float64,3}[]
 
 
 
     for file_path in file_paths[file_range_selection]
         ivt_chunk = NCDataset(file_path) do ds
-            return ds[field_id][:, :, :]::Array{Union{Missing,Float64},3}
+            return ds[field_id][:, :, :]::Array{Union{Missing, Float32}, 3}
         end
         push!(ivt_data, ivt_chunk)
     end
@@ -45,11 +45,11 @@ function get_time_data(data_path, scenario_id, member_nr; file_range_selection=:
 
     file_paths = get_files_of_member(data_path, scenario_id, member_nr)
 
-    time_data = Dates.DateTime[]
+    time_data = DateTime[]
 
     for file_path in file_paths[file_range_selection]
         time_chunk = NCDataset(file_path) do ds
-            return ds[:time][:]::Array{Dates.DateTime,1}
+            return ds[:time][:]::Array{DateTime,1}
         end
         append!(time_data, time_chunk)
     end
@@ -66,7 +66,7 @@ function get_field(path, field_id, T, selectors...)
     return data
 end
 
-function build_timeline_data(base_path, member, scenarios...; file_range_selection=:)
+function build_timeline_data(base_path, member, scenarios...; file_range_selection=:, data_field_id=:ivt)
 
     lons = get_field(get_files_of_member(base_path, scenarios[1], member)[1], :lon, Vector{Float64}, :)
     lats = get_field(get_files_of_member(base_path, scenarios[1], member)[1], :lat, Vector{Float64}, :)
@@ -75,7 +75,7 @@ function build_timeline_data(base_path, member, scenarios...; file_range_selecti
 
     scenarios = map(scenarios) do scenario_id
 
-        data = get_data(base_path, scenario_id, member; file_range_selection=file_range_selection)
+        data = get_data(base_path, scenario_id, member; file_range_selection=file_range_selection, field_id=data_field_id)
 
         return ScenarioData(scenario_id, data)
     end
