@@ -35,4 +35,4 @@ function run_cdo_command_on_all(base_path, result_basepath, command; run_command
 end
 
 
-run_cdo_command_on_all("/home/denis/workspace/data/ivt_fields_v1", "/home/denis/workspace/data/ivt_monthly_mean", ["-monmean"]; run_command = true)
+run_cdo_command_on_all("/home/denis/workspace/data/ivt_fields_v1", "/home/denis/workspace/data/ivt_daily_mean", ["-daymean"]; run_command = true)
