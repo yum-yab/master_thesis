@@ -100,6 +100,7 @@ function show_eof_modes_of_timeline(
     n_seasons::Int,
     filename::String;
     eof_center::Bool=true,
+    use_rotated_eofs=false,
     framerate::Int=30,
     colormap=:viridis,
     coastline_color=:white,
@@ -146,9 +147,9 @@ function show_eof_modes_of_timeline(
 
             if align_with_mean
                 dataset_mean = reshape(mean(chunk, dims=3), 1, :)
-                eof_result = get_eof_of_datachunk(chunk; nmodes=nmodes, center=eof_center, alignment_field=dataset_mean)
+                eof_result = get_eof_of_datachunk(chunk; nmodes=nmodes, center=eof_center, alignment_field=dataset_mean, varimax_rotation=use_rotated_eofs)
             else
-                eof_result = get_eof_of_datachunk(chunk; nmodes=nmodes, center=eof_center)
+                eof_result = get_eof_of_datachunk(chunk; nmodes=nmodes, center=eof_center, varimax_rotation=use_rotated_eofs)
             end
             println("Handled scope $scope out of $(length(all_scopes)) on thread $(Threads.threadid())")
 
@@ -303,7 +304,7 @@ function show_eof_modes_of_timeline_pyeof(
             else
                 eof_result = pyeof_of_datachunk(chunk, nmodes; weights = weights, eof_type = eof_type)
             end
-            println("Handled scope $scope out of $(length(all_scopes)) on thread $(Threads.threadid())")
+            # println("Handled scope $scope out of $(length(all_scopes)) on thread $(Threads.threadid())")
 
             # Direct assignment to the predefined array position
             new_eof_extremas[idx] = extrema(eof_result.spatial_modes)

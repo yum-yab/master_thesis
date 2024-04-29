@@ -131,12 +131,16 @@ function align_with_field(field, alignment_field; mode_dim_index = 2)
     return cat([handle_slice(field[:, modenum]) for modenum in axes(field, mode_dim_index)]..., dims=2)
 end
 
-function get_eof_of_datachunk(datachunk; nmodes=nothing, center=true, alignment_field=nothing)::EOFResult
+function get_eof_of_datachunk(datachunk; nmodes=nothing, center=true, alignment_field=nothing, varimax_rotation=false)::EOFResult
 
     eof = EmpiricalOrthogonalFunction(datachunk; timedim=3, center=center)
 
     if isnothing(nmodes)
         nmodes = size(datachunk, 3)
+    end
+
+    if varimax_rotation
+        orthorotation!(eof; n=nmodes)
     end
 
     temporalsignal = pcs(eof; n=nmodes)
@@ -252,8 +256,6 @@ function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute
         ArgumentError("Could not use eof type $(eof_type), use :normal, :correlation or :covariance instead")
     end
 
-    println("Size of result: $(size(pyconvert(Array{Float64,3}, eof_res)))")
-
     modes_variability = solver.eigenvalues(neigs=nmodes) ./ solver.totalAnomalyVariance() * 100
 
     
@@ -261,7 +263,6 @@ function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute
     # we expect time to be the last dimension
     if !isnothing(alignment_field)
         aligned_res = align_with_field(permutedims(pyconvert(Array{Float64,3}, eof_res), (2, 3, 1)), alignment_field; mode_dim_index = 2)
-        println("Aligned result size: $(size(aligned_res))")
         spatialsignal = reshape(aligned_res, (size(datachunk)[1:2]..., nmodes))
     else
         spatialsignal = permutedims(pyconvert(Array{Float64,3}, eof_res), (2, 3, 1))
