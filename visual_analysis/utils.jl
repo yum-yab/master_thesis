@@ -107,7 +107,7 @@ function align_with_field!(field, alignment_field; dims = 1)
     end
 end
 
-function align_with_field(field, alignment_field; dims = 1)
+function align_with_field(field, alignment_field)
 
     function handle_slice(slice)
         scalar_product = sum(slice .* alignment_field)
@@ -118,7 +118,7 @@ function align_with_field(field, alignment_field; dims = 1)
         end
     end
 
-    return cat([handle_slice(slice) for slice in eachslice(field, dims = dims)]..., dims = 2)
+    return cat([handle_slice(field[:, modenum]) for modenum in axes(field, 2)]..., dims = 2)
 end
 
 function get_eof_of_datachunk(datachunk; nmodes = nothing, center = true, alignment_field = nothing)::EOFResult
@@ -129,15 +129,15 @@ function get_eof_of_datachunk(datachunk; nmodes = nothing, center = true, alignm
         nmodes = size(datachunk, 3)
     end
 
-    temporalsignal = pcs(eof)
-    spatialsignal = eofs(eof)
+    temporalsignal = pcs(eof; n = nmodes)
+    spatialsignal = eofs(eof; n = nmodes)
 
     if !isnothing(alignment_field)
-        spatialsignal = align_with_field(spatialsignal, alignment_field; dims = 1)
+        spatialsignal = align_with_field(spatialsignal, alignment_field)
     end
 
-    modes_variability = eof.eigenvals ./ sum(eof.eigenvals) * 100
-    return EOFResult(reshape(spatialsignal, (size(datachunk)[1:2]..., :))[:, :, 1:nmodes], temporalsignal[:, 1:nmodes], modes_variability[1:nmodes])
+    modes_variability = eigenvalues(eof; n = nmodes) ./ sum(eof.eigenvals) * 100
+    return EOFResult(reshape(spatialsignal, (size(datachunk)[1:2]..., nmodes)), temporalsignal, modes_variability)
 end
 
 
