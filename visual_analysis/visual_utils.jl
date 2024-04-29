@@ -138,7 +138,7 @@ function show_eof_modes_of_timeline(
         eofs = Vector{EOFResult}(undef, length(all_scopes))  # Predefined array for EOFResult
         new_eof_extremas = Vector{Tuple{Float64,Float64}}(undef, length(all_scopes))  # Predefined array for extrema
 
-        #dataset_mean = reshape(mean(dataset.data, dims=3), 1, :)
+        # dataset_mean = reshape(mean(dataset.data, dims=3), 1, :)
 
         Threads.@threads for idx in eachindex(all_scopes)
             scope = all_scopes[idx]
@@ -239,6 +239,104 @@ function compare_truth_with_tldata(
     timestamps = eachindex(truth.time)
     record(fig, filename, timestamps; framerate=framerate) do t
         time_index[] = t
+    end
+
+
+    return fig
+end
+
+
+
+function show_eof_modes_of_timeline_pyeof(
+    data::TimelineData,
+    nmodes::Int,
+    n_seasons::Int,
+    filename::String;
+    eof_center::Bool=true,
+    framerate::Int=30,
+    colormap=:viridis,
+    coastline_color=:white,
+    weights::Union{Nothing, Vector{<: AbstractFloat}},
+    eof_type = :normal,
+    shading=Makie.automatic,
+    resolution::Union{Nothing,Tuple{Int,Int}}=nothing,
+    fontsize::Int=12,
+    whole_figure_title=nothing,
+    align_with_mean=true
+)::Makie.Figure
+
+    println("Threads available: $(Threads.nthreads())")
+
+    fig = isnothing(resolution) ? Figure(fontsize=fontsize) : Figure(size=resolution, fontsize=fontsize)
+
+    if !isnothing(whole_figure_title)
+        Label(fig[0, 1:nmodes], whole_figure_title, fontsize=round(1.7 * fontsize))
+    end
+
+    all_scopes = get_sliding_time_scopes_by_threshold(data.time, n_seasons)
+
+    current_scope_index = Observable(1)
+
+    axis = Dict()
+
+    dataset_to_eofs = Dict()
+
+    lon_bounds = extrema(data.lons)
+    lat_bounds = extrema(data.lats)
+
+    eof_extremas = Tuple{Float64,Float64}[]
+
+
+    for (i, dataset) in enumerate(data.datasets)
+        all_modes_axis = []
+        eofs = Vector{EOFResult}(undef, length(all_scopes))  # Predefined array for EOFResult
+        new_eof_extremas = Vector{Tuple{Float64,Float64}}(undef, length(all_scopes))  # Predefined array for extrema
+
+        #dataset_mean = reshape(mean(dataset.data, dims=3), 1, :)
+
+        for idx in eachindex(all_scopes)
+            scope = all_scopes[idx]
+            chunk = dataset.data[:, :, scope]
+            if align_with_mean
+                dataset_mean = reshape(mean(chunk, dims=3), 1, :)
+                eof_result = pyeof_of_datachunk(chunk, nmodes; weights = weights, eof_type = eof_type, alignment_field=dataset_mean)
+            else
+                eof_result = pyeof_of_datachunk(chunk, nmodes; weights = weights, eof_type = eof_type)
+            end
+            println("Handled scope $scope out of $(length(all_scopes)) on thread $(Threads.threadid())")
+
+            # Direct assignment to the predefined array position
+            new_eof_extremas[idx] = extrema(eof_result.spatial_modes)
+            eofs[idx] = eof_result
+        end
+
+
+        dataset_to_eofs[dataset.name] = eofs
+
+        axis[dataset.name] = all_modes_axis
+        append!(eof_extremas, new_eof_extremas)
+
+
+        for j in 1:nmodes
+            title = @lift("$(dataset.name) $(year(data.time[all_scopes[$current_scope_index].start]))-$(year(data.time[all_scopes[$current_scope_index].stop])) Mode $j Variability $(round(dataset_to_eofs[dataset.name][$current_scope_index].modes_variability[j], digits = 2))")
+            push!(all_modes_axis, local_geoaxis_creation!(fig, lon_bounds, lat_bounds; title=title, figure_row=i, figure_col=j))
+        end
+    end
+
+    min_val, max_val = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), eof_extremas)
+
+    Colorbar(fig[length(data.datasets)+1, 1:nmodes], limits=(min_val, max_val), colormap=colormap, vertical=false, label="EOF values")
+
+    for (i, dataset) in enumerate(data.datasets)
+
+        for mode in 1:nmodes
+            surface!(axis[dataset.name][mode], lon_bounds[1] .. lon_bounds[2], lat_bounds[1] .. lat_bounds[2], @lift(dataset_to_eofs[dataset.name][$current_scope_index].spatial_modes[:, :, mode]); shading=shading, colormap=colormap, colorrange=(min_val, max_val))
+            lines!(axis[dataset.name][mode], GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
+        end
+    end
+
+    record(fig, filename, eachindex(all_scopes); framerate=framerate) do t
+        current_scope_index[] = t
     end
 
 
