@@ -108,7 +108,7 @@ function align_with_field!(field, alignment_field; dims=1)
     end
 end
 
-function align_with_field(field, alignment_field; mode_dim_index = 2)
+function align_with_field(field, alignment_field; mode_dim_index=2)
 
     dims = size(field)
     dimension = length(dims)
@@ -131,7 +131,7 @@ function align_with_field(field, alignment_field; mode_dim_index = 2)
     return cat([handle_slice(field[:, modenum]) for modenum in axes(field, mode_dim_index)]..., dims=2)
 end
 
-function get_eof_of_datachunk(datachunk; nmodes=nothing, center=true, alignment_field=nothing, varimax_rotation=false)::EOFResult
+function get_eof_of_datachunk(datachunk; nmodes=nothing, center=true, alignment_field=nothing, varimax_rotation=false, scale_with_eigenvals=false)::EOFResult
 
     eof = EmpiricalOrthogonalFunction(datachunk; timedim=3, center=center)
 
@@ -148,6 +148,10 @@ function get_eof_of_datachunk(datachunk; nmodes=nothing, center=true, alignment_
 
     if !isnothing(alignment_field)
         spatialsignal = align_with_field(spatialsignal, alignment_field)
+    end
+
+    if scale_with_eigenvals
+        spatialsignal = spatialsignal .* sqrt.(solver.eigenvalues(neigs=nmodes))
     end
 
     modes_variability = eigenvalues(eof; n=nmodes) ./ sum(eof.eigenvals) * 100
@@ -226,17 +230,23 @@ function normalize_tl_data(tl_data)
     return TimelineData(tl_data.lons, tl_data.lats, tl_data.time, normalized_ds)
 end
 
-function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute=true, eof_type=:normal, alignment_field=nothing)
+function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute=true, eof_type=:normal, alignment_field=nothing, scale_with_eigenvals=false)
 
 
     Eof = pyimport("eofs.standard").Eof
     np = pyimport("numpy")
-    
+
     # eofs expects time to be the first dimension
     if standard_permute
         correct_shape_ds = permutedims(datachunk, (3, 1, 2))
     else
         correct_shape_ds = datachunk
+    end
+
+    if scale_with_eigenvals
+        scaling = 2
+    else
+        scaling = 0
     end
 
 
@@ -247,7 +257,7 @@ function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute
     end
 
     if eof_type == :normal
-        eof_res = solver.eofs(neofs=nmodes)
+        eof_res = solver.eofs(neofs=nmodes, eofscaling = scaling)
     elseif eof_type == :covariance
         eof_res = solver.eofsAsCovariance(neofs=nmodes)
     elseif eof_type == :correlation
@@ -258,18 +268,71 @@ function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute
 
     modes_variability = solver.eigenvalues(neigs=nmodes) ./ solver.totalAnomalyVariance() * 100
 
-    
 
     # we expect time to be the last dimension
     if !isnothing(alignment_field)
-        aligned_res = align_with_field(permutedims(pyconvert(Array{Float64,3}, eof_res), (2, 3, 1)), alignment_field; mode_dim_index = 2)
+        aligned_res = align_with_field(permutedims(pyconvert(Array{Float64,3}, eof_res), (2, 3, 1)), alignment_field; mode_dim_index=2)
         spatialsignal = reshape(aligned_res, (size(datachunk)[1:2]..., nmodes))
     else
         spatialsignal = permutedims(pyconvert(Array{Float64,3}, eof_res), (2, 3, 1))
     end
-        
+
+    EOFResult(spatialsignal, pyconvert(Matrix{Float64}, solver.pcs(npcs=nmodes, pcscaling=scaling)), pyconvert(Vector{Float64}, modes_variability))
+
+end
 
 
-    EOFResult(spatialsignal, permutedims(pyconvert(Matrix{Float64}, solver.pcs(npcs=nmodes)), (2, 1)), pyconvert(Vector{Float64}, modes_variability))
+function calculate_eofs_of_tl_data(tl_data::TimelineData, chunking, nmodes; engine=:julia, reof=false, center=true, align_with_mean=true, weights=nothing, eof_type=:normal, scale_with_eigenvals=false)::Dict{String,Vector{EOFResult}}
+
+    function calculate_eof(chunk; alignment_field=nothing)
+        if engine == :julia
+            return get_eof_of_datachunk(chunk; nmodes=nmodes, center=center, alignment_field=alignment_field, varimax_rotation=reof, scale_with_eigenvals=scale_with_eigenvals)
+        elseif engine == :python
+            return pyeof_of_datachunk(chunk, nmodes; weights=weights, standard_permute=true, eof_type=eof_type, alignment_field=alignment_field, scale_with_eigenvals=scale_with_eigenvals)
+        else
+            ArgumentError("COuld not recognize engine. Please use :python or :julia")
+        end
+    end
+
+    result = Dict()
+
+    for (i, dataset) in enumerate(tl_data.datasets)
+        eofs = Vector{EOFResult}(undef, length(chunking))  # Predefined array for EOFResult
+
+        # Function to handle EOF calculation
+        function handle_eof(idx, data, scopes, eofs)
+            scope = scopes[idx]
+            chunk = data[:, :, scope]
+
+            if align_with_mean
+                dataset_mean = reshape(mean(chunk, dims=3), 1, :)
+                eof_result = calculate_eof(chunk; alignment_field=dataset_mean)
+            else
+                eof_result = calculate_eof(chunk)
+            end
+
+            println("Handled scope $scope out of $(length(scopes)) on thread $(Threads.threadid())")
+
+            # Direct assignment to the predefined array position
+            eofs[idx] = eof_result
+        end
+
+        # Decide whether to use threading based on CONDITION
+        if engine == :julia
+            Threads.@threads for idx in eachindex(chunking)
+                handle_eof(idx, dataset.data, chunking, eofs)
+            end
+        elseif engine == :python
+            for idx in eachindex(chunking)
+                handle_eof(idx, dataset.data, chunking, eofs)
+            end
+        else
+            ArgumentError("COuld not recognize engine. Please use :python or :julia")
+        end
+
+        result[dataset.name] = eofs
+    end
+
+    return result
 
 end
