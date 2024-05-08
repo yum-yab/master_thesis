@@ -5,7 +5,7 @@ using NCDatasets
 using Dates
 using BenchmarkTools
 using Statistics
-using Contour
+using StatsBase
 
 # create geographical axes
 function local_geoaxis_creation!(
@@ -276,7 +276,7 @@ function show_eof_and_pc_modes_of_timeline(
 
 
         eof_data_axis[dataset.name] = all_modes_axis
-        pc_axis[dataset.name] = Axis(fig[2*i, 1:nmodes+1])
+        pc_axis[dataset.name] = Axis(fig[2*i, 1:nmodes+1], limits = ((nothing, nothing), (-1, 1)))
         for res in eof_data[dataset.name]
             push!(eof_extremas, extrema(res.spatial_modes))
             push!(pcs_extremas, extrema(res.temporal_modes))
@@ -310,14 +310,14 @@ function show_eof_and_pc_modes_of_timeline(
 
         dataset_mean = @lift(dropdims(mean(dataset.data[:, :, all_scopes[$current_scope_index]], dims=3), dims=3))
 
-        surface!(mean_axis[dataset.name], lonmin .. lonmax, latmin .. latmax, dataset_mean; shading=shading, colormap=colormap, colorrange=(spatial_min_val, spatial_max_val), alpha=surface_alpha_value, overdraw=false)
+        surface!(mean_axis[dataset.name], lonmin .. lonmax, latmin .. latmax, dataset_mean; shading=shading, colormap=colormap, colorrange=(spatial_min_val, spatial_max_val), alpha=surface_alpha_value, overdraw=false, transformation=(; translation=(0, 0, -1000)))
         lines!(mean_axis[dataset.name], GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
         for mode in 1:nmodes
-            surface!(eof_data_axis[dataset.name][mode], lonmin .. lonmax, latmin .. latmax, @lift(eof_data[dataset.name][$current_scope_index].spatial_modes[:, :, mode]); shading=shading, colormap=colormap, colorrange=(spatial_min_val, spatial_max_val), alpha=surface_alpha_value, overdraw=false)
+            surface!(eof_data_axis[dataset.name][mode], lonmin .. lonmax, latmin .. latmax, @lift(eof_data[dataset.name][$current_scope_index].spatial_modes[:, :, mode]); shading=shading, colormap=colormap, colorrange=(spatial_min_val, spatial_max_val), alpha=surface_alpha_value, overdraw=false, transformation=(; translation=(0, 0, -1000)))
             lines!(eof_data_axis[dataset.name][mode], GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
 
             #positions = @lift([(i, eof_data[dataset.name][$current_scope_index].temporal_modes[i, mode]) for i in all_scopes[$current_scope_index]])
-            positions = @lift(collect(zip(eachindex(all_scopes[$current_scope_index]), eof_data[dataset.name][$current_scope_index].temporal_modes[:, mode])))
+            positions = @lift(collect(zip(eachindex(all_scopes[$current_scope_index]), standardize(UnitRangeTransform, eof_data[dataset.name][$current_scope_index].temporal_modes[:, mode]; unit=false))))
 
             #lines!(pc_axis[dataset.name], 1..30, @lift(eof_data[dataset.name][$current_scope_index].temporal_modes[:, mode]); label = "Mode $mode")
 
@@ -330,7 +330,7 @@ function show_eof_and_pc_modes_of_timeline(
             # draw the additional data
             if !isnothing(additional_eof_data) && mode in 1:additional_data_modes && dataset.name in keys(additional_eof_data)
 
-                positions_additional_data = @lift(collect(zip(eachindex(all_scopes[$current_scope_index]), additional_data_scale_factor * additional_eof_data[dataset.name][$current_scope_index].temporal_modes[:, mode])))
+                positions_additional_data = @lift(collect(zip(eachindex(all_scopes[$current_scope_index]), standardize(UnitRangeTransform, additional_eof_data[dataset.name][$current_scope_index].temporal_modes[:, mode]; unit=false))))
                 lines!(pc_axis[dataset.name], positions_additional_data; label="$additional_data_label Mode $mode")
             end
 
