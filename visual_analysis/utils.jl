@@ -28,6 +28,20 @@ struct EOFResult
     modes_variability::Array{Float64,1}
 end
 
+struct EnsembleSimulation
+    id::String
+    lons::Vector{Union{Missing,<:AbstractFloat}}
+    lats::Vector{Union{Missing,<:AbstractFloat}}
+    time::Vector{Union{Missing,Dates.DateTime}}
+    datasets::Vector{EnsembleMember}
+end
+
+struct EnsembleMember
+    member_id::String
+    data::AbstractArray{Union{Missing,<:AbstractFloat},3}
+end
+
+
 function get_files_of_member(data_path, scenario_id, member_nr)
     return readdir(joinpath(data_path, scenario_id, "r$(member_nr)i1p1f1"), join=true)
 end
@@ -87,6 +101,32 @@ function build_timeline_data(base_path, member, scenarios...; file_range_selecti
     end
 
     return TimelineData(lons, lats, time, collect(scenarios))
+end
+
+function build_ensemble_data(base_path, scenarios...; file_range_selection=:, data_field_id="ivt", member_range=1:50)
+    
+    lons = ncread(get_files_of_member(base_path, scenarios[1], 1)[1], "lon")
+    lats = get_field(get_files_of_member(base_path, scenarios[1], 1)[1], "lat")
+
+    time = get_time_data(base_path, scenarios[1], 1; file_range_selection=file_range_selection)
+
+    result = EnsembleSimulation[]
+
+
+    for scenario in scenarios
+        ensemble_members = map(member_range) do member_nr
+
+            member_id = "r$(member_nr)i1p1f1"
+
+            data = get_data(base_path, scenario, member_nr; file_range_selection=file_range_selection, field_id=data_field_id)
+    
+            return EnsembleMember(member_id, data)
+        end
+
+        push!(result, EnsembleSimulation(scenario, lons, lats, time, collect(ensemble_members)))
+    end
+
+    return result
 end
 
 function filter_by_date(fun, timeline_data::TimelineData)::TimelineData
