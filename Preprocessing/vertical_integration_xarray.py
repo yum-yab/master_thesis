@@ -6,6 +6,7 @@ import numpy as np
 from dask.distributed import Client
 import time
 import multiprocessing
+from pathlib import Path
 
 # In order to run, this script needs the following 3rd party libraries
 #
@@ -47,21 +48,28 @@ def generate_ivt_calculation(source_paths, target_path, chunks=dict(time=256, le
         
     relevant_subset = ds.sortby(ds.lon).sel(lon=slice(-90, 40), lat=slice(20, 80))
 
-    relevant_subset["plevs"] = relevant_subset["ap"] + relevant_subset["b"] * relevant_subset["ps"]
+    if not "plev" in relevant_subset:
+        relevant_subset["plev"] = relevant_subset["ap"] + relevant_subset["b"] * relevant_subset["ps"]
+        intdim = "lev"
+    else:
+        intdim = "plev"
 
     eastward_product = relevant_subset["hus"] * relevant_subset["ua"]
 
     northward_product = relevant_subset["hus"] * relevant_subset["va"]
 
-    eastward_integral = integrate_over_data_array(eastward_product, relevant_subset.plevs)
+    eastward_integral = integrate_over_data_array(eastward_product, relevant_subset.plev, integration_dim=intdim)
 
-    northward_integral = integrate_over_data_array(northward_product, relevant_subset.plevs)
+    northward_integral = integrate_over_data_array(northward_product, relevant_subset.plev, integration_dim=intdim)
 
     ivt_norm = np.sqrt(eastward_integral**2 + northward_integral**2)
 
-    new_ds = xr.Dataset(coords={coord: relevant_subset[coord] for coord in relevant_subset.coords if coord != 'lev'})
+    new_ds = xr.Dataset(coords={coord: relevant_subset[coord] for coord in relevant_subset.coords if coord != intdim})
 
     new_ds["time"] = relevant_subset.time
+
+    for key in ["time", "lat", "lon"]:
+        new_ds[key].attrs.update(relevant_subset[key].attrs)
 
     new_ds.attrs = relevant_subset.attrs
 
@@ -165,10 +173,16 @@ if __name__ == "__main__":
 
     target_base = arguments[1]
 
-    if len(arguments) == 3:
+    print(f"Arguments: {arguments}")
+
+    if len(arguments) >= 3:
         time_res_id = arguments[2]
     else:
-        time_res_id = "6hrLev"
+        time_res_id = "Amon"
+
+    print(f"Running job on scenario {scenario_name}, member {member_id} and resolution {time_res_id}", flush=True)
+
+    overwrite_existing_files = False
     
     with Client(processes=processes, threads_per_worker=threads, n_workers=nworker, memory_limit=mem_limit_per_worker) as client:
         # dask.config.config.get('distributed').get('dashboard').update({'link':'{JUPYTERHUB_SERVICE_PREFIX}/proxy/{port}/status'})
@@ -181,5 +195,8 @@ if __name__ == "__main__":
 
             target_file = os.path.join(target_path, f"ivt_{scenario_name}_{member_id}_{timestamp}.nc")
             
-            print(f"Generates ivt for files {field_files} and target {target_file}")
-            generate_ivt_calculation(field_files, target_file, chunks=dict(time=128, lev= 47, lat= 96, lon= 192))
+            
+            if overwrite_existing_files or not Path(target_file).is_file():
+
+                print(f"Generates ivt for files {field_files} and target {target_file}", flush=True)
+                generate_ivt_calculation(field_files, target_file, chunks=dict(time=128, lev= 47, lat= 96, lon= 192))
