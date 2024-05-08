@@ -55,7 +55,7 @@ function get_id_to_file_mappings(base_path::String, ssp_id::String, field_ids::V
 end
 
 
-function register_sbatch_commands(scenario_base_path, target_base_path, logging_base_path, scenarios...; really_register = true)
+function register_sbatch_commands(scenario_base_path, target_base_path, logging_base_path, scenarios...; time_res_id = nothing, really_register = true)
   if isempty(PROGRAM_FILE)
     working_dir="."
   else
@@ -70,11 +70,18 @@ function register_sbatch_commands(scenario_base_path, target_base_path, logging_
       jobname = "ivt_gen_$(scenario)_$(member_id)"
       output_log = "$logging_base_path/output_logs/output_$(scenario)_$(member_id).log"
       error_log = "$logging_base_path/error_logs/error_$(scenario)_$(member_id).log"
-      sbatch_command=`sbatch --job-name=$jobname --chdir=$working_dir --output=$output_log --error=$error_log run_pythonscript.sh $member_path $target_base_path`
+
+      if isnothing(time_res_id)
+        sbatch_command=`sbatch --job-name=$jobname --chdir=$working_dir --output=$output_log --error=$error_log run_pythonscript.sh $member_path $target_base_path`
+      else
+        sbatch_command=`sbatch --job-name=$jobname --chdir=$working_dir --output=$output_log --error=$error_log run_pythonscript.sh $member_path $target_base_path $time_res_id`
+      end
+      
       println(sbatch_command)
       if really_register
       	run(sbatch_command)
       end
+    
     end
   end
   
@@ -85,13 +92,16 @@ end
 
 function main()
   
-  target_base = "/scratch/b/b382641/ivt_fields_v1"
-  scenario_base = "/pool/data/CMIP6/data/ScenarioMIP/MPI-M/MPI-ESM1-2-LR"
+  target_base = "/scratch/b/b382641/ivt_fields_historical_monthly"
+  #scenario_base = "/pool/data/CMIP6/data/ScenarioMIP/MPI-M/MPI-ESM1-2-LR"
+  scenario_base = "/pool/data/CMIP6/data/CMIP/MPI-M/MPI-ESM1-2-LR"
   logging_base_path = "/home/b/b382641/workspace/master_thesis/Preprocessing"
 
-  scenarios = ["ssp585"]
+  time_res = "Amon"
 
-  register_sbatch_commands(scenario_base, target_base, logging_base_path, scenarios...; really_register = false)
+  scenarios = ["piControl"]
+
+  register_sbatch_commands(scenario_base, target_base, logging_base_path, scenarios...; really_register = true, time_res_id = time_res)
 end
 
 main()

@@ -164,11 +164,16 @@ if __name__ == "__main__":
     _, scenario_name = os.path.split(scenario_path)
 
     target_base = arguments[1]
+
+    if len(arguments) == 3:
+        time_res_id = arguments[2]
+    else:
+        time_res_id = "6hrLev"
     
     with Client(processes=processes, threads_per_worker=threads, n_workers=nworker, memory_limit=mem_limit_per_worker) as client:
         # dask.config.config.get('distributed').get('dashboard').update({'link':'{JUPYTERHUB_SERVICE_PREFIX}/proxy/{port}/status'})
 
-        for timestamp, field_files in get_files_per_timescope(member_base_path, field_ids):
+        for timestamp, field_files in get_files_per_timescope(member_base_path, field_ids, time_res_id = time_res_id):
 
             target_path = os.path.join(target_base, scenario_name, member_id)
 
