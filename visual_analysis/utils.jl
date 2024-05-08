@@ -33,7 +33,7 @@ struct EnsembleSimulation
     lons::Vector{Union{Missing,<:AbstractFloat}}
     lats::Vector{Union{Missing,<:AbstractFloat}}
     time::Vector{Union{Missing,Dates.DateTime}}
-    datasets::Vector{EnsembleMember}
+    members::Vector{EnsembleMember}
 end
 
 struct EnsembleMember
@@ -388,6 +388,60 @@ function calculate_eofs_of_tl_data(tl_data::TimelineData, chunking, nmodes; engi
         end
 
         result[dataset.name] = eofs
+    end
+
+    return result
+
+end
+
+function calculate_eofs_of_ensemble(ensemble::EnsembleSimulation, chunking, nmodes; engine=:julia, reof=false, center=true, align_eof_with_mean=true, align_pcs_with_mean=false, weights=nothing, eof_type=:normal, scale_with_eigenvals=false)::Dict{String,Vector{EOFResult}}
+
+    function calculate_eof(chunk; eof_alignment_field=nothing, pcs_alignment_field=nothing )
+        if engine == :julia
+            return get_eof_of_datachunk(chunk; nmodes=nmodes, center=center, alignment_field=alignment_field, varimax_rotation=reof, scale_with_eigenvals=scale_with_eigenvals)
+        elseif engine == :python
+            return pyeof_of_datachunk(chunk, nmodes; weights=weights, standard_permute=true, eof_type=eof_type, eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field, scale_with_eigenvals=scale_with_eigenvals)
+        else
+            ArgumentError("Could not recognize engine. Please use :python or :julia")
+        end
+    end
+
+    result = Dict()
+
+    for (i, member) in enumerate(ensemble.members)
+        eofs = Vector{EOFResult}(undef, length(chunking))  # Predefined array for EOFResult
+
+        # Function to handle EOF calculation
+        function handle_eof(idx, data, scopes, eofs)
+            scope = scopes[idx]
+            chunk = data[:, :, scope]
+
+            eof_alignment_field = align_eof_with_mean ? reshape(mean(chunk, dims=3), 1, :) : nothing
+            pcs_alignment_field = align_pcs_with_mean ? mean(chunk, dims=[1, 2]) : nothing
+            # eof_alignment_field = align_eof_with_mean ? ones(prod(size(chunk)[1:2])) : nothing
+            # pcs_alignment_field = align_pcs_with_mean ? ones(size(chunk)[3]) : nothing
+            eof_result = calculate_eof(chunk; eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field)
+
+            println("Handled scope $scope out of $(length(scopes)) in member $(member.id)")
+
+            # Direct assignment to the predefined array position
+            eofs[idx] = eof_result
+        end
+
+        # Decide whether to use threading based on CONDITION
+        if engine == :julia
+            Threads.@threads for idx in eachindex(chunking)
+                handle_eof(idx, member.data, chunking, eofs)
+            end
+        elseif engine == :python
+            for idx in eachindex(chunking)
+                handle_eof(idx, member.data, chunking, eofs)
+            end
+        else
+            ArgumentError("COuld not recognize engine. Please use :python or :julia")
+        end
+
+        result[member.name] = eofs
     end
 
     return result
