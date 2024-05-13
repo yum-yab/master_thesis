@@ -357,3 +357,73 @@ function show_eof_and_pc_modes_of_timeline(
 
     return fig
 end
+
+function generate_correlation_boxplot(ivt_ensemble::EnsembleSimulation, ps_data_ensemble::EnsembleSimulation; seasons_per_scope = 50, modes_per_ensemble = 2, compare_modes = 1 => 1, title = "", size = Makie.autmatic)
+
+    scopes = get_sliding_time_scopes_by_threshold(ivt_ensemble.time, seasons_per_scope)
+
+    ps_eof_data = calculate_eofs_of_ensemble(
+        ps_data_ensemble, 
+        scopes, 
+        modes_per_ensemble; 
+        engine=:python, 
+        reof=false, 
+        center=true, 
+        align_eof_with_mean=true, 
+        align_pcs_with_mean=false, 
+        weights=sqrt.(cos.(deg2rad.(ps_data_ensemble.lats))), 
+        eof_type=:normal,
+        scale_with_eigenvals=true
+    )
+
+    ivt_eof_data = calculate_eofs_of_ensemble(
+        ivt_ensemble, 
+        scopes, 
+        modes_per_ensemble; 
+        engine=:python, 
+        reof=false, 
+        center=true, 
+        align_eof_with_mean=true, 
+        align_pcs_with_mean=false, 
+        weights=sqrt.(cos.(deg2rad.(ivt_ensemble.lats))), 
+        eof_type=:normal,
+        scale_with_eigenvals=true
+    )
+
+    available_members = intersect(keys(ps_eof_data), keys(ivt_eof_data))
+
+    println("Available members in both datasets: $(length(available_members))")
+
+    xmappings = Int[]
+
+    yvals = Float64[]
+
+    index_set = Set()
+
+    for scope in eachindex(scopes)
+
+        for member_id in available_members
+
+            ps_eof_temporalpattern = ps_eof_data[member_id][scope].temporal_modes[:, compare_modes.second]
+            ivt_eof_temporalpattern = ivt_eof_data[member_id][scope].temporal_modes[:, compare_modes.first]
+            
+            lag = -200:200
+
+            (maximal_correlation, index) = findmax(abs.(crosscor(standardize(ZScoreTransform, ivt_eof_temporalpattern), standardize(ZScoreTransform, ps_eof_temporalpattern), lag)))
+
+            push!(xmappings, scope)
+            push!(yvals, maximal_correlation)
+            push!(index_set, index)
+        end
+    end
+
+    fig = Figure(size = size)
+
+    ax = Axis(fig[1,1], title = title)
+
+    boxplot!(ax, xmappings, yvals)
+
+    return fig
+    
+    
+end
