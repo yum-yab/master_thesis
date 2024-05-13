@@ -87,12 +87,18 @@ function run_cdo_command_on_all_multiprocessing(base_path, result_basepath, comm
     
 end
 
-if length(ARGS) == 0
-    run_cdo_command_on_all("/home/denis/workspace/data/ps_data", "/home/denis/workspace/data/ps_data_daily", ["-daymean"]; run_command = true)
-else 
-    num_workers = parse(Int, ARGS[1])
+if length(ARGS) == 3
+    command = ARGS[1]
+    source_path = ARGS[2]
+    target_path = ARGS[3]
+    run_cdo_command_on_all(source_path, target_path, [command]; run_command = true)
+elseif length(ARGS) == 4
+    command = ARGS[1]
+    source_path = ARGS[2]
+    target_path = ARGS[3]
+    num_workers = parse(Int, ARGS[4])
 
     addprocs(num_workers)
 
-    run_cdo_command_on_all_multiprocessing("/home/denis/workspace/data/ps_data", "/home/denis/workspace/data/ps_data_daily_multi", ["-daymean"]; run_command = true)
+    run_cdo_command_on_all_multiprocessing(source_path, target_path, [command]; run_command = true)
 end
