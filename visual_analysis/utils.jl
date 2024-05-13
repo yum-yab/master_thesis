@@ -127,6 +127,43 @@ function build_ensemble_data(base_path, scenarios...; file_range_selection=:, da
     return result
 end
 
+function concat_ensemble_data(ensemble_simulations::EnsembleSimulation ..., name::String)::EnsembleSimulation
+
+    member_length = Set([length(es.members) for es in ensemble_simulations])
+
+    if length(member_length) != 1
+        ArgumentError("Simulations have not aligning members: Sizes: $(member_length)")
+    end
+
+    first_timestamps = [es.time[1] for es in ensemble_simulations]
+
+    if !issorted(first_timestamps)
+        ArgumentError("Simulations have not aligning timescopes: Sizes: $(first_timestamps)")
+    end
+
+
+    new_lats = cat([es.lats for es in ensemble_simulations]..., dims = 1)
+    new_lons = cat([es.lons for es in ensemble_simulations]..., dims = 1)
+    new_time = cat([es.time for es in ensemble_simulations]..., dims = 1)
+
+    members = Vector{EnsembleMember}(undef, length(ensemble_simulations[1].members))
+
+    for index in eachindex(ensemble_simulations[1].members)
+
+        member_id_set = Set([es.members[index].name for es in ensemble_simulations])
+
+        if length(member_id_set) != 1
+            ArgumentError("Not aligning members: $member_id_set at index $index")
+        end
+
+        members[index] = EnsembleMember(pop!(member_id_set), cat([es.members[index].data for es in ensemble_simulations]..., dims = 1))
+
+    end
+
+
+    return EnsembleSimulation(name, new_lons, new_lats, new_time, members)
+end
+
 function filter_by_date(fun, timeline_data::TimelineData)::TimelineData
 
     time_indices = [i for i in eachindex(timeline_data.time) if fun(timeline_data.time[i])]
