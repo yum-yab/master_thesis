@@ -1,5 +1,3 @@
-using GLMakie
-using GeoMakie
 using EmpiricalOrthogonalFunctions
 using NCDatasets
 using NetCDF
@@ -422,8 +420,6 @@ function calculate_eofs_of_ensemble(ensemble::EnsembleSimulation, chunking, nmod
             # pcs_alignment_field = align_pcs_with_mean ? ones(size(chunk)[3]) : nothing
             eof_result = calculate_eof(chunk; eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field)
 
-            println("Handled scope $scope out of $(length(scopes)) in member $(member.id)")
-
             # Direct assignment to the predefined array position
             eofs[idx] = eof_result
         end
@@ -438,10 +434,11 @@ function calculate_eofs_of_ensemble(ensemble::EnsembleSimulation, chunking, nmod
                 handle_eof(idx, member.data, chunking, eofs)
             end
         else
-            ArgumentError("COuld not recognize engine. Please use :python or :julia")
+            ArgumentError("Could not recognize engine. Please use :python or :julia")
         end
 
         result[member.name] = eofs
+        println("Handled member $(member.name)")
     end
 
     return result
