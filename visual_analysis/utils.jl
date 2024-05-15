@@ -4,8 +4,9 @@ using NetCDF
 using Dates
 using BenchmarkTools
 using Statistics
-
 using PythonCall
+using Distributed
+using JLD2
 
 
 struct ScenarioData
@@ -26,6 +27,13 @@ struct EOFResult
     modes_variability::Array{Float64,1}
 end
 
+
+struct EnsembleMember
+    id::String
+    data::AbstractArray{Union{Missing,<:AbstractFloat},3}
+end
+
+
 struct EnsembleSimulation
     id::String
     lons::Vector{Union{Missing,<:AbstractFloat}}
@@ -34,14 +42,12 @@ struct EnsembleSimulation
     members::Vector{EnsembleMember}
 end
 
-struct EnsembleMember
-    member_id::String
-    data::AbstractArray{Union{Missing,<:AbstractFloat},3}
+function get_member_id_string(member_nr::Int)::String
+    return "r$(member_nr)i1p1f1"
 end
 
-
 function get_files_of_member(data_path, scenario_id, member_nr)
-    return readdir(joinpath(data_path, scenario_id, "r$(member_nr)i1p1f1"), join=true)
+    return readdir(joinpath(data_path, scenario_id, get_member_id_string(member_nr)), join=true)
 end
 
 function get_data(data_path, scenario_id, member_nr; file_range_selection=:, field_id="ivt")
@@ -101,35 +107,47 @@ function build_timeline_data(base_path, member, scenarios...; file_range_selecti
     return TimelineData(lons, lats, time, collect(scenarios))
 end
 
-function build_ensemble_data(base_path, scenarios...; file_range_selection=:, data_field_id="ivt", member_range=1:50)
-    
+function build_ensemble_data(base_path, scenarios...; file_range_selection=:, data_field_id="ivt", member_range=1:50, silent=false, filterfun=nothing)
+
     lons = ncread(get_files_of_member(base_path, scenarios[1], 1)[1], "lon")
     lats = get_field(get_files_of_member(base_path, scenarios[1], 1)[1], "lat")
-
-    time = get_time_data(base_path, scenarios[1], 1; file_range_selection=file_range_selection)
 
     result = EnsembleSimulation[]
 
 
     for scenario in scenarios
+        if !silent
+            println("Handling scenario $scenario ...")
+        end
+
+        time = get_time_data(base_path, scenario, 1; file_range_selection=file_range_selection)
+
+        time_selector = isnothing(filterfun) ? Colon() : [i for i in eachindex(time) if filterfun(time[i])]
+        time = time[time_selector]
+
+
         ensemble_members = map(member_range) do member_nr
 
-            member_id = "r$(member_nr)i1p1f1"
+            member_id = get_member_id_string(member_nr)
 
             data = get_data(base_path, scenario, member_nr; file_range_selection=file_range_selection, field_id=data_field_id)
-    
-            return EnsembleMember(member_id, data)
+            return EnsembleMember(member_id, data[:, :, time_selector])
         end
 
         push!(result, EnsembleSimulation(scenario, lons, lats, time, collect(ensemble_members)))
+        flush(stdout)
     end
 
     return result
 end
 
-function concat_ensemble_data(ensemble_simulations::EnsembleSimulation ..., name::String)::EnsembleSimulation
+function concat_ensemble_data(ensemble_simulations::EnsembleSimulation...; id::String=nothing)::EnsembleSimulation
 
     member_length = Set([length(es.members) for es in ensemble_simulations])
+
+    if isnothing(id)
+        id = ensemble_simulations[1].id
+    end
 
     if length(member_length) != 1
         ArgumentError("Simulations have not aligning members: Sizes: $(member_length)")
@@ -142,26 +160,26 @@ function concat_ensemble_data(ensemble_simulations::EnsembleSimulation ..., name
     end
 
 
-    new_lats = cat([es.lats for es in ensemble_simulations]..., dims = 1)
-    new_lons = cat([es.lons for es in ensemble_simulations]..., dims = 1)
-    new_time = cat([es.time for es in ensemble_simulations]..., dims = 1)
+    new_lats = ensemble_simulations[1].lats
+    new_lons = ensemble_simulations[1].lons
+    new_time = cat([es.time for es in ensemble_simulations]..., dims=1)
 
     members = Vector{EnsembleMember}(undef, length(ensemble_simulations[1].members))
 
     for index in eachindex(ensemble_simulations[1].members)
 
-        member_id_set = Set([es.members[index].name for es in ensemble_simulations])
+        member_id_set = Set([es.members[index].id for es in ensemble_simulations])
 
         if length(member_id_set) != 1
             ArgumentError("Not aligning members: $member_id_set at index $index")
         end
 
-        members[index] = EnsembleMember(pop!(member_id_set), cat([es.members[index].data for es in ensemble_simulations]..., dims = 1))
+        members[index] = EnsembleMember(pop!(member_id_set), cat([es.members[index].data for es in ensemble_simulations]..., dims=3))
 
     end
 
 
-    return EnsembleSimulation(name, new_lons, new_lats, new_time, members)
+    return EnsembleSimulation(id, new_lons, new_lats, new_time, members)
 end
 
 function filter_by_date(fun, timeline_data::TimelineData)::TimelineData
@@ -172,6 +190,14 @@ function filter_by_date(fun, timeline_data::TimelineData)::TimelineData
 
     return TimelineData(timeline_data.lons, timeline_data.lats, timeline_data.time[time_indices], transformed_scenarios)
 end
+
+function filter_by_date(fun, ensemble_simulation::EnsembleSimulation)::EnsembleSimulation
+
+    time_indices = [i for i in eachindex(ensemble_simulation.time) if fun(ensemble_simulation.time[i])]
+
+    return EnsembleSimulation(ensemble_simulation.id, ensemble_simulation.lons, ensemble_simulation.lats, ensemble_simulation.time[time_indices], collect(map(ensemble_simulation.members, member -> EnsembleMember(member.id, member.data[:, :, time_indices]))))
+end
+
 
 function align_with_field!(field, alignment_field; dims=1)
 
@@ -333,7 +359,7 @@ function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute
     end
 
     if eof_type == :normal
-        eof_res = solver.eofs(neofs=nmodes, eofscaling = scaling)
+        eof_res = solver.eofs(neofs=nmodes, eofscaling=scaling)
     elseif eof_type == :covariance
         eof_res = solver.eofsAsCovariance(neofs=nmodes)
     elseif eof_type == :correlation
@@ -377,7 +403,7 @@ end
 
 function calculate_eofs_of_tl_data(tl_data::TimelineData, chunking, nmodes; engine=:julia, reof=false, center=true, align_eof_with_mean=true, align_pcs_with_mean=false, weights=nothing, eof_type=:normal, scale_with_eigenvals=false)::Dict{String,Vector{EOFResult}}
 
-    function calculate_eof(chunk; eof_alignment_field=nothing, pcs_alignment_field=nothing )
+    function calculate_eof(chunk; eof_alignment_field=nothing, pcs_alignment_field=nothing)
         if engine == :julia
             return get_eof_of_datachunk(chunk; nmodes=nmodes, center=center, alignment_field=alignment_field, varimax_rotation=reof, scale_with_eigenvals=scale_with_eigenvals)
         elseif engine == :python
@@ -429,9 +455,9 @@ function calculate_eofs_of_tl_data(tl_data::TimelineData, chunking, nmodes; engi
 
 end
 
-function calculate_eofs_of_ensemble(ensemble::EnsembleSimulation, chunking, nmodes; engine=:julia, reof=false, center=true, align_eof_with_mean=true, align_pcs_with_mean=false, weights=nothing, eof_type=:normal, scale_with_eigenvals=false)::Dict{String,Vector{EOFResult}}
+function calculate_eofs_of_ensemble(ensemble::EnsembleSimulation, chunking, nmodes; engine=:julia, reof=false, center=true, align_eof_with_mean=true, align_pcs_with_mean=false, weights=nothing, eof_type=:normal, scale_with_eigenvals=false, saving_filepath = nothing)::Dict{String,Vector{EOFResult}}
 
-    function calculate_eof(chunk; eof_alignment_field=nothing, pcs_alignment_field=nothing )
+    function calculate_eof(chunk; eof_alignment_field=nothing, pcs_alignment_field=nothing)
         if engine == :julia
             return get_eof_of_datachunk(chunk; nmodes=nmodes, center=center, alignment_field=alignment_field, varimax_rotation=reof, scale_with_eigenvals=scale_with_eigenvals)
         elseif engine == :python
@@ -441,43 +467,60 @@ function calculate_eofs_of_ensemble(ensemble::EnsembleSimulation, chunking, nmod
         end
     end
 
-    result = Dict()
+    result = Dict{String, Vector{EOFResult}}()
+
+    function handle_eof(chunk)
+
+        eof_alignment_field = align_eof_with_mean ? reshape(mean(chunk, dims=3), 1, :) : nothing
+        pcs_alignment_field = align_pcs_with_mean ? mean(chunk, dims=[1, 2]) : nothing
+        # eof_alignment_field = align_eof_with_mean ? ones(prod(size(chunk)[1:2])) : nothing
+        # pcs_alignment_field = align_pcs_with_mean ? ones(size(chunk)[3]) : nothing
+        eof_result = calculate_eof(chunk; eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field)
+
+        # Direct assignment to the predefined array position
+        return eof_result
+    end
 
     for (i, member) in enumerate(ensemble.members)
-        eofs = Vector{EOFResult}(undef, length(chunking))  # Predefined array for EOFResult
+        # Predefined array for EOFResult
 
         # Function to handle EOF calculation
-        function handle_eof(idx, data, scopes, eofs)
-            scope = scopes[idx]
-            chunk = data[:, :, scope]
-
-            eof_alignment_field = align_eof_with_mean ? reshape(mean(chunk, dims=3), 1, :) : nothing
-            pcs_alignment_field = align_pcs_with_mean ? mean(chunk, dims=[1, 2]) : nothing
-            # eof_alignment_field = align_eof_with_mean ? ones(prod(size(chunk)[1:2])) : nothing
-            # pcs_alignment_field = align_pcs_with_mean ? ones(size(chunk)[3]) : nothing
-            eof_result = calculate_eof(chunk; eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field)
-
-            # Direct assignment to the predefined array position
-            eofs[idx] = eof_result
-        end
+        
 
         # Decide whether to use threading based on CONDITION
-        if engine == :julia
-            Threads.@threads for idx in eachindex(chunking)
-                handle_eof(idx, member.data, chunking, eofs)
+        @time "Time it took for eof calculation for member $(member.id)" begin
+            if engine == :julia
+                eofs = Vector{EOFResult}(undef, length(chunking))
+                Threads.@threads for idx in eachindex(chunking)
+                    eofs[idx] = handle_eof(chunk)
+                end
+            elseif engine == :python
+                eofs = pmap([member.data[:, :, scope] for scope in chunking]) do chunk
+                    handle_eof(chunk)
+                end
+            else
+                ArgumentError("Could not recognize engine. Please use :python or :julia")
             end
-        elseif engine == :python
-            for idx in eachindex(chunking)
-                handle_eof(idx, member.data, chunking, eofs)
-            end
-        else
-            ArgumentError("Could not recognize engine. Please use :python or :julia")
+
+            result[member.id] = eofs
         end
 
-        result[member.name] = eofs
-        println("Handled member $(member.name)")
     end
+
+    # if !isnothing(saving_filepath)
+    #     jldsave(saving_filepath, result)
+    # end
 
     return result
 
+end
+
+function get_mean_of_multiple_arrays(arrays::AbstractArray...)
+    sum_array = zeros(Float64, size(arrays[1]))
+
+    for array in arrays
+        sum_array += array
+    end
+
+    return sum_array ./ length(arrays)
 end
