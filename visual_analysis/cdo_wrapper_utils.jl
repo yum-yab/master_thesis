@@ -1,7 +1,7 @@
 using Distributed
 
 
-function run_cdo_command_on_all(base_path, result_basepath, command; run_command = false)
+function run_cdo_command_on_all(base_path, result_basepath, command; run_command = false, overwrite = true)
 
     for scenario_path in readdir(base_path, join = true, sort = true)
         
@@ -23,6 +23,10 @@ function run_cdo_command_on_all(base_path, result_basepath, command; run_command
 
                 output_file = joinpath(output_path, dataset_name)
 
+                if isfile(output_file) && !overwrite
+                    continue
+                end
+
 
                 cdo_cmd = `cdo $command $(dataset_path) $(output_file)`
                 
@@ -36,7 +40,7 @@ function run_cdo_command_on_all(base_path, result_basepath, command; run_command
     
 end
 
-function run_cdo_command_on_all_multiprocessing(base_path, result_basepath, command; run_command = false)
+function run_cdo_command_on_all_multiprocessing(base_path, result_basepath, command; run_command = false, overwrite = false)
 
     for scenario_path in readdir(base_path, join = true, sort = true)
         
@@ -62,6 +66,9 @@ function run_cdo_command_on_all_multiprocessing(base_path, result_basepath, comm
                 mkpath(output_path)
 
                 output_file = joinpath(output_path, dataset_name)
+                if isfile(output_file) && !overwrite
+                    continue
+                end
 
 
 
@@ -91,7 +98,7 @@ if length(ARGS) == 3
     command = ARGS[1]
     source_path = ARGS[2]
     target_path = ARGS[3]
-    run_cdo_command_on_all(source_path, target_path, [command]; run_command = true)
+    run_cdo_command_on_all(source_path, target_path, [command]; run_command = true, overwrite = false)
 elseif length(ARGS) == 4
     command = ARGS[1]
     source_path = ARGS[2]
@@ -100,5 +107,5 @@ elseif length(ARGS) == 4
 
     addprocs(num_workers)
 
-    run_cdo_command_on_all_multiprocessing(source_path, target_path, [command]; run_command = true)
+    run_cdo_command_on_all_multiprocessing(source_path, target_path, [command]; run_command = true, overwrite = false)
 end
