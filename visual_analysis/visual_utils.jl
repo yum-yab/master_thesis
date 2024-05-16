@@ -292,7 +292,7 @@ function show_eof_and_pc_modes_of_timeline(
         mean_axis[dataset.name] = local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=@lift("$(dataset.name) $(year(data.time[all_scopes[$current_scope_index].start]))-$(year(data.time[all_scopes[$current_scope_index].stop])) Mean map"), figure_row=2 * (i - 1) + 1, figure_col=nmodes + 1)
     end
 
-
+    spatial_min_val, spatial_max_val = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), eof_extremas)
 
     println("Data extremas: $spatial_min_val $spatial_max_val")
 
@@ -459,7 +459,7 @@ function generate_correlation_boxplot(ivt_eof_ensemble, ps_eof_ensemble, scopes,
 
     yvals = Float64[]
 
-    index_set = Set()
+    lagvals = Int[]
 
     for scope in eachindex(scopes)
 
@@ -473,11 +473,13 @@ function generate_correlation_boxplot(ivt_eof_ensemble, ps_eof_ensemble, scopes,
             lag = collect(-1 *half_signal:half_signal)
             lag = collect(-100:100)
 
-            (maximal_correlation, index) = findmax(abs.(crosscor(standardize(ZScoreTransform, ivt_eof_temporalpattern), standardize(ZScoreTransform, ps_eof_temporalpattern), lag)))
+            corsscor_result = crosscor(standardize(ZScoreTransform, ivt_eof_temporalpattern), standardize(ZScoreTransform, ps_eof_temporalpattern), lag)
+
+            (maximal_correlation, index) = findmax(abs.(corsscor_result))
 
             push!(xmappings, scope)
             push!(yvals, maximal_correlation)
-            push!(index_set, index)
+            push!(lagvals, lag[index])
         end
     end
 
@@ -485,16 +487,22 @@ function generate_correlation_boxplot(ivt_eof_ensemble, ps_eof_ensemble, scopes,
 
     fig = Figure(size = size)
 
-    ax = Axis(fig[1,1], title = title)
+    ax_boxplot = Axis(fig[1,1], title = title)
 
-    boxplot!(ax, xmappings, yvals)
+    ax_lagval = Axis(fig[2,1], title = title)
+
+    boxplot!(ax_boxplot, xmappings, yvals)
+    boxplot!(ax_lagval, xmappings, lagvals)
+    
+    seasonslice = 1:3:length(scopes)
+
+    for axis in [ax_boxplot, ax_lagval]
+        axis.xticks = (seasonslice, ["$(year(time_axis[scopes[i].start])) - $(year(time_axis[scopes[i].stop]))" for i in seasonslice])
+        axis.xticklabelrotation = π / 4
+        axis.xticklabelalign = (:right, :center)
+    end
 
     
-    seasonslice = range(1, length(scopes), step=3)
-
-    ax.xticks = (seasonslice, ["$(year(time_axis[scopes[i].start])) - $(year(time_axis[scopes[i].stop]))" for i in eachindex(seasonslice)])
-    ax.xticklabelrotation = π / 4
-    ax.xticklabelalign = (:right, :center)
 
     return fig
     
