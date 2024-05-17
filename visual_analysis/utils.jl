@@ -9,6 +9,9 @@ using Distributed
 using JLD2
 
 
+include("eof.jl")
+
+
 struct ScenarioData
     name::String
     data::AbstractArray{Union{Missing,<:AbstractFloat},3}
@@ -19,12 +22,6 @@ struct TimelineData
     lats::Vector{Union{Missing,<:AbstractFloat}}
     time::Vector{Union{Missing,Dates.DateTime}}
     datasets::Vector{ScenarioData}
-end
-
-struct EOFResult
-    spatial_modes::Array{Float64,3}
-    temporal_modes::Array{Float64,2}
-    modes_variability::Array{Float64,1}
 end
 
 
@@ -209,29 +206,6 @@ function align_with_field!(field, alignment_field; dims=1)
     end
 end
 
-function align_with_field(field, alignment_field; mode_dim_index=2)
-
-    dims = size(field)
-    dimension = length(dims)
-
-    if dimension == 3
-        spat_dims = dims[1:2]
-        mode_dim = dims[3]
-        field = reshape(field, (prod(spat_dims), mode_dim))
-    end
-
-    function handle_slice(slice)
-        scalar_product = sum(slice .* alignment_field)
-        if scalar_product < 0
-            return slice * -1
-        else
-            return slice
-        end
-    end
-
-    return cat([handle_slice(field[:, modenum]) for modenum in axes(field, mode_dim_index)]..., dims=2)
-end
-
 function get_eof_of_datachunk(datachunk; nmodes=nothing, center=true, alignment_field=nothing, varimax_rotation=false, scale_with_eigenvals=false)::EOFResult
 
     eof = EmpiricalOrthogonalFunction(datachunk; timedim=3, center=center)
@@ -331,7 +305,7 @@ function normalize_tl_data(tl_data)
     return TimelineData(tl_data.lons, tl_data.lats, tl_data.time, normalized_ds)
 end
 
-function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute=true, eof_type=:normal, eof_alignment_field=nothing, pcs_alignment_field=nothing, scale_with_eigenvals=false, ddof=1.0)
+function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute=true, eof_type=:normal, eof_alignment_field=nothing, pcs_alignment_field=nothing, scale_mode=nothing, ddof=1.0)
 
 
     Eof = pyimport("eofs.standard").Eof
@@ -344,12 +318,15 @@ function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute
         correct_shape_ds = datachunk
     end
 
-    # if scale_with_eigenvals
-    #     scaling = 2
-    # else
-    #     scaling = 0
-    # end
-    scaling = 0
+    if isnothing(scale_mode)
+        scaling = 0
+    elseif scale_mode == :divide
+        scaling = 1
+    elseif scale_mode == :multiply
+        scaling = 2
+    elseif scale_mode == :singularvals
+        scaling = 0
+    end
 
 
     if !isnothing(weights)
@@ -387,11 +364,11 @@ function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute
     end
 
     # revert the change from singular values to eigenvalues here https://github.com/ajdawson/eofs/blob/main/lib/eofs/standard.py
-    if scale_with_eigenvals
+    if scale_mode == :singularvals
         eigenvals = pyconvert(Vector{Float64}, solver.eigenvalues(neigs=nmodes))
         singular_vals = sqrt.(eigenvals * (size(datachunk, 3) - ddof))
         spatialsignal = cat(
-            [spatialsignal[:, :, mode] .* singular_vals[mode] for mode in 1:nmodes]...,
+            [spatialsignal[:, :, mode] .* singular_vals[mode] * (1 / sqrt(size(datachunk, 3) - 1)) for mode in 1:nmodes]...,
             dims=3
         )
     end
@@ -401,16 +378,17 @@ function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute
 end
 
 
-function calculate_eofs_of_tl_data(tl_data::TimelineData, chunking, nmodes; engine=:julia, reof=false, center=true, align_eof_with_mean=true, align_pcs_with_mean=false, weights=nothing, eof_type=:normal, scale_with_eigenvals=false)::Dict{String,Vector{EOFResult}}
+function calculate_eofs_of_tl_data(tl_data::TimelineData, chunking, nmodes; engine=:julia, reof=false, center=true, align_eof_with_mean=true, align_pcs_with_mean=false, weights=nothing, eof_type=:normal, scale_mode=nothing)::Dict{String,Vector{EOFResult}}
 
     function calculate_eof(chunk; eof_alignment_field=nothing, pcs_alignment_field=nothing)
-        if engine == :julia
-            return get_eof_of_datachunk(chunk; nmodes=nmodes, center=center, alignment_field=alignment_field, varimax_rotation=reof, scale_with_eigenvals=scale_with_eigenvals)
-        elseif engine == :python
-            return pyeof_of_datachunk(chunk, nmodes; weights=weights, standard_permute=true, eof_type=eof_type, eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field, scale_with_eigenvals=scale_with_eigenvals)
-        else
-            ArgumentError("Could not recognize engine. Please use :python or :julia")
-        end
+        # if engine == :julia
+        #     return get_eof_of_datachunk(chunk; nmodes=nmodes, center=center, alignment_field=alignment_field, varimax_rotation=reof, scale_with_eigenvals=scale_with_eigenvals)
+        # elseif engine == :python
+        #     return pyeof_of_datachunk(chunk, nmodes; weights=weights, standard_permute=true, eof_type=eof_type, eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field, scale_mode=scale_mode)
+        # else
+        #     ArgumentError("Could not recognize engine. Please use :python or :julia")
+        # end
+        return pyeof_of_datachunk(chunk, nmodes; weights=weights, standard_permute=true, eof_type=eof_type, eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field, scale_mode=scale_mode)
     end
 
     result = Dict()
@@ -455,19 +433,21 @@ function calculate_eofs_of_tl_data(tl_data::TimelineData, chunking, nmodes; engi
 
 end
 
-function calculate_eofs_of_ensemble(ensemble::EnsembleSimulation, chunking, nmodes; engine=:julia, reof=false, center=true, align_eof_with_mean=true, align_pcs_with_mean=false, weights=nothing, eof_type=:normal, scale_with_eigenvals=false, saving_filepath = nothing)::Dict{String,Vector{EOFResult}}
+function calculate_eofs_of_ensemble(ensemble::EnsembleSimulation, chunking, nmodes; engine=:julia, reof=false, center=true, align_eof_with_mean=true, align_pcs_with_mean=false, weights=nothing, eof_type=:normal, scale_mode=nothing, saving_filepath=nothing)::Dict{String,Vector{EOFResult}}
 
     function calculate_eof(chunk; eof_alignment_field=nothing, pcs_alignment_field=nothing)
-        if engine == :julia
-            return get_eof_of_datachunk(chunk; nmodes=nmodes, center=center, alignment_field=alignment_field, varimax_rotation=reof, scale_with_eigenvals=scale_with_eigenvals)
-        elseif engine == :python
-            return pyeof_of_datachunk(chunk, nmodes; weights=weights, standard_permute=true, eof_type=eof_type, eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field, scale_with_eigenvals=scale_with_eigenvals)
-        else
-            ArgumentError("Could not recognize engine. Please use :python or :julia")
-        end
+        # if engine == :julia
+        #     return get_eof_of_datachunk(chunk; nmodes=nmodes, center=center, alignment_field=alignment_field, varimax_rotation=reof, scale_with_eigenvals=scale_with_eigenvals)
+        # elseif engine == :python
+        #     return pyeof_of_datachunk(chunk, nmodes; weights=weights, standard_permute=true, eof_type=eof_type, eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field, scale_with_eigenvals=scale_with_eigenvals)
+        # else
+        #     ArgumentError("Could not recognize engine. Please use :python or :julia")
+        # end
+
+        return pyeof_of_datachunk(chunk, nmodes; weights=weights, standard_permute=true, eof_type=eof_type, eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field, scale_mode=scale_mode)
     end
 
-    result = Dict{String, Vector{EOFResult}}()
+    result = Dict{String,Vector{EOFResult}}()
 
     function handle_eof(chunk)
 
@@ -485,7 +465,7 @@ function calculate_eofs_of_ensemble(ensemble::EnsembleSimulation, chunking, nmod
         # Predefined array for EOFResult
 
         # Function to handle EOF calculation
-        
+
 
         # Decide whether to use threading based on CONDITION
         @time "Time it took for eof calculation for member $(member.id)" begin
@@ -507,9 +487,66 @@ function calculate_eofs_of_ensemble(ensemble::EnsembleSimulation, chunking, nmod
 
     end
 
-    # if !isnothing(saving_filepath)
-    #     jldsave(saving_filepath, result)
-    # end
+    if !isnothing(saving_filepath)
+        try
+            save(saving_filepath, result)
+        catch e
+            println("Couldn't save to filepath $saving_filepath: $e")
+        end
+
+    end
+
+    return result
+
+end
+
+function calculate_eofs_of_ensemble_fast(
+    ensemble::EnsembleSimulation,
+    chunking,
+    nmodes;
+    center=true,
+    align_eofs_with_mean=true,
+    norm_withsqrt_timedim=false,
+    geoweights=true,
+    scale_mode=nothing,
+    saving_filepath=nothing
+)::Dict{String,Vector{EOFResult}}
+
+    result = Dict{String,Vector{EOFResult}}()
+
+    if geoweights
+        weights = sqrt.(cos.(deg2rad.(ensemble.lats)))
+    else
+        weights = nothing
+    end
+
+    for (i, member) in enumerate(ensemble.members)
+        # Predefined array for EOFResult
+
+        # Function to handle EOF calculation
+
+
+        # Decide whether to use threading based on CONDITION
+        @time "Time it took for eof calculation for member $(member.id)" begin
+            eofs = Vector{EOFResult}(undef, length(chunking))
+            Threads.@threads for idx in eachindex(chunking)
+                eofs[idx] = eof(member.data[:, :, chunking[idx]]; nmodes=nmodes, center=center, align_eofs_with_mean=align_eofs_with_mean, norm_withsqrt_timedim=norm_withsqrt_timedim, weights=weights, scaling=scale_mode)
+            end
+
+
+            result[member.id] = eofs
+        end
+        flush(stdout)
+    end
+
+    if !isnothing(saving_filepath)
+        try
+            save(saving_filepath, result)
+        catch e
+            println("Couldn't save to filepath $saving_filepath: $e")
+        end
+
+    end
 
     return result
 
@@ -524,3 +561,4 @@ function get_mean_of_multiple_arrays(arrays::AbstractArray...)
 
     return sum_array ./ length(arrays)
 end
+
