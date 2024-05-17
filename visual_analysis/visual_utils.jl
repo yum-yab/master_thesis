@@ -277,7 +277,7 @@ function show_eof_and_pc_modes_of_timeline(
 
 
         eof_data_axis[dataset.name] = all_modes_axis
-        pc_axis[dataset.name] = Axis(fig[2*i, 1:nmodes+1], limits = ((nothing, nothing), (-1, 1)))
+        pc_axis[dataset.name] = Axis(fig[2*i, 1:nmodes+1], limits=((nothing, nothing), (-1, 1)))
         for res in eof_data[dataset.name]
             push!(eof_extremas, extrema(res.spatial_modes))
             push!(pcs_extremas, extrema(res.temporal_modes))
@@ -377,22 +377,30 @@ function show_eof_and_pc_modes_of_ensemble(
     current_scope_index = Observable(1)
 
 
-    pc_axis = Axis(fig[3, 1:nmodes+1], limits = ((nothing, nothing), (-1, 1)))
+    pc_axis = Axis(fig[3, 1:nmodes+1], limits=((nothing, nothing), (-1, 1)))
 
     lonmin, lonmax = extrema(data.lons)
     latmin, latmax = extrema(data.lats)
 
     eof_extremas = Tuple{Float64,Float64}[]
 
-    pcs_extremas = Tuple{Float64,Float64}[]
+
 
     for (_, eofres_array) in eof_data
         append!(eof_extremas, [extrema(res.spatial_modes) for res in eofres_array])
     end
 
+
     spatial_min_val, spatial_max_val = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), eof_extremas)
+
+    data_min_val, data_max_val = extrema(get_mean_of_multiple_arrays([member.data for member in data.members]...))
     # spatial_min_val = -1 * spatial_max_val
-    println("Data extremas: $spatial_min_val $spatial_max_val")
+    println("EOF extremas: $spatial_min_val $spatial_max_val")
+    println("Data extremas: $data_min_val $data_max_val")
+
+    upper_limit = max(data_max_val, spatial_max_val)
+
+    lower_limit = -1 * upper_limit
 
 
     mode_axes = []
@@ -402,16 +410,16 @@ function show_eof_and_pc_modes_of_ensemble(
         push!(mode_axes, local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=title, figure_row=1, figure_col=modenr))
     end
 
-    mean_axis = local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=@lift("$(data.id) $(year(data.time[all_scopes[$current_scope_index].start]))-$(year(data.time[all_scopes[$current_scope_index].stop])) Mean map"), figure_row=1, figure_col=nmodes+1)
+    mean_axis = local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=@lift("$(data.id) $(year(data.time[all_scopes[$current_scope_index].start]))-$(year(data.time[all_scopes[$current_scope_index].stop])) Mean map"), figure_row=1, figure_col=nmodes + 1)
 
-    dataset_mean_observable = @lift(dropdims(mean(get_mean_of_multiple_arrays([member.data[:, :, all_scopes[$current_scope_index]] for member in data.members]...), dims = 3), dims = 3))
+    dataset_mean_observable = @lift(dropdims(mean(get_mean_of_multiple_arrays([member.data[:, :, all_scopes[$current_scope_index]] for member in data.members]...), dims=3), dims=3))
 
-    surface!(mean_axis, lonmin .. lonmax, latmin .. latmax, dataset_mean_observable; shading=shading, colormap=colormap, colorrange=(spatial_min_val, spatial_max_val), alpha=surface_alpha_value, overdraw=false, transformation=(; translation=(0, 0, -1000)))
+    surface!(mean_axis, lonmin .. lonmax, latmin .. latmax, dataset_mean_observable; shading=shading, colormap=colormap, colorrange=(lower_limit, upper_limit), alpha=surface_alpha_value, overdraw=false, transformation=(; translation=(0, 0, -1000)))
     lines!(mean_axis, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
 
 
     for mode in 1:nmodes
-        surface!(mode_axes[mode], lonmin .. lonmax, latmin .. latmax, @lift(get_mean_of_multiple_arrays([res_array[$current_scope_index].spatial_modes[:, :, mode] for (_, res_array) in eof_data]...)); shading=shading, colormap=colormap, colorrange=(spatial_min_val, spatial_max_val), alpha=surface_alpha_value, overdraw=false, transformation=(; translation=(0, 0, -1 * spatial_max_val)))
+        surface!(mode_axes[mode], lonmin .. lonmax, latmin .. latmax, @lift(get_mean_of_multiple_arrays([res_array[$current_scope_index].spatial_modes[:, :, mode] for (_, res_array) in eof_data]...)); shading=shading, colormap=colormap, colorrange=(lower_limit, upper_limit), alpha=surface_alpha_value, overdraw=false, transformation=(; translation=(0, 0, -1 * spatial_max_val)))
         lines!(mode_axes[mode], GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
         positions = @lift(collect(zip(eachindex(all_scopes[$current_scope_index]), standardize(UnitRangeTransform, get_mean_of_multiple_arrays([res_array[$current_scope_index].temporal_modes[:, mode] for (_, res_array) in eof_data]...); unit=false))))
         lines!(pc_axis, positions; label="Mode $mode")
@@ -422,13 +430,13 @@ function show_eof_and_pc_modes_of_ensemble(
 
     for (i, (_, eofres_array)) in enumerate(eof_data)
         for mode in 1:nmodes
-            contour!(mode_axes[mode], lonmin .. lonmax, latmin .. latmax, @lift(eofres_array[$current_scope_index].spatial_modes[:, :, mode]), levels=[0], color= contour_colors[i], transformation=(; translation=(0, 0, 1100)))
+            contour!(mode_axes[mode], lonmin .. lonmax, latmin .. latmax, @lift(eofres_array[$current_scope_index].spatial_modes[:, :, mode]), levels=[0], color=contour_colors[i], transformation=(; translation=(0, 0, 1100)))
         end
     end
 
 
 
-    Colorbar(fig[2, 1:nmodes+1], limits=(spatial_min_val, spatial_max_val), colormap=colormap, vertical=false, label="EOF values")
+    Colorbar(fig[2, 1:nmodes+1], limits=(lower_limit, upper_limit), colormap=colormap, vertical=false, label="EOF values")
 
     # time_data = string.(data.time)
     # dates_slice = @lift(range(all_scopes[$current_scope_index].start, all_scopes[$current_scope_index].stop, step=4))
@@ -449,7 +457,139 @@ function show_eof_and_pc_modes_of_ensemble(
     return fig
 end
 
-function generate_correlation_boxplot(ivt_eof_ensemble, ps_eof_ensemble, scopes, time_axis; compare_modes = 1 => 1, title = "", size = Makie.autmatic)
+
+function display_eof_modes!(
+    ensemble_simulation::EnsembleSimulation,
+    eof_data::Dict{String,Vector{EOFResult}},
+    scopes,
+    current_scope,
+    axis_array,
+    limits;
+    contour_levels=[0],
+    contours_for_slice=:,
+    colormap=:viridis,
+    coastline_color=:white,
+    shading=Makie.automatic)
+
+    lonmin, lonmax = extrema(ensemble_simulation.lons)
+    latmin, latmax = extrema(ensemble_simulation.lats)
+
+
+    nmodes = length(eof_data[get_member_id_string(1)][1].modes_variability)
+
+    mean_axis = axis_array[end]
+
+    dataset_mean_observable = @lift(dropdims(mean(get_mean_of_multiple_arrays([member.data[:, :, $current_scope] for member in data.members]...), dims=3), dims=3))
+
+    surface!(
+        mean_axis,
+        lonmin .. lonmax,
+        latmin .. latmax,
+        dataset_mean_observable;
+        shading=shading,
+        colormap=colormap,
+        colorrange=limits,
+        overdraw=false,
+        transformation=(; translation=(0, 0, -1000))
+    )
+    lines!(mean_axis, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
+
+    mode_iterator = 1:nmodes
+
+    contour_colors = distinguishable_colors(50)
+
+
+    for mode in mode_iterator
+        surface!(
+            axis_array[mode],
+            lonmin .. lonmax,
+            latmin .. latmax,
+            @lift(get_mean_of_multiple_arrays([res_array[$current_scope_index].spatial_modes[:, :, mode] for (_, res_array) in eof_data]...));
+            shading=shading,
+            colormap=colormap,
+            colorrange=limits,
+            overdraw=false,
+            transformation=(; translation=(0, 0, -1 * limits[2]))
+        )
+        lines!(axis_array[mode], GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
+
+        if mode in mode_iterator[contours_for_slice]
+            for (i, (_, eofres_array)) in enumerate(eof_data)
+                contour!(
+                    axis_array[mode],
+                    lonmin .. lonmax,
+                    latmin .. latmax,
+                    @lift(eofres_array[$current_scope_index].spatial_modes[:, :, mode]),
+                    levels=contour_levels,
+                    color=contour_colors[i],
+                    transformation=(; translation=(0, 0, 1100))
+                )
+            end
+        end
+
+    end
+
+
+
+end
+
+function compare_ensembles(
+    scopes,
+    nmodes,
+    ensembles_eof_tuples::Tuple{EnsembleSimulation,Dict{String,Vector{EOFResult}}}...;
+    framerate::Int=30,
+    colormap=:viridis,
+    coastline_color=:white,
+    shading=Makie.automatic,
+    resolution::Union{Nothing,Tuple{Int,Int}}=nothing,
+    fontsize::Int=12,
+    whole_figure_title=nothing,
+)
+
+    current_scope_index = Observable(1)
+
+    fig = isnothing(resolution) ? Figure(fontsize=fontsize) : Figure(size=resolution, fontsize=fontsize)
+
+    eof_extremas = Tuple{Float64,Float64}[]
+
+    for (_, eof_data) in ensembles_eof_tuples
+        append!(eof_extremas, [extrema(res.spatial_modes) for (_, eofresarray) in eof_data for res in eofresarray])
+    end
+
+    limits = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), eof_extremas)
+
+    for (i, (ensemble, eof_data)) in enumerate(ensembles_eof_tuples)
+        mode_axes = []
+
+        for modenr in 1:nmodes
+            title = @lift("$(ensemble.id) $(year(ensemble.time[all_scopes[$current_scope_index].start]))-$(year(ensemble.time[all_scopes[$current_scope_index].stop])) Mode $modenr Variability $(round(mean([resarray[$current_scope_index].modes_variability[modenr] for (_, resarray) in eof_data]), digits = 2)) %")
+            push!(mode_axes, local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=title, figure_row=i, figure_col=modenr))
+        end
+        push!(mode_axes, local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=@lift("$(data.id) $(year(data.time[all_scopes[$current_scope_index].start]))-$(year(data.time[all_scopes[$current_scope_index].stop])) Mean map"), figure_row=i, figure_col=nmodes + 1))
+
+        display_eof_modes!(
+            ensemble,
+            eof_data,
+            scopes,
+            current_scope_index,
+            mode_axes,
+            limits;
+            contour_levels=[0],
+            contours_for_slice=:,
+            colormap=:viridis,
+            coastline_color=:white,
+            shading=Makie.automatic
+        )
+
+    end
+
+
+
+end
+
+
+
+function generate_correlation_boxplot(ivt_eof_ensemble, ps_eof_ensemble, scopes, time_axis; compare_modes=1 => 1, data_name="", size=Makie.autmatic)
 
     available_members = intersect(keys(ps_eof_ensemble), keys(ivt_eof_ensemble))
 
@@ -467,10 +607,10 @@ function generate_correlation_boxplot(ivt_eof_ensemble, ps_eof_ensemble, scopes,
 
             ps_eof_temporalpattern = ps_eof_ensemble[member_id][scope].temporal_modes[:, compare_modes.second]
             ivt_eof_temporalpattern = ivt_eof_ensemble[member_id][scope].temporal_modes[:, compare_modes.first]
-            
+
             println("Length of signals: $(length(ps_eof_temporalpattern)) $(length(ivt_eof_temporalpattern))")
             half_signal = trunc(Int, round(length(ivt_eof_temporalpattern) * 0.5))
-            lag = collect(-1 *half_signal:half_signal)
+            lag = collect(-1*half_signal:half_signal)
             lag = collect(-100:100)
 
             corsscor_result = crosscor(standardize(ZScoreTransform, ivt_eof_temporalpattern), standardize(ZScoreTransform, ps_eof_temporalpattern), lag)
@@ -483,17 +623,15 @@ function generate_correlation_boxplot(ivt_eof_ensemble, ps_eof_ensemble, scopes,
         end
     end
 
-    println("Index of crosscor: $index_set")
+    fig = Figure(size=size)
 
-    fig = Figure(size = size)
+    ax_boxplot = Axis(fig[1, 1], title="Crosscorreltaion of $data_name")
 
-    ax_boxplot = Axis(fig[1,1], title = title)
-
-    ax_lagval = Axis(fig[2,1], title = title)
+    ax_lagval = Axis(fig[2, 1], title="Lags of Crosscorrelation of $data_name")
 
     boxplot!(ax_boxplot, xmappings, yvals)
     boxplot!(ax_lagval, xmappings, lagvals)
-    
+
     seasonslice = 1:3:length(scopes)
 
     for axis in [ax_boxplot, ax_lagval]
@@ -502,9 +640,9 @@ function generate_correlation_boxplot(ivt_eof_ensemble, ps_eof_ensemble, scopes,
         axis.xticklabelalign = (:right, :center)
     end
 
-    
+
 
     return fig
-    
-    
+
+
 end
