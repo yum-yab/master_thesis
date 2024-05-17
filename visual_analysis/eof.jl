@@ -9,7 +9,7 @@ struct EOFResult
 end
 
 
-function prepare_data_for_eof(data; weights=nothing, timedim=3, weightdim=2, norm_withsqrt_timedim=true)
+function prepare_data_for_eof(data; weights=nothing, timedim=3, weightdim=2, norm_withsqrt_timedim=false)
     dims = size(data)
 
     time_shape = dims[timedim]
@@ -17,18 +17,14 @@ function prepare_data_for_eof(data; weights=nothing, timedim=3, weightdim=2, nor
     geodims = [i for i in 1:length(dims) if i != timedim]
     geo_shape = dims[geodims]
 
-    if norm_withsqrt_timedim
-
-        data = data / sqrt(time_shape - 1)
-    end
+    norm_factor = norm_withsqrt_timedim ? sqrt(time_shape - 1) : 1
 
     # apply weights over weightdim
     if !isnothing(weights)
 
         weights_reshaped = reshape(weights, 1, dims[weightdim], 1)
-        data = data .* weights_reshaped
+        data = data .* weights_reshaped ./ norm_factor
     end
-
     # reshape to timedim being the first
     if timedim != 1
         data = permutedims(data, (timedim, geodims...))
@@ -39,20 +35,41 @@ function prepare_data_for_eof(data; weights=nothing, timedim=3, weightdim=2, nor
     return reshape(data, (time_shape, prod(geo_shape)))
 end
 
+function align_with_field(field, alignment_field; mode_dim_index=2)
 
-function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, scaling=nothing, nmodes=-1, norm_withsqrt_timedim=true)
+    dims = size(field)
+    dimension = length(dims)
+
+    if dimension == 3
+        spat_dims = dims[1:2]
+        mode_dim = dims[3]
+        field = reshape(field, (prod(spat_dims), mode_dim))
+    end
+
+    function handle_slice(slice)
+        scalar_product = sum(slice .* alignment_field)
+        if scalar_product < 0
+            return slice * -1
+        else
+            return slice
+        end
+    end
+
+    return cat([handle_slice(field[:, modenum]) for modenum in axes(field, mode_dim_index)]..., dims=2)
+end
+
+
+function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, scaling=nothing, nmodes=-1, norm_withsqrt_timedim=false, align_eofs_with_mean=false)
 
     old_dims = size(data)
 
-    geodims = [i for i in length(old_dims) if i != timedim]
+    geodims = [i for i in 1:length(old_dims) if i != timedim]
 
     data = prepare_data_for_eof(data; weights=weights, timedim=timedim, weightdim=weightdim, norm_withsqrt_timedim=norm_withsqrt_timedim)
 
-    time_shape = size(data, 1)
-
-    geo_shape = size(data, 2)
-
     mean_over_time = mean(data, dims=1)
+
+    time_shape = size(data, 1)
 
     if center
         data = data .- mean_over_time
@@ -65,9 +82,7 @@ function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, scaling
     end
     # filter missing data
 
-    isnotmissing_indices = findall(x -> !ismissing(x), mean_over_time[1, :])
-
-    left_singular_vectors, singular_vals, right_singular_vectors = svd(data[:, isnotmissing_indices])
+    left_singular_vectors, singular_vals, right_singular_vectors = svd(data)
 
     truncated_lsv = left_singular_vectors[:, mode_selector]
     truncated_svals = singular_vals[mode_selector]
@@ -80,10 +95,7 @@ function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, scaling
     # prepare svals to be broadcasted over modes
     broadcasting_svals = reshape(truncated_svals, 1, length(truncated_svals))
 
-    # also reintroduce missing data
-
-    eofs = Array{Union{Missing,Float64}}(missing, geo_shape, length(mode_selector))
-    eofs[isnotmissing_indices, :] = truncated_rsv 
+    eofs = truncated_rsv
 
 
     # rescale the principal components with the singular value
@@ -94,7 +106,6 @@ function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, scaling
     if !isnothing(scaling)
 
         if scaling == :singularvals
-
             eofs = eofs .* broadcasting_svals
         elseif scaling == :eigenvalsmult
             sqrt_ev = sqrt.(truncated_evs)
@@ -106,7 +117,9 @@ function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, scaling
 
     end
 
-    println(size(reshape(eofs, (old_dims[geodims]..., length(mode_selector)))))
+    if align_eofs_with_mean
+        eofs = align_with_field(eofs, mean_over_time)
+    end
 
-    return EOFResult(reshape(eofs, (old_dims[geodims]..., length(mode_selector))), principal_components, truncated_evs / sum(eigenvals) * 100)
+    return EOFResult(reshape(eofs, (old_dims[geodims]..., :)), principal_components, truncated_evs / sum(eigenvals) * 100)
 end
