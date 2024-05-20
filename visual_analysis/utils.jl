@@ -4,9 +4,8 @@ using NetCDF
 using Dates
 using BenchmarkTools
 using Statistics
-using PythonCall
-using Distributed
 using JLD2
+using ProgressBars
 
 
 include("eof.jl")
@@ -37,6 +36,16 @@ struct EnsembleSimulation
     lats::Vector{Union{Missing,<:AbstractFloat}}
     time::Vector{Union{Missing,Dates.DateTime}}
     members::Vector{EnsembleMember}
+end
+
+
+struct EOFEnsembleResult
+    id::String
+    scopes::Vector{UnitRange{Int}}
+    ivt_piControl::Vector{EOFResult}
+    ps_piControl::Vector{EOFResult}
+    ivt_ensemble_eofs::Dict{String, Vector{EOFResult}}
+    ps_ensemble_eofs::Dict{String, Vector{EOFResult}}
 end
 
 function get_member_id_string(member_nr::Int)::String
@@ -159,7 +168,38 @@ function concat_ensemble_data(ensemble_simulations::EnsembleSimulation...; id::S
 
     new_lats = ensemble_simulations[1].lats
     new_lons = ensemble_simulations[1].lons
-    new_time = cat([es.time for es in ensemble_simulations]..., dims=1)
+
+    # check overlapping monthly data 
+
+    function get_last_indices_array(ensemble_simulations)
+
+        result = []
+
+        for i in eachindex(ensemble_simulations)
+
+            if i == 1
+                continue
+            end
+
+            last_time_array = ensemble_simulations[i-1].time
+            first_new_date = ensemble_simulations[i].time[1]
+
+            last_index = findlast(last_time_array) do dtime
+
+                return month(dtime) != month(first_new_date)
+            end
+            push!(result, last_index)
+        end
+
+        push!(result, lastindex(ensemble_simulations[end].time))
+
+        return result
+    end
+
+
+    last_indeces_ensemble = get_last_indices_array(ensemble_simulations)
+
+    new_time = cat([es.time[1:last_indeces_ensemble[i]] for (i, es) in enumerate(ensemble_simulations)]..., dims=1)
 
     members = Vector{EnsembleMember}(undef, length(ensemble_simulations[1].members))
 
@@ -206,47 +246,6 @@ function align_with_field!(field, alignment_field; dims=1)
     end
 end
 
-function get_eof_of_datachunk(datachunk; nmodes=nothing, center=true, alignment_field=nothing, varimax_rotation=false, scale_with_eigenvals=false)::EOFResult
-
-    eof = EmpiricalOrthogonalFunction(datachunk; timedim=3, center=center)
-
-    if isnothing(nmodes)
-        nmodes = size(datachunk, 3)
-    end
-
-    if varimax_rotation
-        orthorotation!(eof; n=nmodes)
-    end
-
-    temporalsignal = pcs(eof; n=nmodes)
-    spatialsignal = eofs(eof; n=nmodes)
-
-    if !isnothing(alignment_field)
-        spatialsignal = align_with_field(spatialsignal, alignment_field)
-    end
-
-    if scale_with_eigenvals
-        spatialsignal = spatialsignal .* sqrt.(solver.eigenvalues(neigs=nmodes))
-    end
-
-    modes_variability = eigenvalues(eof; n=nmodes) ./ sum(eof.eigenvals) * 100
-    return EOFResult(reshape(spatialsignal, (size(datachunk)[1:2]..., nmodes)), temporalsignal, modes_variability)
-end
-
-
-
-function get_spatial_modes(datachunk; nmodes=nothing, center=true)
-    eof = EmpiricalOrthogonalFunction(datachunk; timedim=3, center=center)
-
-    if isnothing(nmodes)
-        nmodes = size(datachunk, 3)
-    end
-
-    temporalsignal = pcs(eof)
-    spatialsignal = reshape(eofs(eof), (size(datachunk)[1:2]..., :))
-    modes_variability = eof.eigenvals ./ sum(eof.eigenvals) * 100
-    return spatialsignal[:, :, 1:nmodes], temporalsignal[:, 1:nmodes], modes_variability[1:nmodes]
-end
 
 
 function get_sliding_time_scopes_by_threshold(time_data, n, threshold=Day(100))
@@ -305,200 +304,7 @@ function normalize_tl_data(tl_data)
     return TimelineData(tl_data.lons, tl_data.lats, tl_data.time, normalized_ds)
 end
 
-function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute=true, eof_type=:normal, eof_alignment_field=nothing, pcs_alignment_field=nothing, scale_mode=nothing, ddof=1.0)
 
-
-    Eof = pyimport("eofs.standard").Eof
-    np = pyimport("numpy")
-
-    # eofs expects time to be the first dimension
-    if standard_permute
-        correct_shape_ds = permutedims(datachunk, (3, 1, 2))
-    else
-        correct_shape_ds = datachunk
-    end
-
-    if isnothing(scale_mode)
-        scaling = 0
-    elseif scale_mode == :divide
-        scaling = 1
-    elseif scale_mode == :multiply
-        scaling = 2
-    elseif scale_mode == :singularvals
-        scaling = 0
-    end
-
-
-    if !isnothing(weights)
-        solver = Eof(np.array(correct_shape_ds, dtype=np.float64), weights=np.array(weights, dtype=np.float64), ddof=ddof)
-    else
-        solver = Eof(np.array(correct_shape_ds, dtype=np.float64), ddof=ddof)
-    end
-
-    if eof_type == :normal
-        eof_res = solver.eofs(neofs=nmodes, eofscaling=scaling)
-    elseif eof_type == :covariance
-        eof_res = solver.eofsAsCovariance(neofs=nmodes)
-    elseif eof_type == :correlation
-        eof_res = solver.eofsAsCorrelation(neofs=nmodes)
-    else
-        ArgumentError("Could not use eof type $(eof_type), use :normal, :correlation or :covariance instead")
-    end
-
-    modes_variability = solver.eigenvalues(neigs=nmodes) ./ solver.totalAnomalyVariance() * 100
-
-
-    # we expect time to be the last dimension
-    if !isnothing(eof_alignment_field)
-        aligned_res = align_with_field(permutedims(pyconvert(Array{Float64,3}, eof_res), (2, 3, 1)), eof_alignment_field; mode_dim_index=2)
-        spatialsignal = reshape(aligned_res, (size(datachunk)[1:2]..., nmodes))
-    else
-        spatialsignal = permutedims(pyconvert(Array{Float64,3}, eof_res), (2, 3, 1))
-    end
-
-    if !isnothing(pcs_alignment_field)
-        aligned_pcs_res = align_with_field(pyconvert(Matrix{Float64}, solver.pcs(npcs=nmodes, pcscaling=scaling)), pcs_alignment_field; mode_dim_index=2)
-        temporalsignal = reshape(aligned_pcs_res, (size(datachunk)[3], nmodes))
-    else
-        temporalsignal = pyconvert(Matrix{Float64}, solver.pcs(npcs=nmodes, pcscaling=scaling))
-    end
-
-    # revert the change from singular values to eigenvalues here https://github.com/ajdawson/eofs/blob/main/lib/eofs/standard.py
-    if scale_mode == :singularvals
-        eigenvals = pyconvert(Vector{Float64}, solver.eigenvalues(neigs=nmodes))
-        singular_vals = sqrt.(eigenvals * (size(datachunk, 3) - ddof))
-        spatialsignal = cat(
-            [spatialsignal[:, :, mode] .* singular_vals[mode] * (1 / sqrt(size(datachunk, 3) - 1)) for mode in 1:nmodes]...,
-            dims=3
-        )
-    end
-
-    EOFResult(spatialsignal, temporalsignal, pyconvert(Vector{Float64}, modes_variability))
-
-end
-
-
-function calculate_eofs_of_tl_data(tl_data::TimelineData, chunking, nmodes; engine=:julia, reof=false, center=true, align_eof_with_mean=true, align_pcs_with_mean=false, weights=nothing, eof_type=:normal, scale_mode=nothing)::Dict{String,Vector{EOFResult}}
-
-    function calculate_eof(chunk; eof_alignment_field=nothing, pcs_alignment_field=nothing)
-        # if engine == :julia
-        #     return get_eof_of_datachunk(chunk; nmodes=nmodes, center=center, alignment_field=alignment_field, varimax_rotation=reof, scale_with_eigenvals=scale_with_eigenvals)
-        # elseif engine == :python
-        #     return pyeof_of_datachunk(chunk, nmodes; weights=weights, standard_permute=true, eof_type=eof_type, eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field, scale_mode=scale_mode)
-        # else
-        #     ArgumentError("Could not recognize engine. Please use :python or :julia")
-        # end
-        return pyeof_of_datachunk(chunk, nmodes; weights=weights, standard_permute=true, eof_type=eof_type, eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field, scale_mode=scale_mode)
-    end
-
-    result = Dict()
-
-    for (i, dataset) in enumerate(tl_data.datasets)
-        eofs = Vector{EOFResult}(undef, length(chunking))  # Predefined array for EOFResult
-
-        # Function to handle EOF calculation
-        function handle_eof(idx, data, scopes, eofs)
-            scope = scopes[idx]
-            chunk = data[:, :, scope]
-
-            eof_alignment_field = align_eof_with_mean ? reshape(mean(chunk, dims=3), 1, :) : nothing
-            pcs_alignment_field = align_pcs_with_mean ? mean(chunk, dims=[1, 2]) : nothing
-            # eof_alignment_field = align_eof_with_mean ? ones(prod(size(chunk)[1:2])) : nothing
-            # pcs_alignment_field = align_pcs_with_mean ? ones(size(chunk)[3]) : nothing
-            eof_result = calculate_eof(chunk; eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field)
-
-            println("Handled scope $scope out of $(length(scopes)) on thread $(Threads.threadid())")
-
-            # Direct assignment to the predefined array position
-            eofs[idx] = eof_result
-        end
-
-        # Decide whether to use threading based on CONDITION
-        if engine == :julia
-            Threads.@threads for idx in eachindex(chunking)
-                handle_eof(idx, dataset.data, chunking, eofs)
-            end
-        elseif engine == :python
-            for idx in eachindex(chunking)
-                handle_eof(idx, dataset.data, chunking, eofs)
-            end
-        else
-            ArgumentError("COuld not recognize engine. Please use :python or :julia")
-        end
-
-        result[dataset.name] = eofs
-    end
-
-    return result
-
-end
-
-function calculate_eofs_of_ensemble(ensemble::EnsembleSimulation, chunking, nmodes; engine=:julia, reof=false, center=true, align_eof_with_mean=true, align_pcs_with_mean=false, weights=nothing, eof_type=:normal, scale_mode=nothing, saving_filepath=nothing)::Dict{String,Vector{EOFResult}}
-
-    function calculate_eof(chunk; eof_alignment_field=nothing, pcs_alignment_field=nothing)
-        # if engine == :julia
-        #     return get_eof_of_datachunk(chunk; nmodes=nmodes, center=center, alignment_field=alignment_field, varimax_rotation=reof, scale_with_eigenvals=scale_with_eigenvals)
-        # elseif engine == :python
-        #     return pyeof_of_datachunk(chunk, nmodes; weights=weights, standard_permute=true, eof_type=eof_type, eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field, scale_with_eigenvals=scale_with_eigenvals)
-        # else
-        #     ArgumentError("Could not recognize engine. Please use :python or :julia")
-        # end
-
-        return pyeof_of_datachunk(chunk, nmodes; weights=weights, standard_permute=true, eof_type=eof_type, eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field, scale_mode=scale_mode)
-    end
-
-    result = Dict{String,Vector{EOFResult}}()
-
-    function handle_eof(chunk)
-
-        eof_alignment_field = align_eof_with_mean ? reshape(mean(chunk, dims=3), 1, :) : nothing
-        pcs_alignment_field = align_pcs_with_mean ? mean(chunk, dims=[1, 2]) : nothing
-        # eof_alignment_field = align_eof_with_mean ? ones(prod(size(chunk)[1:2])) : nothing
-        # pcs_alignment_field = align_pcs_with_mean ? ones(size(chunk)[3]) : nothing
-        eof_result = calculate_eof(chunk; eof_alignment_field=eof_alignment_field, pcs_alignment_field=pcs_alignment_field)
-
-        # Direct assignment to the predefined array position
-        return eof_result
-    end
-
-    for (i, member) in enumerate(ensemble.members)
-        # Predefined array for EOFResult
-
-        # Function to handle EOF calculation
-
-
-        # Decide whether to use threading based on CONDITION
-        @time "Time it took for eof calculation for member $(member.id)" begin
-            if engine == :julia
-                eofs = Vector{EOFResult}(undef, length(chunking))
-                Threads.@threads for idx in eachindex(chunking)
-                    eofs[idx] = handle_eof(chunk)
-                end
-            elseif engine == :python
-                eofs = pmap([member.data[:, :, scope] for scope in chunking]) do chunk
-                    handle_eof(chunk)
-                end
-            else
-                ArgumentError("Could not recognize engine. Please use :python or :julia")
-            end
-
-            result[member.id] = eofs
-        end
-
-    end
-
-    if !isnothing(saving_filepath)
-        try
-            save(saving_filepath, result)
-        catch e
-            println("Couldn't save to filepath $saving_filepath: $e")
-        end
-
-    end
-
-    return result
-
-end
 
 function calculate_eofs_of_ensemble_fast(
     ensemble::EnsembleSimulation,
@@ -520,22 +326,20 @@ function calculate_eofs_of_ensemble_fast(
         weights = nothing
     end
 
-    for (i, member) in enumerate(ensemble.members)
-        # Predefined array for EOFResult
+    iter = ProgressBar(ensemble.members)
 
-        # Function to handle EOF calculation
-
-
-        # Decide whether to use threading based on CONDITION
-        @time "Time it took for eof calculation for member $(member.id)" begin
-            eofs = Vector{EOFResult}(undef, length(chunking))
-            Threads.@threads for idx in eachindex(chunking)
-                eofs[idx] = eof(member.data[:, :, chunking[idx]]; nmodes=nmodes, center=center, align_eofs_with_mean=align_eofs_with_mean, norm_withsqrt_timedim=norm_withsqrt_timedim, weights=weights, scaling=scale_mode)
-            end
+    for member in iter
+        # update description of progress bar
+        set_description(iter, "$(ensemble.id) $(member.id)")
 
 
-            result[member.id] = eofs
+        eofs = Vector{EOFResult}(undef, length(chunking))
+        for idx in eachindex(chunking)
+            eofs[idx] = eof(member.data[:, :, chunking[idx]]; nmodes=nmodes, center=center, align_eofs_with_mean=align_eofs_with_mean, norm_withsqrt_timedim=norm_withsqrt_timedim, weights=weights, scaling=scale_mode)
         end
+
+
+        result[member.id] = eofs
         flush(stdout)
     end
 
@@ -562,3 +366,18 @@ function get_mean_of_multiple_arrays(arrays::AbstractArray...)
     return sum_array ./ length(arrays)
 end
 
+
+function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale = false)::EOFEnsembleResult
+
+    sqrt_string = sqrtscale ? "sqrtscale" : "nosqrtscale"
+    ds = load(joinpath(base_path, scope_id, "eofs_$(scenario_id)_$(scope_id)_$(sqrt_string).jld2"))
+
+    return EOFEnsembleResult(
+        "$scenario_id $scope_id",
+        convert(Vector{UnitRange{Int}}, ds["scopes"]),
+        convert(Vector{EOFResult}, ds["ivt_piControl"]["r1i1p1f1"]),
+        convert(Vector{EOFResult}, ds["ps_piControl"]["r1i1p1f1"]),
+        convert(Dict{String, Vector{EOFResult}}, ds["ivt_eof"]),
+        convert(Dict{String, Vector{EOFResult}}, ds["ps_eof"])
+    )
+end
