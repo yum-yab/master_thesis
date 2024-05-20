@@ -1,11 +1,39 @@
 using LinearAlgebra
 using Statistics
-
+using EmpiricalOrthogonalFunctions
 
 struct EOFResult
     spatial_modes::Array{Float64,3}
     temporal_modes::Array{Float64,2}
     modes_variability::Array{Float64,1}
+end
+
+
+function get_eof_of_datachunk(datachunk; nmodes=nothing, center=true, alignment_field=nothing, varimax_rotation=false, scale_with_eigenvals=false)::EOFResult
+
+    eof = EmpiricalOrthogonalFunction(datachunk; timedim=3, center=center)
+
+    if isnothing(nmodes)
+        nmodes = size(datachunk, 3)
+    end
+
+    if varimax_rotation
+        orthorotation!(eof; n=nmodes)
+    end
+
+    temporalsignal = pcs(eof; n=nmodes)
+    spatialsignal = eofs(eof; n=nmodes)
+
+    if !isnothing(alignment_field)
+        spatialsignal = align_with_field(spatialsignal, alignment_field)
+    end
+
+    if scale_with_eigenvals
+        spatialsignal = spatialsignal .* sqrt.(solver.eigenvalues(neigs=nmodes))
+    end
+
+    modes_variability = eigenvalues(eof; n=nmodes) ./ sum(eof.eigenvals) * 100
+    return EOFResult(reshape(spatialsignal, (size(datachunk)[1:2]..., nmodes)), temporalsignal, modes_variability)
 end
 
 
