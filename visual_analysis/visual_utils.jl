@@ -7,6 +7,7 @@ using BenchmarkTools
 using Statistics
 using StatsBase
 using Colors
+using Contour
 
 include("utils.jl")
 
@@ -562,7 +563,10 @@ function compare_ensembles(
     resolution::Union{Nothing,Tuple{Int,Int}}=nothing,
     fontsize::Int=12,
     whole_figure_title=nothing,
-    contours_for_slice=:
+    contours_for_slice=:,
+    contour_mode = :spaghetti,
+    hexbin_colormap = :amp,
+    testmode = false
 )
     lonmin, lonmax = extrema(ensembles_eof_tuples[1][1].lons)
     latmin, latmax = extrema(ensembles_eof_tuples[1][1].lats)
@@ -613,7 +617,9 @@ function compare_ensembles(
             contours_for_slice=contours_for_slice,
             colormap=colormap,
             coastline_color=coastline_color,
-            shading=shading
+            shading=shading,
+            contour_mode = contour_mode,
+            hexbin_colormap = hexbin_colormap
         )
 
     end
@@ -621,8 +627,8 @@ function compare_ensembles(
     Colorbar(fig[1, 1:nmodes+2], limits=limits, colormap=colormap, vertical=false, label="EOF values")
 
 
-
-    record(fig, filename, eachindex(all_scopes); framerate=framerate) do t
+    record_iterator = testmode ? range(1, 5) : all_scopes
+    record(fig, filename, eachindex(record_iterator); framerate=framerate) do t
         current_scope_index[] = t
     end
 
@@ -633,6 +639,7 @@ function compare_ensembles(
 
 end
 
+
 function display_eof_modes!(
     ensemble_simulation::EnsembleSimulation,
     eof_result::EOFEnsembleResult,
@@ -642,6 +649,8 @@ function display_eof_modes!(
     field=:ivt,
     contour_levels=[0],
     contours_for_slice=:,
+    contour_mode = :spaghetti,
+    hexbin_colormap = :amp,
     colormap=:viridis,
     coastline_color=:white,
     shading=Makie.automatic)
@@ -718,17 +727,30 @@ function display_eof_modes!(
         lines!(axis_array[mode], GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
 
         if mode in mode_iterator[contours_for_slice]
-            for (i, (_, eofres_array)) in enumerate(ensemble_eofs)
-                contour!(
-                    axis_array[mode],
-                    lonmin .. lonmax,
-                    latmin .. latmax,
-                    @lift(eofres_array[$current_scope_index].spatial_modes[:, :, mode]),
-                    levels=contour_levels,
-                    color=contour_colors[i],
-                    transformation=(; translation=(0, 0, 1100))
+
+            if contour_mode == :spaghetti
+                for (i, (_, eofres_array)) in enumerate(ensemble_eofs)
+                    contour!(
+                        axis_array[mode],
+                        lonmin .. lonmax,
+                        latmin .. latmax,
+                        @lift(eofres_array[$current_scope_index].spatial_modes[:, :, mode]),
+                        levels=contour_levels,
+                        color=contour_colors[i],
+                        transformation=(; translation=(0, 0, 1100))
+                    )
+                end
+            elseif contour_mode == :hexbin
+
+                vertices_observable = @lift(
+                    get_all_vertices_from_iscontours(
+                        [contours(ensemble_simulation.lons, ensemble_simulation.lats, eofres_array[$current_scope_index].spatial_modes[:, :, mode], contour_levels) 
+                        for (i, (_, eofres_array)) in enumerate(ensemble_eofs)]...
+                    )
                 )
-            end
+
+                hexbin!(axis_array[mode], @lift(unzip($vertices_observable)...), cellsize=2.0, colormap=hexbin_colormap, threshold = 1, colorrange = (1, 80))
+
         end
 
     end

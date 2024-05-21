@@ -6,7 +6,7 @@ using BenchmarkTools
 using Statistics
 using JLD2
 using ProgressBars
-
+using Contour
 
 include("eof.jl")
 
@@ -44,8 +44,8 @@ struct EOFEnsembleResult
     scopes::Vector{UnitRange{Int}}
     ivt_piControl::Vector{EOFResult}
     ps_piControl::Vector{EOFResult}
-    ivt_ensemble_eofs::Dict{String, Vector{EOFResult}}
-    ps_ensemble_eofs::Dict{String, Vector{EOFResult}}
+    ivt_ensemble_eofs::Dict{String,Vector{EOFResult}}
+    ps_ensemble_eofs::Dict{String,Vector{EOFResult}}
 end
 
 function get_member_id_string(member_nr::Int)::String
@@ -367,7 +367,7 @@ function get_mean_of_multiple_arrays(arrays::AbstractArray...)
 end
 
 
-function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale = false)::EOFEnsembleResult
+function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=false)::EOFEnsembleResult
 
     sqrt_string = sqrtscale ? "sqrtscale" : "nosqrtscale"
     ds = load(joinpath(base_path, scope_id, "eofs_$(scenario_id)_$(scope_id)_$(sqrt_string).jld2"))
@@ -377,7 +377,21 @@ function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale = 
         convert(Vector{UnitRange{Int}}, ds["scopes"]),
         convert(Vector{EOFResult}, ds["ivt_piControl"]["r1i1p1f1"]),
         convert(Vector{EOFResult}, ds["ps_piControl"]["r1i1p1f1"]),
-        convert(Dict{String, Vector{EOFResult}}, ds["ivt_eof"]),
-        convert(Dict{String, Vector{EOFResult}}, ds["ps_eof"])
+        convert(Dict{String,Vector{EOFResult}}, ds["ivt_eof"]),
+        convert(Dict{String,Vector{EOFResult}}, ds["ps_eof"])
     )
 end
+
+function get_all_vertices_from_iscontours(contour_collections::Contour.ContourCollection...)::Vector{Tuple{Float64,Float64}}
+    result = Tuple{Float64,Float64}[]
+    for contour_collection in contour_collections
+        for contour_level in levels(contour_struct)
+            for contour_line in Contour.lines(contour_level)
+                append!(result, [(x, y) for (x, y) in contour_line.vertices if !ismissing(x) && !ismissing(y)])
+            end
+        end
+    end
+    return result
+end
+
+unzip(a) = map(x->getfield.(a, x), fieldnames(eltype(a)))
