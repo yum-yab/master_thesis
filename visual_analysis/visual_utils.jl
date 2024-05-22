@@ -589,7 +589,9 @@ function compare_ensembles(
         append!(eof_extremas, [extrema(res.spatial_modes) for (_, eofresarray) in ensemble_eof_data for res in eofresarray])
     end
 
-    limits = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), eof_extremas)
+    minval, maxval = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), eof_extremas)
+
+    limits = (-1*maxval, maxval)
 
     for (i, (ensemble, eof_data)) in enumerate(ensembles_eof_tuples)
         mode_axes = []
@@ -742,15 +744,15 @@ function display_eof_modes!(
                 end
             elseif contour_mode == :hexbin
 
-                vertices_observable = @lift(
-                    get_all_vertices_from_iscontours(
-                        [contours(ensemble_simulation.lons, ensemble_simulation.lats, eofres_array[$current_scope_index].spatial_modes[:, :, mode], contour_levels) 
-                        for (i, (_, eofres_array)) in enumerate(ensemble_eofs)]...
-                    )
-                )
+                contours_observable = @lift([contours(ensemble_simulation.lons, ensemble_simulation.lats, eofres_array[$current_scope_index].spatial_modes[:, :, mode], contour_levels) for (i, (_, eofres_array)) in enumerate(ensemble_eofs)])
 
-                hexbin!(axis_array[mode], @lift(unzip($vertices_observable)...), cellsize=2.0, colormap=hexbin_colormap, threshold = 1, colorrange = (1, 80))
+                vertices_observable = @lift(get_all_vertices_from_iscontours($contours_observable...))
 
+                hexbin!(axis_array[mode], vertices_observable, cellsize=2.0, colormap=hexbin_colormap, threshold = 1, colorrange = (1, 80))
+            
+            else
+                ArgumentError("Use either :spaghetti or :hexbin")
+            end
         end
 
     end
@@ -851,7 +853,7 @@ function generate_correlation_boxplot(ivt_eof_ensemble, ps_eof_ensemble, scopes,
 
 end
 
-function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_axis; compare_modes=1 => 1, data_name="", size=Makie.autmatic)
+function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_axis; compare_modes=1 => 1, data_name="", size=Makie.autmatic, value_mode=:normal)
 
     available_members = intersect(keys(eof_result_data.ps_ensemble_eofs), keys(eof_result_data.ivt_ensemble_eofs))
 
@@ -884,20 +886,27 @@ function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_a
             # lag = collect(-1*half_signal:half_signal)
 
 
-            corsscor_result = crosscor(standardize(ZScoreTransform, ivt_eof_temporalpattern), standardize(ZScoreTransform, ps_eof_temporalpattern), lag)
+            crosscor_result = crosscor(standardize(ZScoreTransform, ivt_eof_temporalpattern), standardize(ZScoreTransform, ps_eof_temporalpattern), lag)
 
-            (maximal_correlation, index) = findmax(abs.(corsscor_result))
+            (maximal_correlation, index) = findmax(abs.(crosscor_result))
 
             push!(xmappings, scope_index)
-            push!(yvals, maximal_correlation)
+
+            if value_mode == :normal
+                push!(yvals, crosscor_result[index])
+            elseif value_mode == :absolute
+                push!(yvals, maximal_correlation)
+            else
+                ArgumentError("Please use :normal or :absolute as value_mode")
+            end
             push!(lagvals, lag[index])
         end
 
 
 
-        corsscor_result = crosscor(standardize(ZScoreTransform, eof_result_data.ivt_piControl[scope_index].temporal_modes[:, compare_modes.first]), standardize(ZScoreTransform, eof_result_data.ps_piControl[scope_index].temporal_modes[:, compare_modes.second]), lag)
+        crosscor_piControl_result = crosscor(standardize(ZScoreTransform, eof_result_data.ivt_piControl[scope_index].temporal_modes[:, compare_modes.first]), standardize(ZScoreTransform, eof_result_data.ps_piControl[scope_index].temporal_modes[:, compare_modes.second]), lag)
 
-        (maximal_correlation, index) = findmax(abs.(corsscor_result))
+        (maximal_correlation, index) = findmax(abs.(crosscor_piControl_result))
 
         control_correlation[scope_index] = maximal_correlation
         control_lag[scope_index] = lag[index]

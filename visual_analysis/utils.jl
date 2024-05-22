@@ -385,7 +385,7 @@ end
 function get_all_vertices_from_iscontours(contour_collections::Contour.ContourCollection...)::Vector{Tuple{Float64,Float64}}
     result = Tuple{Float64,Float64}[]
     for contour_collection in contour_collections
-        for contour_level in levels(contour_struct)
+        for contour_level in levels(contour_collection)
             for contour_line in Contour.lines(contour_level)
                 append!(result, [(x, y) for (x, y) in contour_line.vertices if !ismissing(x) && !ismissing(y)])
             end
