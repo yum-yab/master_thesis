@@ -2,39 +2,114 @@ using LinearAlgebra
 using Statistics
 using EmpiricalOrthogonalFunctions
 
+
+@enum EOFScaling begin
+    noscaling=1
+    svalmult=2
+    svaldivide=3
+end
+
 struct EOFResult
     spatial_modes::Array{Float64,3}
     temporal_modes::Array{Float64,2}
-    modes_variability::Array{Float64,1}
+    singularvals::Array{Float64,1}
+    sum_all_eigenvals::Float64
+    scaling::EOFScaling
 end
 
 
-function get_eof_of_datachunk(datachunk; nmodes=nothing, center=true, alignment_field=nothing, varimax_rotation=false, scale_with_eigenvals=false)::EOFResult
+function scale_eof_result(eof_response::EOFResult; scale_mode::EOFScaling=svalmult)
+    # now scale the eofs in different ways
 
-    eof = EmpiricalOrthogonalFunction(datachunk; timedim=3, center=center)
-
-    if isnothing(nmodes)
-        nmodes = size(datachunk, 3)
+    if eof_response.scaling != noscaling
+        ArgumentError("You cannot scale an already scaled response!")
     end
 
-    if varimax_rotation
-        orthorotation!(eof; n=nmodes)
+
+    broadcasting_svals = reshape(eof_response.singularvals, 1, :)
+    if scale_mode == svalmult
+        new_eofs = eof_response.spatial_modes .* broadcasting_svals
+        new_temp_signal = eof_response.temporal_modes .* broadcasting_svals
+    elseif scale_mode == svaldivide
+        new_eofs = eof_response.spatial_modes ./ broadcasting_svals
+        new_temp_signal = eof_response.temporal_modes ./ broadcasting_svals
     end
 
-    temporalsignal = pcs(eof; n=nmodes)
-    spatialsignal = eofs(eof; n=nmodes)
-
-    if !isnothing(alignment_field)
-        spatialsignal = align_with_field(spatialsignal, alignment_field)
-    end
-
-    if scale_with_eigenvals
-        spatialsignal = spatialsignal .* sqrt.(solver.eigenvalues(neigs=nmodes))
-    end
-
-    modes_variability = eigenvalues(eof; n=nmodes) ./ sum(eof.eigenvals) * 100
-    return EOFResult(reshape(spatialsignal, (size(datachunk)[1:2]..., nmodes)), temporalsignal, modes_variability)
+    return EOFResult(new_eofs, new_temp_signal, eof_response.singularvals, eof_response.sum_all_eigenvals, scale_mode)
 end
+
+function get_modes_variability(eof_response::EOFResult)::Vector{Float64}
+    return  (eof_response.singularvals .^ 2) / eof_response.sum_all_eigenvals
+end
+
+function reconstruct_data(eof_response::EOFResult, original_data::AbstractArray{<:AbstractFloat, 3}; timedim::Int = 3, weights=nothing, center=true)
+
+
+    # regenerate L, S, R depending on scaling
+    S = Diagonal(eof_response.singularvals)
+
+    # reshape spatial dims back
+    # first two dims are geo_dims
+    geo_shape = size(eof_response.spatial_modes)[1:2]
+
+    reshaped_spatial = reshape(eof_response.spatial_modes, prod(geo_shape), :)
+
+    println("Size of reshaped spatial: $(size(reshaped_spatial))")
+    
+    if eof_response.scaling == noscaling
+        L = eof_response.temporal_modes
+        R = reshaped_spatial
+        
+    else
+        broadcasting_svals = reshape(eof_response.singularvals, 1, :)
+        if eof_response.scaling == svalmult
+            L = eof_response.temporal_modes ./ broadcasting_svals
+            R = reshaped_spatial ./ broadcasting_svals
+        elseif eof_response.scaling == svaldivide
+            L = eof_response.temporal_modes .* broadcasting_svals
+            R = reshaped_spatial .* broadcasting_svals
+        else
+            ArgumentError("Unknown scaling: $(eof_response.scaling)")
+        end
+    end
+    
+    reconstructed = L * S * R'
+
+    prepared_data = prepare_data_for_eof(original_data; weights=weights)
+
+    _, _, R = svd(prepared_data)
+
+    diffs_rsv = R .- reshaped_spatial
+
+    println("Extrema von spatial side: $(extrema(diffs_rsv))")
+
+    diffs_prepared = prepared_data .- reconstructed
+
+    println("Extrema of diffs: $(extrema(diffs_prepared))")
+
+
+    reconstructed = reshape(reconstructed, geo_shape..., :)
+
+
+    if center
+        old_data_mean = mean(original_data, dims=timedim)
+
+        println("Size reconstructed $(size(reconstructed))\tSize old data mean: $(size(old_data_mean))")
+
+
+        # now reshape the reconstructed back to its original dimensions
+        reconstructed = reconstructed .+ old_data_mean
+    end
+
+    if !isnothing(weights)
+        weights_reshaped = reshape(weights, 1, :, 1)
+        reconstructed = reconstructed ./ weights_reshaped 
+    end
+
+    return reconstructed
+end
+
+
 
 
 function prepare_data_for_eof(data; weights=nothing, timedim=3, weightdim=2, norm_withsqrt_timedim=false)
@@ -76,18 +151,29 @@ function align_with_field(field, alignment_field; mode_dim_index=2)
 
     function handle_slice(slice)
         scalar_product = sum(slice .* alignment_field)
+
         if scalar_product < 0
-            return slice * -1
+            return -1, slice * -1
         else
-            return slice
+            return 1, slice
         end
     end
 
-    return cat([handle_slice(field[:, modenum]) for modenum in axes(field, mode_dim_index)]..., dims=2)
+    result = similar(field)
+
+    flips = ones(length(axes(field, mode_dim_index)))
+
+    for modenum in axes(field, mode_dim_index)
+        factor, sliceresult = handle_slice(field[:, modenum])
+        result[:, modenum] = sliceresult
+        flips[modenum] = factor
+    end
+
+    return result, flips
 end
 
 
-function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, scaling=nothing, nmodes=-1, norm_withsqrt_timedim=false, align_eofs_with_mean=false)
+function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, nmodes=-1, norm_withsqrt_timedim=false, align_eofs_with_mean=false)
 
     old_dims = size(data)
 
@@ -118,36 +204,19 @@ function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, scaling
 
     # eigenvals
     eigenvals = singular_vals .^ 2
-    truncated_evs = eigenvals[mode_selector]
-
-    # prepare svals to be broadcasted over modes
-    broadcasting_svals = reshape(truncated_svals, 1, length(truncated_svals))
 
     eofs = truncated_rsv
 
 
-    # rescale the principal components with the singular value
     pc_factor = norm_withsqrt_timedim ? sqrt(time_shape - 1) : 1
-    principal_components = truncated_lsv .* broadcasting_svals * pc_factor
+    temporal_modes = truncated_lsv .* pc_factor
 
-    # now scale the eofs in different ways
-    if !isnothing(scaling)
 
-        if scaling == :singularvals
-            eofs = eofs .* broadcasting_svals
-        elseif scaling == :eigenvalsmult
-            sqrt_ev = sqrt.(truncated_evs)
-            eofs = eofs .* reshape(sqrt_ev, 1, length(sqrt_ev))
-        elseif scaling == :eigenvalsdivide
-            sqrt_ev = sqrt.(truncated_evs)
-            eofs = eofs ./ reshape(sqrt_ev, 1, length(sqrt_ev))
-        end
-
-    end
 
     if align_eofs_with_mean
-        eofs = align_with_field(eofs, mean_over_time)
+        eofs, flip_factors = align_with_field(eofs, mean_over_time)
+        temporal_modes = temporal_modes .* reshape(flip_factors, 1, :)
     end
 
-    return EOFResult(reshape(eofs, (old_dims[geodims]..., :)), principal_components, truncated_evs / sum(eigenvals) * 100)
+    return EOFResult(reshape(eofs, (old_dims[geodims]..., :)), temporal_modes, truncated_svals, sum(eigenvals), noscaling)
 end
