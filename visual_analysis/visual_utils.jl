@@ -746,9 +746,9 @@ function display_eof_modes!(
 
                 contours_observable = @lift([contours(ensemble_simulation.lons, ensemble_simulation.lats, eofres_array[$current_scope_index].spatial_modes[:, :, mode], contour_levels) for (i, (_, eofres_array)) in enumerate(ensemble_eofs)])
 
-                vertices_observable = @lift(get_all_vertices_from_iscontours($contours_observable...))
+                vertices_observable = @lift(vcat(sample_along_line.(get_isocontour_vertices($contours_observable...); dx = 0.01)...))
 
-                hexbin!(axis_array[mode], vertices_observable, cellsize=2.0, colormap=hexbin_colormap, threshold = 1, colorrange = (1, 80))
+                hexbin!(axis_array[mode], vertices_observable, cellsize=2.0, colormap=hexbin_colormap, threshold = 1)
             
             else
                 ArgumentError("Use either :spaghetti or :hexbin")
