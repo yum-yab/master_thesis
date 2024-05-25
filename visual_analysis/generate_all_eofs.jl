@@ -30,9 +30,9 @@ end
 
 
 
-function generate_access_dict()
-    ps_data_monthly_path = "/mnt/bigdrive/Datasets/master_thesis_data/ps_data_monthly"
-    ivt_data_monthly_path = "/mnt/bigdrive/Datasets/master_thesis_data/ivt_fields_monthly"
+function generate_access_dict(data_base_path)
+    ps_data_monthly_path = joinpath(data_base_path, "ps_data_monthly")
+    ivt_data_monthly_path = joinpath(data_base_path, "ivt_fields_monthly")
 
     (ivt_historical_monthly, ivt_ssp126_monthly, ivt_ssp585_monthly) = build_ensemble_data(ivt_data_monthly_path, "historical", "ssp126", "ssp585"; file_range_selection=:, data_field_id="ivt", member_range=1:50, filterfun=filter_winter_season)
 
@@ -61,20 +61,23 @@ end
 
 
 
-function main()
+function main(data_base_path, target_base_path)
 
-    access_dict, time_data = generate_access_dict()
+    access_dict, time_data = generate_access_dict(data_base_path)
     scale_by_sqrt = Dict(
-      # false => "nosqrtscale", 
-      true => "sqrtscale"
+        false => "nosqrtscale",
+        true => "sqrtscale"
     )
 
-    season_timescopes = Dict(i => "$(i)seasons" for i in [4, 7, 12, 20, 30, 50, 70])
+    season_timescopes = Dict(i => "$(i)seasons" for i in [30, 50, 70])
 
     # month_timescopes = Dict(i => "$(i)months" for i in [8, 15, 30, 50])
 
+    multithreading = false
 
-    target_dir = "/mnt/bigdrive/Datasets/master_thesis_data/eof_data"
+    nmodes = 5
+
+    target_dir = target_base_path
 
     for (sqrtscale, sqrtlabel) in scale_by_sqrt
 
@@ -90,23 +93,25 @@ function main()
             ivt_piControl_eof = calculate_eofs_of_ensemble_fast(
                 access_dict["ivt_piControl"],
                 scopes,
-                2;
+                nmodes;
                 center=true,
                 align_eofs_with_mean=true,
                 norm_withsqrt_timedim=false,
                 geoweights=true,
-                scale_mode=:singularvals,
+                scale_mode=noscaling,
+                multithreading=multithreading
             )
 
             ps_piControl_eof = calculate_eofs_of_ensemble_fast(
                 access_dict["ps_piControl"],
                 scopes,
-                2;
+                nmodes;
                 center=true,
                 align_eofs_with_mean=true,
                 norm_withsqrt_timedim=false,
                 geoweights=true,
-                scale_mode=:singularvals,
+                scale_mode=noscaling,
+                multithreading=multithreading
             )
 
 
@@ -117,26 +122,28 @@ function main()
                 ivt_eof = calculate_eofs_of_ensemble_fast(
                     ivt_data,
                     scopes,
-                    2;
+                    nmodes;
                     center=true,
                     align_eofs_with_mean=true,
                     norm_withsqrt_timedim=sqrtscale,
                     geoweights=true,
-                    scale_mode=:singularvals,
+                    scale_mode=noscaling,
+                    multithreading=multithreading
                 )
 
                 ps_eof = calculate_eofs_of_ensemble_fast(
                     ps_data,
                     scopes,
-                    2;
+                    nmodes;
                     center=true,
                     align_eofs_with_mean=true,
                     norm_withsqrt_timedim=sqrtscale,
                     geoweights=true,
-                    scale_mode=:singularvals,
+                    scale_mode=noscaling,
+                    multithreading=multithreading
                 )
 
-                file_name = "eofs_$(scenario)_$(scope_label)_$(sqrtlabel).jld2"
+                file_name = "eofs_$(nmodes)modes_$(scenario)_$(scope_label)_$(sqrtlabel).jld2"
 
                 persisting_dir = joinpath(target_dir, scope_label)
 
@@ -153,4 +160,4 @@ function main()
 
 end
 
-main()
+main(ARGS[1], ARGS[2])
