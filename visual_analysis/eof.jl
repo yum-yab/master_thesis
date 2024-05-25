@@ -26,13 +26,12 @@ function scale_eof_result(eof_response::EOFResult; scale_mode::EOFScaling=svalmu
     end
 
 
-    broadcasting_svals = reshape(eof_response.singularvals, 1, :)
     if scale_mode == svalmult
-        new_eofs = eof_response.spatial_modes .* broadcasting_svals
-        new_temp_signal = eof_response.temporal_modes .* broadcasting_svals
+        new_eofs = eof_response.spatial_modes .* reshape(eof_response.singularvals, 1, 1, :)
+        new_temp_signal = eof_response.temporal_modes .* reshape(eof_response.singularvals, 1, :)
     elseif scale_mode == svaldivide
-        new_eofs = eof_response.spatial_modes ./ broadcasting_svals
-        new_temp_signal = eof_response.temporal_modes ./ broadcasting_svals
+        new_eofs = eof_response.spatial_modes ./ reshape(eof_response.singularvals, 1, 1, :)
+        new_temp_signal = eof_response.temporal_modes ./ reshape(eof_response.singularvals, 1, :)
     end
 
     return EOFResult(new_eofs, new_temp_signal, eof_response.singularvals, eof_response.sum_all_eigenvals, scale_mode)
@@ -47,14 +46,12 @@ function reconstruct_data(eof_response::EOFResult, original_data::AbstractArray{
 
     # regenerate L, S, R depending on scaling
     S = Diagonal(eof_response.singularvals)
-
+    
     # reshape spatial dims back
     # first two dims are geo_dims
     geo_shape = size(eof_response.spatial_modes)[1:2]
 
     reshaped_spatial = reshape(eof_response.spatial_modes, prod(geo_shape), :)
-
-    println("Size of reshaped spatial: $(size(reshaped_spatial))")
     
     if eof_response.scaling == noscaling
         L = eof_response.temporal_modes
@@ -75,36 +72,21 @@ function reconstruct_data(eof_response::EOFResult, original_data::AbstractArray{
     
     reconstructed = L * S * R'
 
-    prepared_data = prepare_data_for_eof(original_data; weights=weights)
+    # reshape for timedim is the first, then permute the new dims 
+    reconstructed = permutedims(reshape(reconstructed, :, geo_shape...), (2, 3, 1))
 
-    _, _, R = svd(prepared_data)
-
-    diffs_rsv = R .- reshaped_spatial
-
-    println("Extrema von spatial side: $(extrema(diffs_rsv))")
-
-    diffs_prepared = prepared_data .- reconstructed
-
-    println("Extrema of diffs: $(extrema(diffs_prepared))")
-
-
-    reconstructed = reshape(reconstructed, geo_shape..., :)
-
-
-    if center
-        old_data_mean = mean(original_data, dims=timedim)
-
-        println("Size reconstructed $(size(reconstructed))\tSize old data mean: $(size(old_data_mean))")
-
-
-        # now reshape the reconstructed back to its original dimensions
-        reconstructed = reconstructed .+ old_data_mean
-    end
 
     if !isnothing(weights)
         weights_reshaped = reshape(weights, 1, :, 1)
         reconstructed = reconstructed ./ weights_reshaped 
     end
+    if center
+        old_data_mean = mean(original_data, dims=timedim)
+
+        # now reshape the reconstructed back to its original dimensions
+        reconstructed .= reconstructed .+ old_data_mean
+    end
+
 
     return reconstructed
 end
