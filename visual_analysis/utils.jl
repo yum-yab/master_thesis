@@ -394,4 +394,52 @@ function get_all_vertices_from_iscontours(contour_collections::Contour.ContourCo
     return result
 end
 
+function get_isocontour_vertices(contour_collections::Contour.ContourCollection...)::Vector{Vector{Tuple{Float64,Float64}}}
+    result = Vector{Tuple{Float64,Float64}}[]
+    for contour_collection in contour_collections
+        for contour_level in levels(contour_collection)
+            for contour_line in Contour.lines(contour_level)
+                push!(result, [(x, y) for (x, y) in contour_line.vertices if !ismissing(x) && !ismissing(y)])
+            end
+        end
+    end
+    return result
+end
+
 unzip(a) = map(x->getfield.(a, x), fieldnames(eltype(a)))
+
+
+function sample_along_line(line; dx = 0.1)::Vector{Tuple{Float64, Float64}}
+    n = length(line)
+    sampled_points = []
+    
+    # Calculate total length of the line
+    total_length = 0.0
+    for i in 1:(n - 1)
+        total_length += norm([line[i+1][1] - line[i][1], line[i+1][2] - line[i][2]])
+    end
+    
+    # Interpolate and sample along the line
+    distance_covered = 0.0
+    for i in 1:(n - 1)
+        (x1, y1) = line[i]
+        (x2, y2) = line[i + 1]
+        segment_length = norm([x2 - x1, y2 - y1])
+        
+        while distance_covered < segment_length
+            t = distance_covered / segment_length
+            x_sample = (1 - t) * x1 + t * x2
+            y_sample = (1 - t) * y1 + t * y2
+            push!(sampled_points, (x_sample, y_sample))
+            distance_covered += dx
+        end
+        
+        # Adjust the distance covered for the next segment
+        distance_covered -= segment_length
+    end
+    
+    # Add the last point of the line
+    push!(sampled_points, line[end])
+    
+    return sampled_points
+end
