@@ -314,8 +314,9 @@ function calculate_eofs_of_ensemble_fast(
     align_eofs_with_mean=true,
     norm_withsqrt_timedim=false,
     geoweights=true,
-    scale_mode=nothing,
-    saving_filepath=nothing
+    scale_mode=noscaling,
+    saving_filepath=nothing,
+    multithreading = false
 )::Dict{String,Vector{EOFResult}}
 
     result = Dict{String,Vector{EOFResult}}()
@@ -334,8 +335,23 @@ function calculate_eofs_of_ensemble_fast(
 
 
         eofs = Vector{EOFResult}(undef, length(chunking))
-        for idx in eachindex(chunking)
-            eofs[idx] = eof(member.data[:, :, chunking[idx]]; nmodes=nmodes, center=center, align_eofs_with_mean=align_eofs_with_mean, norm_withsqrt_timedim=norm_withsqrt_timedim, weights=weights, scaling=scale_mode)
+
+        if multithreading
+            Threads.@threads for idx in eachindex(chunking)
+                if scale_mode == noscaling
+                    eofs[idx] = eof(member.data[:, :, chunking[idx]]; nmodes=nmodes, center=center, align_eofs_with_mean=align_eofs_with_mean, norm_withsqrt_timedim=norm_withsqrt_timedim, weights=weights)
+                else
+                    eofs[idx] = scale_eof_result(eof(member.data[:, :, chunking[idx]]; nmodes=nmodes, center=center, align_eofs_with_mean=align_eofs_with_mean, norm_withsqrt_timedim=norm_withsqrt_timedim, weights=weights); scale_mode=scale_mode)
+                end
+            end
+        else
+            for idx in eachindex(chunking)
+                if scale_mode == noscaling
+                    eofs[idx] = eof(member.data[:, :, chunking[idx]]; nmodes=nmodes, center=center, align_eofs_with_mean=align_eofs_with_mean, norm_withsqrt_timedim=norm_withsqrt_timedim, weights=weights)
+                else
+                    eofs[idx] = scale_eof_result(eof(member.data[:, :, chunking[idx]]; nmodes=nmodes, center=center, align_eofs_with_mean=align_eofs_with_mean, norm_withsqrt_timedim=norm_withsqrt_timedim, weights=weights); scale_mode=scale_mode)
+                end
+            end
         end
 
 

@@ -9,6 +9,35 @@ using Distributed
 using JLD2
 using ProgressBars
 
+include("utils.jl")
+
+
+function get_eof_of_datachunk(datachunk; nmodes=nothing, center=true, alignment_field=nothing, varimax_rotation=false, scale_with_eigenvals=false)::EOFResult
+
+    eof = EmpiricalOrthogonalFunction(datachunk; timedim=3, center=center)
+
+    if isnothing(nmodes)
+        nmodes = size(datachunk, 3)
+    end
+
+    if varimax_rotation
+        orthorotation!(eof; n=nmodes)
+    end
+
+    temporalsignal = pcs(eof; n=nmodes)
+    spatialsignal = eofs(eof; n=nmodes)
+
+    if !isnothing(alignment_field)
+        spatialsignal = align_with_field(spatialsignal, alignment_field)
+    end
+
+    if scale_with_eigenvals
+        spatialsignal = spatialsignal .* sqrt.(eigenvalues(eof; n=nmodes))
+    end
+
+    modes_variability = eigenvalues(eof; n=nmodes) ./ sum(eof.eigenvals) * 100
+    return EOFResult(reshape(spatialsignal, (size(datachunk)[1:2]..., nmodes)), temporalsignal, sqrt.(eigenvalues(eof; n=nmodes)), sum(eof.eigenvals), noscaling)
+end
 
 function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute=true, eof_type=:normal, eof_alignment_field=nothing, pcs_alignment_field=nothing, scale_mode=nothing, ddof=1.0)
 
@@ -78,7 +107,7 @@ function pyeof_of_datachunk(datachunk, nmodes; weights=nothing, standard_permute
         )
     end
 
-    EOFResult(spatialsignal, temporalsignal, pyconvert(Vector{Float64}, modes_variability))
+    EOFResult(spatialsignal, temporalsignal, pyconvert(Vector{Float64}, solver.eigenvalues(neigs=nmodes)), pyconvert(Float64, solver.totalAnomalyVariance()), noscaling)
 
 end
 
