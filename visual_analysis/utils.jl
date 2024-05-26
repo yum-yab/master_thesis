@@ -383,10 +383,10 @@ function get_mean_of_multiple_arrays(arrays::AbstractArray...)
 end
 
 
-function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=false)::EOFEnsembleResult
+function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=false, modes=5)::EOFEnsembleResult
 
     sqrt_string = sqrtscale ? "sqrtscale" : "nosqrtscale"
-    ds = load(joinpath(base_path, scope_id, "eofs_$(scenario_id)_$(scope_id)_$(sqrt_string).jld2"))
+    ds = load(joinpath(base_path, scope_id, "eofs_$(modes)modes_$(scenario_id)_$(scope_id)_$(sqrt_string).jld2"))
 
     return EOFEnsembleResult(
         "$scenario_id $scope_id",

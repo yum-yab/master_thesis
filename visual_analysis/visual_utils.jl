@@ -16,8 +16,8 @@ function local_geoaxis_creation!(
     figure::Makie.Figure,
     lonlims::Tuple{<:Number,<:Number},
     latlims::Tuple{<:Number,<:Number};
-    figure_row::Int=1,
-    figure_col::Int=1,
+    figure_row=1,
+    figure_col=1,
     title="",
     dest_projection="+proj=merc",
 )
@@ -564,14 +564,14 @@ function compare_ensembles(
     fontsize::Int=12,
     whole_figure_title=nothing,
     contours_for_slice=:,
-    contour_mode = :spaghetti,
-    hexbin_colormap = :amp,
-    testmode = false
+    contour_mode=:spaghetti,
+    hexbin_colormap=:amp,
+    testmode=false
 )
     lonmin, lonmax = extrema(ensembles_eof_tuples[1][1].lons)
     latmin, latmax = extrema(ensembles_eof_tuples[1][1].lats)
 
-    all_scopes = ensembles_eof_tuples[1][2].scopes 
+    all_scopes = ensembles_eof_tuples[1][2].scopes
     current_scope_index = Observable(1)
 
     fig = isnothing(resolution) ? Figure(fontsize=fontsize) : Figure(size=resolution, fontsize=fontsize)
@@ -585,18 +585,18 @@ function compare_ensembles(
     for (_, eof_data) in ensembles_eof_tuples
 
         ensemble_eof_data, _ = pick_correct_field(eof_data, :ivt)
-        
+
         append!(eof_extremas, [extrema(res.spatial_modes) for (_, eofresarray) in ensemble_eof_data for res in eofresarray])
     end
 
     minval, maxval = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), eof_extremas)
 
-    limits = (-1*maxval, maxval)
+    limits = (-1 * maxval, maxval)
 
     for (i, (ensemble, eof_data)) in enumerate(ensembles_eof_tuples)
         mode_axes = []
 
-        current_row = i+1
+        current_row = i + 1
 
         ensemble_eof_data, _ = pick_correct_field(eof_data, :ivt)
 
@@ -620,8 +620,8 @@ function compare_ensembles(
             colormap=colormap,
             coastline_color=coastline_color,
             shading=shading,
-            contour_mode = contour_mode,
-            hexbin_colormap = hexbin_colormap
+            contour_mode=contour_mode,
+            hexbin_colormap=hexbin_colormap
         )
 
     end
@@ -651,8 +651,8 @@ function display_eof_modes!(
     field=:ivt,
     contour_levels=[0],
     contours_for_slice=:,
-    contour_mode = :spaghetti,
-    hexbin_colormap = :amp,
+    contour_mode=:spaghetti,
+    hexbin_colormap=:amp,
     colormap=:viridis,
     coastline_color=:white,
     shading=Makie.automatic)
@@ -746,10 +746,10 @@ function display_eof_modes!(
 
                 contours_observable = @lift([contours(ensemble_simulation.lons, ensemble_simulation.lats, eofres_array[$current_scope_index].spatial_modes[:, :, mode], contour_levels) for (i, (_, eofres_array)) in enumerate(ensemble_eofs)])
 
-                vertices_observable = @lift(vcat(sample_along_line.(get_isocontour_vertices($contours_observable...); dx = 0.01)...))
+                vertices_observable = @lift(vcat(sample_along_line.(get_isocontour_vertices($contours_observable...); dx=0.01)...))
 
-                hexbin!(axis_array[mode], vertices_observable, cellsize=2.0, colormap=hexbin_colormap, threshold = 1)
-            
+                hexbin!(axis_array[mode], vertices_observable, cellsize=2.0, colormap=hexbin_colormap, threshold=1)
+
             else
                 ArgumentError("Use either :spaghetti or :hexbin")
             end
@@ -942,3 +942,146 @@ function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_a
 
 end
 
+function add_()
+    
+end
+
+function compare_data_reconstruction(
+    ensemble_simulation::EnsembleSimulation,
+    eof_result::EOFEnsembleResult,
+    member::Int,
+    filename::String;
+    scope_index=1,
+    field=:ivt,
+    framerate::Int=30,
+    data_colormap=:vik100,
+    coastline_color=:white,
+    shading=Makie.automatic,
+    resolution::Union{Nothing,Tuple{Int,Int}}=nothing,
+    fontsize::Int=12,
+    whole_figure_title=nothing,
+    filter_by_temporal_mode_fun=nothing
+)
+
+    ensemble_eofs, _ = pick_correct_field(eof_result, field)
+
+    current_index = Observable(1)
+    lonmin, lonmax = extrema(ensemble_simulation.lons)
+    latmin, latmax = extrema(ensemble_simulation.lats)
+
+    my_scope = eof_result.scopes[scope_index]
+
+    scope_timeaxis = ensemble_simulation.time[my_scope]
+
+    fig = isnothing(resolution) ? Figure(fontsize=fontsize) : Figure(size=resolution, fontsize=fontsize)
+
+
+    simulation_data = ensemble_simulation.members[member].data[:, :, my_scope]
+
+    eof_res = scale_eof_result(ensemble_eofs[get_member_id_string(member)][scope_index])
+
+    minval, maxval = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), [extrema(simulation_data), extrema(eof_res.spatial_modes)])
+
+    data_limits = extrema(simulation_data)
+
+    limits = (-1 * data_limits[2], data_limits[2]) 
+
+    _, eof_maxval = extrema(eof_res.spatial_modes)
+
+    eof_limits = (-1 * eof_maxval, eof_maxval)
+
+    nmodes = length(eof_res.singularvals)
+
+    chosen_indices = isnothing(filter_by_temporal_mode_fun) ? eachindex(my_scope) : filter_by_temporal_mode_fun(eof_res.temporal_modes)
+
+    if !isnothing(whole_figure_title)
+        Label(fig[0, 1:nmodes+1], whole_figure_title, fontsize=round(1.7 * fontsize))
+    end
+
+    month_year_format = DateFormat("yyyy-mm")
+
+
+    orig_data_ax = local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=@lift("$(ensemble_simulation.id) $(Dates.format(scope_timeaxis[$current_index], month_year_format)) Original Data"), figure_row=3, figure_col=1)
+
+    surface!(
+        orig_data_ax,
+        lonmin .. lonmax,
+        latmin .. latmax,
+        @lift(simulation_data[:, :, $current_index]);
+        shading=shading,
+        colormap=data_colormap,
+        colorrange=limits,
+        overdraw=false,
+        transformation=(; translation=(0, 0, -1 * data_limits[2]))
+    )
+    lines!(orig_data_ax, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
+
+    influence_axis = Axis(fig[1, 1], limits=((nothing, nothing), (-1, 1)), title="Coefficient of Modes (standardized)")
+
+    standardized_temp_modes = cat([standardize(UnitRangeTransform, eof_res.temporal_modes[:, i]; unit=false) for i in 1:nmodes]..., dims=2)
+
+    positions_observable = @lift([(i, standardized_temp_modes[$current_index, i]) for i in 1:nmodes])
+
+    barplot!(influence_axis, positions_observable, color = @lift(unzip($positions_observable)[1]))
+
+
+    for modenum in 1:nmodes
+
+        truncated_eof_res = truncate_eof_result(eof_res, modenum)
+        var_encoded = sum(get_modes_variability(truncated_eof_res) * 100)
+
+        modes_var = get_modes_variability(eof_res) * 100
+
+        reconstructed_eof_res = reconstruct_data(truncated_eof_res, simulation_data; center=true, weights=sqrt.(cos.(deg2rad.(ensemble_simulation.lats))))
+
+        println("Min and max error of reconstruction of Mode $modenum: $(extrema(abs.(simulation_data .- reconstructed_eof_res)))")
+
+        mode_ax = local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title="Mode $modenum Var: $(modes_var[modenum]) %", figure_row=1, figure_col=1+modenum)
+        reconstructed_ax = local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title="Reconstruction Modes 1:$(modenum) Var: $(var_encoded) %", figure_row=3, figure_col=1+modenum)
+
+        surface!(
+            mode_ax,
+            lonmin .. lonmax,
+            latmin .. latmax,
+            eof_res.spatial_modes[:, :, modenum];
+            shading=shading,
+            colormap=data_colormap,
+            colorrange=limits,
+            overdraw=false,
+            transformation=(; translation=(0, 0, -1 * eof_limits[2]))
+        )
+        lines!(mode_ax, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
+
+        surface!(
+            reconstructed_ax,
+            lonmin .. lonmax,
+            latmin .. latmax,
+            @lift(reconstructed_eof_res[:, :, $current_index]);
+            shading=shading,
+            colormap=data_colormap,
+            colorrange=limits,
+            overdraw=false,
+            transformation=(; translation=(0, 0, -1 * data_limits[2]))
+        )
+        lines!(reconstructed_ax, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
+
+
+    end
+
+    Colorbar(fig[2, 1:6], limits=limits, colormap=data_colormap, vertical=false, label="IVT Values")
+    # Colorbar(fig[2, 5:6], limits=eof_limits, colormap=eof_colormap, vertical=false, label="IVT anomalies")
+
+
+
+    record(fig, filename, chosen_indices; framerate=framerate) do t
+        current_index[] = t
+    end
+
+
+    return fig
+
+
+
+
+
+end

@@ -4,9 +4,9 @@ using EmpiricalOrthogonalFunctions
 
 
 @enum EOFScaling begin
-    noscaling=1
-    svalmult=2
-    svaldivide=3
+    noscaling = 1
+    svalmult = 2
+    svaldivide = 3
 end
 
 struct EOFResult
@@ -18,45 +18,55 @@ struct EOFResult
 end
 
 
-function scale_eof_result(eof_response::EOFResult; scale_mode::EOFScaling=svalmult)
+function scale_eof_result(eof_result::EOFResult; scale_mode::EOFScaling=svalmult)
     # now scale the eofs in different ways
 
-    if eof_response.scaling != noscaling
+    if eof_result.scaling != noscaling
         ArgumentError("You cannot scale an already scaled response!")
     end
 
 
     if scale_mode == svalmult
-        new_eofs = eof_response.spatial_modes .* reshape(eof_response.singularvals, 1, 1, :)
-        new_temp_signal = eof_response.temporal_modes .* reshape(eof_response.singularvals, 1, :)
+        new_eofs = eof_result.spatial_modes .* reshape(eof_result.singularvals, 1, 1, :)
+        new_temp_signal = eof_result.temporal_modes .* reshape(eof_result.singularvals, 1, :)
     elseif scale_mode == svaldivide
-        new_eofs = eof_response.spatial_modes ./ reshape(eof_response.singularvals, 1, 1, :)
-        new_temp_signal = eof_response.temporal_modes ./ reshape(eof_response.singularvals, 1, :)
+        new_eofs = eof_result.spatial_modes ./ reshape(eof_result.singularvals, 1, 1, :)
+        new_temp_signal = eof_result.temporal_modes ./ reshape(eof_result.singularvals, 1, :)
     end
 
-    return EOFResult(new_eofs, new_temp_signal, eof_response.singularvals, eof_response.sum_all_eigenvals, scale_mode)
+    return EOFResult(new_eofs, new_temp_signal, eof_result.singularvals, eof_result.sum_all_eigenvals, scale_mode)
 end
 
-function get_modes_variability(eof_response::EOFResult)::Vector{Float64}
-    return  (eof_response.singularvals .^ 2) / eof_response.sum_all_eigenvals
+function get_modes_variability(eof_result::EOFResult)::Vector{Float64}
+    return (eof_result.singularvals .^ 2) / eof_result.sum_all_eigenvals
 end
 
-function reconstruct_data(eof_response::EOFResult, original_data::AbstractArray{<:AbstractFloat, 3}; timedim::Int = 3, weights=nothing, center=true)
+function truncate_eof_result(eof_result::EOFResult, n::Int)
+    return EOFResult(
+        eof_result.spatial_modes[:, :, 1:n],
+        eof_result.temporal_modes[:, 1:n],
+        eof_result.singularvals[1:n],
+        eof_result.sum_all_eigenvals,
+        eof_result.scaling
+    )
+end
+
+function reconstruct_data(eof_response::EOFResult, original_data::AbstractArray{<:Union{Missing,AbstractFloat},3}; timedim::Int=3, weights=nothing, center=true)
 
 
     # regenerate L, S, R depending on scaling
     S = Diagonal(eof_response.singularvals)
-    
+
     # reshape spatial dims back
     # first two dims are geo_dims
     geo_shape = size(eof_response.spatial_modes)[1:2]
 
     reshaped_spatial = reshape(eof_response.spatial_modes, prod(geo_shape), :)
-    
+
     if eof_response.scaling == noscaling
         L = eof_response.temporal_modes
         R = reshaped_spatial
-        
+
     else
         broadcasting_svals = reshape(eof_response.singularvals, 1, :)
         if eof_response.scaling == svalmult
@@ -69,7 +79,7 @@ function reconstruct_data(eof_response::EOFResult, original_data::AbstractArray{
             ArgumentError("Unknown scaling: $(eof_response.scaling)")
         end
     end
-    
+
     reconstructed = L * S * R'
 
     # reshape for timedim is the first, then permute the new dims 
@@ -78,7 +88,7 @@ function reconstruct_data(eof_response::EOFResult, original_data::AbstractArray{
 
     if !isnothing(weights)
         weights_reshaped = reshape(weights, 1, :, 1)
-        reconstructed = reconstructed ./ weights_reshaped 
+        reconstructed = reconstructed ./ weights_reshaped
     end
     if center
         old_data_mean = mean(original_data, dims=timedim)
