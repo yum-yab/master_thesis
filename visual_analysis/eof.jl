@@ -51,7 +51,7 @@ function truncate_eof_result(eof_result::EOFResult, n::Int)
     )
 end
 
-function reconstruct_data(eof_response::EOFResult, original_data::AbstractArray{<:Union{Missing,AbstractFloat},3}; timedim::Int=3, weights=nothing, center=true)
+function reconstruct_data(eof_response::EOFResult; original_data_timemean::Union{Nothing, AbstractArray{<:Union{Missing,AbstractFloat},3}}=nothing)
 
 
     # regenerate L, S, R depending on scaling
@@ -85,16 +85,9 @@ function reconstruct_data(eof_response::EOFResult, original_data::AbstractArray{
     # reshape for timedim is the first, then permute the new dims 
     reconstructed = permutedims(reshape(reconstructed, :, geo_shape...), (2, 3, 1))
 
-
-    if !isnothing(weights)
-        weights_reshaped = reshape(weights, 1, :, 1)
-        reconstructed = reconstructed ./ weights_reshaped
-    end
-    if center
-        old_data_mean = mean(original_data, dims=timedim)
-
+    if !isnothing(original_data_timemean)
         # now reshape the reconstructed back to its original dimensions
-        reconstructed .= reconstructed .+ old_data_mean
+        reconstructed .= reconstructed .+ original_data_timemean
     end
 
 
@@ -210,5 +203,11 @@ function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, nmodes=
         temporal_modes = temporal_modes .* reshape(flip_factors, 1, :)
     end
 
-    return EOFResult(reshape(eofs, (old_dims[geodims]..., :)), temporal_modes, truncated_svals, sum(eigenvals), noscaling)
+    if !isnothing(weights)
+        reshaped_eofs = reshape(eofs, (old_dims[geodims]..., :)) ./ reshape(weights, 1, :, 1)
+    else
+        reshaped_eofs = reshape(eofs, (old_dims[geodims]..., :))
+    end
+
+    return EOFResult(reshaped_eofs, temporal_modes, truncated_svals, sum(eigenvals), noscaling)
 end
