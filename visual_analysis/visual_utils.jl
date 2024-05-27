@@ -980,9 +980,8 @@ function compare_data_reconstruction(
 
     eof_res = scale_eof_result(ensemble_eofs[get_member_id_string(member)][scope_index])
 
-    minval, maxval = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), [extrema(simulation_data), extrema(eof_res.spatial_modes)])
-
     data_limits = extrema(simulation_data)
+
 
     limits = (-1 * data_limits[2], data_limits[2]) 
 
@@ -995,7 +994,7 @@ function compare_data_reconstruction(
     chosen_indices = isnothing(filter_by_temporal_mode_fun) ? eachindex(my_scope) : filter_by_temporal_mode_fun(eof_res.temporal_modes)
 
     if !isnothing(whole_figure_title)
-        Label(fig[0, 1:nmodes+1], whole_figure_title, fontsize=round(1.7 * fontsize))
+        Label(fig[0, 1:nmodes+1], whole_figure_title, fontsize=round(1.5 * fontsize))
     end
 
     month_year_format = DateFormat("yyyy-mm")
@@ -1043,7 +1042,7 @@ function compare_data_reconstruction(
             mode_ax,
             lonmin .. lonmax,
             latmin .. latmax,
-            eof_res.spatial_modes[:, :, modenum];
+            spatial_modes[:, :, modenum];
             shading=shading,
             colormap=data_colormap,
             colorrange=limits,
@@ -1081,6 +1080,226 @@ function compare_data_reconstruction(
     return fig
 
 
+
+
+
+end
+
+
+function draw_reconstruction_field!(
+  figure,
+  row_id,
+  ensemble_simulation::EnsembleSimulation,
+  eof_result::EOFEnsembleResult,
+  member::Int,
+  field::Symbol,
+  modes::Int,
+  current_index;
+  data_label::String="",
+  scope_index=1,
+  data_colormap=:vik100,
+  coastline_color=:white,
+  shading=NoShading,
+  fontsize::Int=12,
+  whole_figure_title=nothing,
+  display_mode=:anomaly,
+  factor_for_data_transform = 1
+)
+
+    ensemble_eofs, _ = pick_correct_field(eof_result, field)
+
+    lonmin, lonmax = extrema(ensemble_simulation.lons)
+    latmin, latmax = extrema(ensemble_simulation.lats)
+
+    my_scope = eof_result.scopes[scope_index]
+
+    scope_timeaxis = ensemble_simulation.time[my_scope]
+
+    if display_mode == :anomaly
+        simulation_data = (ensemble_simulation.members[member].data[:, :, my_scope] .- mean(ensemble_simulation.members[member].data[:, :, my_scope], dims=3)) .* factor_for_data_transform
+        old_mean = nothing
+        data_name = "Anomaly Map"
+    elseif display_mode == :reconstruction
+        simulation_data = ensemble_simulation.members[member].data[:, :, my_scope]
+        old_mean = mean(ensemble_simulation.members[member].data[:, :, my_scope], dims=3)
+        data_name = "Original Data"
+    else
+        ArgumentError("Only :anomaly and :reconstruction are supported")
+    end
+
+
+    eof_res = scale_eof_result(ensemble_eofs[get_member_id_string(member)][scope_index])
+
+    spatial_modes = eof_res.spatial_modes .* factor_for_data_transform
+
+    data_limits = extrema(simulation_data)
+
+    _, eof_maxval = extrema(spatial_modes[:, :, 1:modes])
+
+    eof_limits = (-1 * eof_maxval, eof_maxval)
+
+    limits = (-1 * eof_maxval, eof_maxval) 
+
+
+
+    println("extrema of $data_label EOF: $(extrema(spatial_modes))")
+
+    if !isnothing(whole_figure_title)
+        Label(figure[row_id, 1:modes+1], whole_figure_title, fontsize=round(1.7 * fontsize))
+    end
+
+    month_year_format = DateFormat("yyyy-mm")
+
+
+    orig_data_ax = local_geoaxis_creation!(figure, (lonmin, lonmax), (latmin, latmax); title=@lift("$(ensemble_simulation.id) $(Dates.format(scope_timeaxis[$current_index], month_year_format)) $data_name"), figure_row=row_id+3, figure_col=1)
+
+    surface!(
+        orig_data_ax,
+        lonmin .. lonmax,
+        latmin .. latmax,
+        @lift(simulation_data[:, :, $current_index]);
+        shading=shading,
+        colormap=data_colormap,
+        colorrange=limits,
+        overdraw=false,
+        transformation=(; translation=(0, 0, -1 * data_limits[2] * 0.5))
+    )
+    lines!(orig_data_ax, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
+
+    influence_axis = Axis(figure[row_id+1, 1], limits=((nothing, nothing), (-1, 1)), title="Coefficient of Modes (standardized)")
+
+    standardized_temp_modes = cat([standardize(UnitRangeTransform, eof_res.temporal_modes[:, i]; unit=false) for i in 1:modes]..., dims=2)
+
+    positions_observable = @lift([(i, standardized_temp_modes[$current_index, i]) for i in 1:modes])
+
+    barplot!(influence_axis, positions_observable, color = @lift(unzip($positions_observable)[1]))
+
+
+    for modenum in 1:modes
+
+        truncated_eof_res = truncate_eof_result(eof_res, modenum)
+        var_encoded = sum(get_modes_variability(truncated_eof_res) * 100)
+
+        modes_var = get_modes_variability(eof_res) * 100
+
+        reconstructed_eof_res = reconstruct_data(truncated_eof_res; original_data_timemean=old_mean, weights=sqrt.(cos.(deg2rad.(ensemble_simulation.lats)))) .* factor_for_data_transform
+
+        println("Min and max error of reconstruction of Mode $modenum: $(extrema(abs.(simulation_data .- reconstructed_eof_res)))")
+
+        mode_ax = local_geoaxis_creation!(figure, (lonmin, lonmax), (latmin, latmax); title="Mode $modenum Var: $(modes_var[modenum]) %", figure_row=row_id+1, figure_col=1+modenum)
+        reconstructed_ax = local_geoaxis_creation!(figure, (lonmin, lonmax), (latmin, latmax); title="Reconstruction Modes 1:$(modenum) Var: $(var_encoded) %", figure_row=row_id+3, figure_col=1+modenum)
+
+        surface!(
+            mode_ax,
+            lonmin .. lonmax,
+            latmin .. latmax,
+            spatial_modes[:, :, modenum];
+            shading=shading,
+            colormap=data_colormap,
+            colorrange=limits,
+            overdraw=false,
+            transformation=(; translation=(0, 0, -1 * data_limits[2] * 0.5))
+        )
+        lines!(mode_ax, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
+
+        surface!(
+            reconstructed_ax,
+            lonmin .. lonmax,
+            latmin .. latmax,
+            @lift(reconstructed_eof_res[:, :, $current_index]);
+            shading=shading,
+            colormap=data_colormap,
+            colorrange=limits,
+            overdraw=false,
+            transformation=(; translation=(0, 0, -1 * data_limits[2] * 0.5))
+        )
+        lines!(reconstructed_ax, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
+
+
+    end
+
+    Colorbar(figure[row_id+2, 1:1+modes], limits=limits, colormap=data_colormap, vertical=false, label=data_label)
+    # Colorbar(fig[2, 5:6], limits=eof_limits, colormap=eof_colormap, vertical=false, label="IVT anomalies")
+end
+
+function compare_ivt_ps_reconstruction(
+    ivt_ensemble_simulation::EnsembleSimulation,
+    ps_ensemble_simulation::EnsembleSimulation,
+    eof_result::EOFEnsembleResult,
+    member::Int,
+    modes::Int,
+    filename::String;
+    scope_index=1,
+    framerate::Int=30,
+    data_colormap=:vik100,
+    coastline_color=:white,
+    shading=NoShading,
+    resolution::Union{Nothing,Tuple{Int,Int}}=nothing,
+    fontsize::Int=12,
+    whole_figure_title=nothing,
+    filter_by_temporal_mode_fun=nothing
+)
+  
+
+    current_index = Observable(1)
+
+    my_scope = eof_result.scopes[scope_index]
+
+    fig = isnothing(resolution) ? Figure(fontsize=fontsize) : Figure(size=resolution, fontsize=fontsize)
+
+
+    chosen_indices = isnothing(filter_by_temporal_mode_fun) ? eachindex(my_scope) : filter_by_temporal_mode_fun(eof_result.ivt_ensemble_eofs[get_member_id_string(member)][scope_index])
+
+    if !isnothing(whole_figure_title)
+        Label(fig[0, 1:modes+1], whole_figure_title, fontsize=round(1.7 * fontsize))
+    end
+
+
+    draw_reconstruction_field!(
+      fig,
+      1,
+      ivt_ensemble_simulation,
+      eof_result,
+      member,
+      :ivt,
+      2,
+      current_index;
+      data_label="IVT Values",
+      scope_index=scope_index,
+      data_colormap=data_colormap,
+      coastline_color=coastline_color,
+      shading=shading,
+      fontsize=fontsize,
+      whole_figure_title="Anomalies of IVT fields",
+      display_mode=:anomaly
+  )
+
+    draw_reconstruction_field!(
+      fig,
+      5,
+      ps_ensemble_simulation,
+      eof_result,
+      member,
+      :ps,
+      2,
+      current_index;
+      data_label="PS Values",
+      scope_index=scope_index,
+      data_colormap=data_colormap,
+      coastline_color=coastline_color,
+      shading=shading,
+      fontsize=fontsize,
+      whole_figure_title="Anomalies of PS fields",
+      display_mode=:anomaly,
+      factor_for_data_transform = 1/100
+  )
+  
+    record(fig, filename, chosen_indices; framerate=framerate) do t
+        current_index[] = t
+    end
+
+
+    return fig
 
 
 
