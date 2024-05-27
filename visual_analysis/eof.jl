@@ -135,7 +135,7 @@ function align_with_field(field, alignment_field; mode_dim_index=2)
     end
 
     function handle_slice(slice)
-        scalar_product = sum(slice .* alignment_field)
+        scalar_product = dot(slice, alignment_field)
 
         if scalar_product < 0
             return -1, slice * -1
@@ -163,6 +163,8 @@ function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, nmodes=
     old_dims = size(data)
 
     geodims = [i for i in 1:length(old_dims) if i != timedim]
+
+    other_dim = [i for i in 1:length(old_dims) if i != timedim && i != weightdim][1]
 
     data = prepare_data_for_eof(data; weights=weights, timedim=timedim, weightdim=weightdim, norm_withsqrt_timedim=norm_withsqrt_timedim)
 
@@ -196,18 +198,16 @@ function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, nmodes=
     pc_factor = norm_withsqrt_timedim ? sqrt(time_shape - 1) : 1
     temporal_modes = truncated_lsv .* pc_factor
 
-
+    if !isnothing(weights)
+        eofs = eofs ./ repeat(weights, inner=(old_dims[other_dim], 1))
+    end
 
     if align_eofs_with_mean
         eofs, flip_factors = align_with_field(eofs, mean_over_time)
         temporal_modes = temporal_modes .* reshape(flip_factors, 1, :)
     end
 
-    if !isnothing(weights)
-        reshaped_eofs = reshape(eofs, (old_dims[geodims]..., :)) ./ reshape(weights, 1, :, 1)
-    else
-        reshaped_eofs = reshape(eofs, (old_dims[geodims]..., :))
-    end
+    
 
-    return EOFResult(reshaped_eofs, temporal_modes, truncated_svals, sum(eigenvals), noscaling)
+    return EOFResult(reshape(eofs, (old_dims[geodims]..., :)), temporal_modes, truncated_svals, sum(eigenvals), noscaling)
 end
