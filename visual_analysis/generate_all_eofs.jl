@@ -63,32 +63,49 @@ end
 
 function main(data_base_path, target_base_path)
 
-    access_dict, time_data = generate_access_dict(data_base_path)
+    target_dir = target_base_path
+
+    nmodes = 5
+
+    scenario_ids = ["ssp126", "ssp585"]
+    
     scale_by_sqrt = Dict(
         false => "nosqrtscale",
         true => "sqrtscale"
     )
 
-    season_timescopes = Dict(i => "$(i)seasons" for i in [30, 50, 70])
+    multithreading = false
+
+    access_dict, time_data = generate_access_dict(data_base_path)
+
+    season_timescopes = Dict(i => "$(i)seasons" for i in [30, 50])
 
     # month_timescopes = Dict(i => "$(i)months" for i in [8, 15, 30, 50])
 
-    multithreading = false
-
-    nmodes = 5
-
-    target_dir = target_base_path
 
     for (sqrtscale, sqrtlabel) in scale_by_sqrt
 
         all_scopes = [(season_label, get_sliding_time_scopes_by_threshold(time_data, season_scope)) for (season_scope, season_label) in season_timescopes]
 
         # append!(all_scopes, [(label, get_sliding_window(time_data, scope)) for (scope, label) in month_timescopes])
+        isfile_array = [isfile(joinpath(target_dir, scope_label, "eofs_$(nmodes)modes_$(scenario)_$(scope_label)_$(sqrtlabel).jld2")) for (_, scope_label) in season_timescopes for scenario in scenario_ids]
+        
+        if all(isfile_array)
+            println("Skipped creaton of files for $sqrtlabel, since all already exist")
+            continue
+        end
 
 
         for (scope_label, scopes) in all_scopes
 
             println("Started eof generation of $sqrtlabel $scope_label")
+
+            isfile_array = [isfile(joinpath(target_dir, scope_label, "eofs_$(nmodes)modes_$(scenario)_$(scope_label)_$(sqrtlabel).jld2")) for scenario in scenario_ids]
+        
+            if all(isfile_array)
+                println("Skipped creaton of files for $scope_label, since all already exist")
+                continue
+            end
 
             ivt_piControl_eof = calculate_eofs_of_ensemble_fast(
                 access_dict["ivt_piControl"],
@@ -115,7 +132,12 @@ function main(data_base_path, target_base_path)
             )
 
 
-            for scenario in ["ssp126", "ssp585"]
+            for scenario in scenario_ids
+
+                if isfile(joinpath(target_dir, scope_label, "eofs_$(nmodes)modes_$(scenario)_$(scope_label)_$(sqrtlabel).jld2"))
+                    println("Skipped creaton of file for $scenario, since it already exists")
+                    continue
+                end
 
                 ivt_data, ps_data = access_dict[scenario]
 
