@@ -316,7 +316,7 @@ function calculate_eofs_of_ensemble_fast(
     geoweights=true,
     scale_mode=noscaling,
     saving_filepath=nothing,
-    multithreading = false
+    multithreading=false
 )::Dict{String,Vector{EOFResult}}
 
     result = Dict{String,Vector{EOFResult}}()
@@ -383,18 +383,30 @@ function get_mean_of_multiple_arrays(arrays::AbstractArray...)
 end
 
 
-function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=false, modes=5)::EOFEnsembleResult
+function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=false, modes=5, scale_eofs::Union{Nothing,EOFScaling}=nothing)::EOFEnsembleResult
 
     sqrt_string = sqrtscale ? "sqrtscale" : "nosqrtscale"
     ds = load(joinpath(base_path, scope_id, "eofs_$(modes)modes_$(scenario_id)_$(scope_id)_$(sqrt_string).jld2"))
 
+    if isnothing(scale_eofs)
+        ivt_piControl = convert(Vector{EOFResult}, ds["ivt_piControl"]["r1i1p1f1"])
+        ps_piControl = convert(Vector{EOFResult}, ds["ps_piControl"]["r1i1p1f1"])
+        ivt_eof = convert(Dict{String,Vector{EOFResult}}, ds["ivt_eof"])
+        ps_eof = convert(Dict{String,Vector{EOFResult}}, ds["ps_eof"])
+    else
+        ivt_piControl = scale_eof_result.(convert(Vector{EOFResult}, ds["ivt_piControl"]["r1i1p1f1"]); scale_mode=scale_eofs)
+        ps_piControl = scale_eof_result.(convert(Vector{EOFResult}, ds["ps_piControl"]["r1i1p1f1"]); scale_mode=scale_eofs)
+        ivt_eof = Dict(member_id => scale_eof_result.(eof_results; scale_mode=scale_eofs) for (member_id, eof_results) in convert(Dict{String,Vector{EOFResult}}, ds["ivt_eof"]))
+        ps_eof = Dict(member_id => scale_eof_result.(eof_results; scale_mode=scale_eofs) for (member_id, eof_results) in convert(Dict{String,Vector{EOFResult}}, ds["ps_eof"]))
+    end
+
     return EOFEnsembleResult(
         "$scenario_id $scope_id",
         convert(Vector{UnitRange{Int}}, ds["scopes"]),
-        convert(Vector{EOFResult}, ds["ivt_piControl"]["r1i1p1f1"]),
-        convert(Vector{EOFResult}, ds["ps_piControl"]["r1i1p1f1"]),
-        convert(Dict{String,Vector{EOFResult}}, ds["ivt_eof"]),
-        convert(Dict{String,Vector{EOFResult}}, ds["ps_eof"])
+        ivt_piControl,
+        ps_piControl,
+        ivt_eof,
+        ps_eof
     )
 end
 
@@ -422,26 +434,26 @@ function get_isocontour_vertices(contour_collections::Contour.ContourCollection.
     return result
 end
 
-unzip(a) = map(x->getfield.(a, x), fieldnames(eltype(a)))
+unzip(a) = map(x -> getfield.(a, x), fieldnames(eltype(a)))
 
 
-function sample_along_line(line; dx = 0.1)::Vector{Tuple{Float64, Float64}}
+function sample_along_line(line; dx=0.1)::Vector{Tuple{Float64,Float64}}
     n = length(line)
     sampled_points = []
-    
+
     # Calculate total length of the line
     total_length = 0.0
-    for i in 1:(n - 1)
+    for i in 1:(n-1)
         total_length += norm([line[i+1][1] - line[i][1], line[i+1][2] - line[i][2]])
     end
-    
+
     # Interpolate and sample along the line
     distance_covered = 0.0
-    for i in 1:(n - 1)
+    for i in 1:(n-1)
         (x1, y1) = line[i]
-        (x2, y2) = line[i + 1]
+        (x2, y2) = line[i+1]
         segment_length = norm([x2 - x1, y2 - y1])
-        
+
         while distance_covered < segment_length
             t = distance_covered / segment_length
             x_sample = (1 - t) * x1 + t * x2
@@ -449,13 +461,13 @@ function sample_along_line(line; dx = 0.1)::Vector{Tuple{Float64, Float64}}
             push!(sampled_points, (x_sample, y_sample))
             distance_covered += dx
         end
-        
+
         # Adjust the distance covered for the next segment
         distance_covered -= segment_length
     end
-    
+
     # Add the last point of the line
     push!(sampled_points, line[end])
-    
+
     return sampled_points
 end
