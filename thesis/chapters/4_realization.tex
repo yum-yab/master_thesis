@@ -14,7 +14,7 @@ The goal of this step is to generate an IVT field (see Chapter \ref{ch:related_w
 The steps to complete this task are quite straight forward:
 
 \begin{enumerate}
-  \item Load four different fields for each time period in each member in each szenario: Specific humidity $hus$, eastward horizontal wind $ua$, northward horizontal wind $va$ and surface pressure $ps$. Here the geographical box around the area of interest is cut out: Europe and the North Atlantic (Longitude: $-90° \to 40°$, Latitude: $20° \to 80°$, based on \cite{vietinghoff_visual_2021})
+  \item Load four different fields for each time period in each member in each szenario: Specific humidity $hus$, eastward horizontal wind $ua$, northward horizontal wind $va$ and surface pressure $ps$. Here the geographical box around the area of interest is cut out: Europe and the North Atlantic (Longitude: $-90 \to 40$, Latitude: $20 \to 80$, based on \cite{vietinghoff_visual_2021})
   \item For each geographical gridpoint ($lon$, $lat$) and timestep: Calculate the integrals of hte product of wind components and specific humidity over the vertical pressure levels $\frac{1}{g}\int_{p_S}^0 hus * ua$ and  $\frac{1}{g}\int_{p_S}^0 hus * va$, with $g$ being the gravitational acceleration ($9.806 \frac{m}{s}$) 
   \item Save the results for each time period in each member in each szenario in a NetCDF file for the further steps. 
   
