@@ -51,7 +51,7 @@ function truncate_eof_result(eof_result::EOFResult, n::Int)
     )
 end
 
-function reconstruct_data(eof_response::EOFResult; original_data_timemean::Union{Nothing, AbstractArray{<:Union{Missing,AbstractFloat},3}}=nothing)
+function reconstruct_data(eof_response::EOFResult; original_data_timemean::Union{Nothing,AbstractArray{<:Union{Missing,AbstractFloat},3}}=nothing)
 
 
     # regenerate L, S, R depending on scaling
@@ -97,7 +97,7 @@ end
 
 
 
-function prepare_data_for_eof(data; weights=nothing, timedim=3, weightdim=2, norm_withsqrt_timedim=false)
+function prepare_data_for_eof(data; meanfield=nothing, weights=nothing, timedim=3, weightdim=2, norm_withsqrt_timedim=false)
     dims = size(data)
 
     time_shape = dims[timedim]
@@ -105,14 +105,14 @@ function prepare_data_for_eof(data; weights=nothing, timedim=3, weightdim=2, nor
     geodims = [i for i in 1:length(dims) if i != timedim]
     geo_shape = dims[geodims]
 
-    norm_factor = norm_withsqrt_timedim ? sqrt(time_shape - 1) : 1
+    # generate the needed factors
+    norm_factor = norm_withsqrt_timedim ? 1/sqrt(time_shape - 1) : 1
+    data_adjusted = isnothing(meanfield) ? data : data .- meanfield
+    weights_reshaped = isnothing(weights) ? ones(1, dims[weightdim], 1) : reshape(weights, 1, dims[weightdim], 1)
 
-    # apply weights over weightdim
-    if !isnothing(weights)
+    # apply the needed factors
+    data = norm_factor * weights_reshaped .* data_adjusted
 
-        weights_reshaped = reshape(weights, 1, dims[weightdim], 1)
-        data = data .* weights_reshaped ./ norm_factor
-    end
     # reshape to timedim being the first
     if timedim != 1
         data = permutedims(data, (timedim, geodims...))
@@ -164,20 +164,24 @@ function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, nmodes=
 
     geodims = [i for i in 1:length(old_dims) if i != timedim]
 
+    spat_dims = old_dims[geodims]
+
     other_dim = [i for i in 1:length(old_dims) if i != timedim && i != weightdim][1]
 
-    data = prepare_data_for_eof(data; weights=weights, timedim=timedim, weightdim=weightdim, norm_withsqrt_timedim=norm_withsqrt_timedim)
+    mean_over_time = mean(data, dims=timedim)
 
-    mean_over_time = mean(data, dims=1)
+    if center
+        mfield = mean_over_time
+    else
+        mfield = nothing
+    end
+
+    data = prepare_data_for_eof(data; meanfield=mfield, weights=weights, timedim=timedim, weightdim=weightdim, norm_withsqrt_timedim=norm_withsqrt_timedim)
 
     time_shape = size(data, 1)
 
-    if center
-        data = data .- mean_over_time
-    end
-
     if nmodes < 0
-        mode_selector = 1:time_shape
+        mode_selector = Colon()
     else
         mode_selector = 1:nmodes
     end
@@ -203,11 +207,23 @@ function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, nmodes=
     end
 
     if align_eofs_with_mean
-        eofs, flip_factors = align_with_field(eofs, mean_over_time)
+        eofs, flip_factors = align_with_field(eofs, reshape(mean_over_time, (prod(spat_dims), 1)))
         temporal_modes = temporal_modes .* reshape(flip_factors, 1, :)
     end
 
-    
+
 
     return EOFResult(reshape(eofs, (old_dims[geodims]..., :)), temporal_modes, truncated_svals, sum(eigenvals), noscaling)
 end
+
+
+# data = rand(20, 30, 100) * 1000
+
+
+# weights = sqrt.(cos.(deg2rad.(51:80)))
+
+# eof_response = eof(data; weights=nothing, timedim=3, weightdim=2, center=true, nmodes=-1, norm_withsqrt_timedim=false, align_eofs_with_mean=true)
+# # eof_markert = get_eof_of_datachunk(data)
+# #eof_response.spatial_modes
+# # extrema(abs.(eof_response.spatial_modes .- eof_markert.spatial_modes))
+# size(eof_response.spatial_modes)
