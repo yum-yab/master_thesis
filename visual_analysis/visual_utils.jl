@@ -353,6 +353,114 @@ function show_eof_and_pc_modes_of_timeline(
     return fig
 end
 
+function show_eof_and_pc_modes_of_member(
+    data::EnsembleSimulation,
+    eof_data::Dict{String,Vector{EOFResult}},
+    all_scopes,
+    member,
+    filename::String;
+    framerate::Int=30,
+    colormap=:viridis,
+    coastline_color=:white,
+    shading=Makie.automatic,
+    resolution::Union{Nothing,Tuple{Int,Int}}=nothing,
+    fontsize::Int=12,
+    whole_figure_title=nothing,
+    surface_alpha_value=1.0,
+    draw_contours=true,
+    nmodes=nothing,
+)::Makie.Figure
+
+
+    member_identifier = get_member_id_string(member)
+    nmodes = isnothing(nmodes) ? length(eof_data[member_identifier][1].singularvals) : nmodes
+
+
+    fig = isnothing(resolution) ? Figure(fontsize=fontsize) : Figure(size=resolution, fontsize=fontsize)
+
+    current_scope_index = Observable(1)
+
+
+    if !isnothing(whole_figure_title)
+        Label(fig[0, 1:nmodes+1], @lift("$(whole_figure_title) $(member_identifier) $(year(data.time[all_scopes[$current_scope_index].start]))-$(year(data.time[all_scopes[$current_scope_index].stop]))"), fontsize=round(1.7 * fontsize))
+    end
+
+
+
+    pc_axis = Axis(fig[3, 1:nmodes+1], limits=((nothing, nothing), (-1, 1)))
+
+    lonmin, lonmax = extrema(data.lons)
+    latmin, latmax = extrema(data.lats)
+
+
+    spatial_min_val, spatial_max_val = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), [extrema(res.spatial_modes) for res in eof_data[member_identifier]])
+
+    data_min_val, data_max_val = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), [extrema(mean(data.members[member].data[:, :, scope], dims=3)) for scope in all_scopes])
+    # spatial_min_val = -1 * spatial_max_val
+    println("temporal extremata: $(extrema(reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), [extrema(res.temporal_modes[:, 1:nmodes]) for res in eof_data[member_identifier]])))")
+    println("EOF extremas: $spatial_min_val $spatial_max_val")
+    println("Data mean extremas: $data_min_val $data_max_val")
+
+    upper_limit = max(data_max_val, spatial_max_val)
+
+    lower_limit = -1 * upper_limit
+
+
+    mode_axes = []
+
+    for modenr in 1:nmodes
+        title = @lift("Mode $modenr Variability $(round(get_modes_variability(eof_data[member_identifier][$current_scope_index])[modenr] * 100, digits = 2)) %")
+        push!(mode_axes, local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=title, figure_row=1, figure_col=modenr))
+    end
+
+    mean_axis = local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=@lift("$(data.id) $(year(data.time[all_scopes[$current_scope_index].start]))-$(year(data.time[all_scopes[$current_scope_index].stop])) Mean map"), figure_row=1, figure_col=nmodes + 1)
+
+    dataset_mean_observable = @lift(dropdims(mean(data.members[member].data[:, :, all_scopes[$current_scope_index]], dims=3), dims=3))
+
+    surface!(mean_axis, lonmin .. lonmax, latmin .. latmax, dataset_mean_observable; shading=shading, colormap=colormap, colorrange=(lower_limit, upper_limit), alpha=surface_alpha_value, overdraw=false, transformation=(; translation=(0, 0, -1000)))
+    lines!(mean_axis, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
+
+
+    for mode in 1:nmodes
+        surface!(mode_axes[mode], lonmin .. lonmax, latmin .. latmax, @lift(eof_data[member_identifier][$current_scope_index].spatial_modes[:, :, mode]), shading=shading, colormap=colormap, colorrange=(lower_limit, upper_limit), alpha=surface_alpha_value, overdraw=false, transformation=(; translation=(0, 0, -1 * spatial_max_val)))
+        lines!(mode_axes[mode], GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
+        positions = @lift(collect(zip(eachindex(all_scopes[$current_scope_index]), standardize(UnitRangeTransform, eof_data[member_identifier][$current_scope_index].temporal_modes[:, mode]; unit=false))))
+        lines!(pc_axis, positions; label="Mode $mode")
+    end
+    axislegend(pc_axis)
+
+    if draw_contours
+
+        for mode in 1:nmodes
+            contour!(mode_axes[mode], lonmin .. lonmax, latmin .. latmax, @lift(eof_data[member_identifier][$current_scope_index].spatial_modes[:, :, mode]), levels=[0], color=:red, transformation=(; translation=(0, 0, 1100)))
+        end        
+    end
+
+
+
+    Colorbar(fig[2, 1:nmodes+1], limits=(lower_limit, upper_limit), colormap=colormap, vertical=false, label="EOF values")
+
+    # time_data = string.(data.time)
+    # dates_slice = @lift(range(all_scopes[$current_scope_index].start, all_scopes[$current_scope_index].stop, step=4))
+    vals_per_season = all_scopes[3].start - all_scopes[2].start
+    vals_per_scope = length(all_scopes[1])
+    seasonslice = range(1, vals_per_scope, step=vals_per_season)
+
+    pc_axis.xticks = (seasonslice, ["Winter $i" for i in eachindex(seasonslice)])
+    pc_axis.xticklabelrotation = π / 4
+    pc_axis.xticklabelalign = (:right, :center)
+
+
+    record(fig, filename, eachindex(all_scopes); framerate=framerate) do t
+        current_scope_index[] = t
+    end
+
+
+    return fig
+end
+
+
+
 function show_eof_and_pc_modes_of_ensemble(
     data::EnsembleSimulation,
     eof_data::Dict{String,Vector{EOFResult}},
@@ -366,9 +474,10 @@ function show_eof_and_pc_modes_of_ensemble(
     fontsize::Int=12,
     whole_figure_title=nothing,
     surface_alpha_value=1.0,
+    draw_contours=true
 )::Makie.Figure
 
-    nmodes = length(eof_data[get_member_id_string(1)][1].modes_variability)
+    nmodes = length(eof_data[get_member_id_string(1)][1].singularvals)
 
 
     fig = isnothing(resolution) ? Figure(fontsize=fontsize) : Figure(size=resolution, fontsize=fontsize)
@@ -409,7 +518,7 @@ function show_eof_and_pc_modes_of_ensemble(
     mode_axes = []
 
     for modenr in 1:nmodes
-        title = @lift("$(data.id) $(year(data.time[all_scopes[$current_scope_index].start]))-$(year(data.time[all_scopes[$current_scope_index].stop])) Mode $modenr Variability $(round(mean([resarray[$current_scope_index].modes_variability[modenr] for (_, resarray) in eof_data]), digits = 2)) %")
+        title = @lift("$(data.id) $(year(data.time[all_scopes[$current_scope_index].start]))-$(year(data.time[all_scopes[$current_scope_index].stop])) Mode $modenr Variability $(round(mean([get_modes_variability(resarray[$current_scope_index])[modenr] for (_, resarray) in eof_data]), digits = 2)) %")
         push!(mode_axes, local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=title, figure_row=1, figure_col=modenr))
     end
 
@@ -429,11 +538,13 @@ function show_eof_and_pc_modes_of_ensemble(
     end
     axislegend(pc_axis)
 
-    contour_colors = distinguishable_colors(50)
+    if draw_contours
+        contour_colors = distinguishable_colors(50)
 
-    for (i, (_, eofres_array)) in enumerate(eof_data)
-        for mode in 1:nmodes
-            contour!(mode_axes[mode], lonmin .. lonmax, latmin .. latmax, @lift(eofres_array[$current_scope_index].spatial_modes[:, :, mode]), levels=[0], color=contour_colors[i], transformation=(; translation=(0, 0, 1100)))
+        for (i, (_, eofres_array)) in enumerate(eof_data)
+            for mode in 1:nmodes
+                contour!(mode_axes[mode], lonmin .. lonmax, latmin .. latmax, @lift(eofres_array[$current_scope_index].spatial_modes[:, :, mode]), levels=[0], color=contour_colors[i], transformation=(; translation=(0, 0, 1100)))
+            end
         end
     end
 
@@ -760,7 +871,7 @@ function display_eof_modes!(
 
 end
 
-function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_axis; compare_modes=1 => 1, data_name="", size=Makie.autmatic, value_mode=:normal)
+function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_axis; compare_modes=1 => 1, compare_keys=(:ivt, :ps), data_name="", size=Makie.autmatic, value_mode=:normal, transformation=nothing)
 
     available_members = intersect(keys(eof_result_data.ps_ensemble_eofs), keys(eof_result_data.ivt_ensemble_eofs))
 
@@ -777,6 +888,19 @@ function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_a
 
     xvals = eachindex(eof_result_data.scopes)
 
+    first_ensemble_eof, first_piControl = pick_correct_field(eof_result_data, compare_keys[1])
+
+    second_ensemble_eofs, second_piControl = pick_correct_field(eof_result_data, compare_keys[2])
+
+
+    function transform_data(data)
+        if isnothing(transformation)
+            return data
+        else
+            return standardize(transformation, data)
+        end
+    end
+
     for scope_index in eachindex(eof_result_data.scopes)
 
         lag_extent = Int(floor(length(eof_result_data.scopes[scope_index]) / 2))
@@ -785,15 +909,14 @@ function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_a
 
         for member_id in available_members
 
-            ps_eof_temporalpattern = eof_result_data.ps_ensemble_eofs[member_id][scope_index].temporal_modes[:, compare_modes.second]
-            ivt_eof_temporalpattern = eof_result_data.ivt_ensemble_eofs[member_id][scope_index].temporal_modes[:, compare_modes.first]
+            first_eof_temporalpattern = first_ensemble_eof[member_id][scope_index].temporal_modes[:, compare_modes.second]
+            second_eof_temporalpattern = second_ensemble_eofs[member_id][scope_index].temporal_modes[:, compare_modes.first]
 
             # println("Length of signals: $(length(ps_eof_temporalpattern)) $(length(ivt_eof_temporalpattern))")
             # half_signal = trunc(Int, round(length(ivt_eof_temporalpattern) * 0.5))
             # lag = collect(-1*half_signal:half_signal)
 
-
-            crosscor_result = crosscor(standardize(ZScoreTransform, ivt_eof_temporalpattern), standardize(ZScoreTransform, ps_eof_temporalpattern), lag)
+            crosscor_result = crosscor(transform_data(first_eof_temporalpattern), transform_data(second_eof_temporalpattern), lag)
 
             (maximal_correlation, index) = findmax(abs.(crosscor_result))
 
@@ -811,7 +934,7 @@ function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_a
 
 
 
-        crosscor_piControl_result = crosscor(standardize(ZScoreTransform, eof_result_data.ivt_piControl[scope_index].temporal_modes[:, compare_modes.first]), standardize(ZScoreTransform, eof_result_data.ps_piControl[scope_index].temporal_modes[:, compare_modes.second]), lag)
+        crosscor_piControl_result = crosscor(transform_data(first_piControl[scope_index].temporal_modes[:, compare_modes.first]), transform_data(second_piControl[scope_index].temporal_modes[:, compare_modes.second]), lag)
 
         (maximal_correlation, index) = findmax(abs.(crosscor_piControl_result))
 
@@ -827,9 +950,9 @@ function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_a
 
     fig = Figure(size=size)
 
-    ax_boxplot = Axis(fig[1, 1], title="Crosscorrelation of $data_name", yminorticksvisible=true)
+    ax_boxplot = Axis(fig[1, 1], title="Maximum Crosscorrelation of $data_name", yminorticksvisible=true)
 
-    ax_lagval = Axis(fig[2, 1], title="Lags of Crosscorrelation of $data_name", yminorticksvisible=true)
+    ax_lagval = Axis(fig[2, 1], title="Lags of Maximum Crosscorrelation of $data_name", yminorticksvisible=true)
     scatter!(ax_lagval, xvals, control_lag; color=:red, label="piControl simulation")
 
     boxplot!(ax_boxplot, xmappings, yvals)
