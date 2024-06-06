@@ -1164,24 +1164,24 @@ function draw_reconstruction_field!(
     end
 
 
-    eof_res = scale_eof_result(ensemble_eofs[get_member_id_string(member)][scope_index])
+    eof_res = ensemble_eofs[get_member_id_string(member)][scope_index]
 
     spatial_modes = eof_res.spatial_modes .* factor_for_data_transform
 
-    data_limits = extrema(simulation_data)
+    data_min, data_max = extrema(simulation_data)
 
-    _, eof_maxval = extrema(spatial_modes[:, :, 1:modes])
+    eof_minval, eof_maxval = extrema(spatial_modes[:, :, 1:modes])
 
-    eof_limits = (-1 * eof_maxval, eof_maxval)
+    upper_limit = max(eof_maxval, data_max)
 
-    limits = (-1 * eof_maxval, eof_maxval)
+    limits = (-1 * eof_maxval * 3, eof_maxval * 3)
 
-
+    day_format = DateFormat("yyyy-mm-dd")
 
     println("extrema of $data_label EOF: $(extrema(spatial_modes))")
 
     if !isnothing(whole_figure_title)
-        Label(figure[row_id, 1:modes+1], whole_figure_title, fontsize=round(1.7 * fontsize))
+        Label(figure[row_id, 1:modes+1], @lift("$(whole_figure_title) $(Dates.format(scope_timeaxis[$current_index], day_format))"), fontsize=round(1.7 * fontsize))
     end
 
     month_year_format = DateFormat("yyyy-mm")
@@ -1198,7 +1198,7 @@ function draw_reconstruction_field!(
         colormap=data_colormap,
         colorrange=limits,
         overdraw=false,
-        transformation=(; translation=(0, 0, -1 * data_limits[2] * 0.5))
+        transformation=(; translation=(0, 0, -1 * limits[2]))
     )
     lines!(orig_data_ax, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
 
@@ -1220,7 +1220,7 @@ function draw_reconstruction_field!(
 
         reconstructed_eof_res = reconstruct_data(truncated_eof_res; original_data_timemean=old_mean) .* factor_for_data_transform
 
-        println("Min and max error of reconstruction of Mode $modenum: $(extrema(abs.(simulation_data .- reconstructed_eof_res)))")
+        println("Mean Squared error of reconstruction of Mode $modenum: $(mean((simulation_data .- reconstructed_eof_res).^2))")
 
         mode_ax = local_geoaxis_creation!(figure, (lonmin, lonmax), (latmin, latmax); title="Mode $modenum Var: $(modes_var[modenum]) %", figure_row=row_id + 1, figure_col=1 + modenum)
         reconstructed_ax = local_geoaxis_creation!(figure, (lonmin, lonmax), (latmin, latmax); title="Reconstruction Modes 1:$(modenum) Var: $(var_encoded) %", figure_row=row_id + 3, figure_col=1 + modenum)
@@ -1234,7 +1234,7 @@ function draw_reconstruction_field!(
             colormap=data_colormap,
             colorrange=limits,
             overdraw=false,
-            transformation=(; translation=(0, 0, -1 * data_limits[2] * 0.5))
+            transformation=(; translation=(0, 0, -1 * limits[2]))
         )
         lines!(mode_ax, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
 
@@ -1247,7 +1247,7 @@ function draw_reconstruction_field!(
             colormap=data_colormap,
             colorrange=limits,
             overdraw=false,
-            transformation=(; translation=(0, 0, -1 * data_limits[2] * 0.5))
+            transformation=(; translation=(0, 0, -1 * limits[2]))
         )
         lines!(reconstructed_ax, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
 
@@ -1298,7 +1298,7 @@ function compare_ivt_ps_reconstruction(
         eof_result,
         member,
         :ivt,
-        2,
+        modes,
         current_index;
         data_label="IVT Values",
         scope_index=scope_index,
@@ -1317,9 +1317,9 @@ function compare_ivt_ps_reconstruction(
         eof_result,
         member,
         :ps,
-        2,
+        modes,
         current_index;
-        data_label="PS Values hPa",
+        data_label="PS Values Pa",
         scope_index=scope_index,
         data_colormap=data_colormap,
         coastline_color=coastline_color,
@@ -1327,7 +1327,7 @@ function compare_ivt_ps_reconstruction(
         fontsize=fontsize,
         whole_figure_title="Anomalies of PS fields",
         display_mode=:anomaly,
-        factor_for_data_transform=1 / 100
+        factor_for_data_transform=1
     )
 
     record(fig, filename, chosen_indices; framerate=framerate) do t
