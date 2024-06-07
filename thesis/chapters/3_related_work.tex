@@ -67,7 +67,7 @@ is also a popular choice in detecting atmospheric rivers \cite{sousa_north_2020,
 
 % An example of using this method can be found in \cite{ayantobo_integrated_2022} with many more references why this method is working well for these kinds of approaches. 
 
-Also, this paper lists some other methods of moisture transportation which are also used
+% Also, this paper lists some other methods of moisture transportation which are also used
 
 The IVT is also part of the atmospheric moisture budget \cite{yang_moisture_2022} (and similar in \cite{seager_mechanisms_2020}) given by 
 
@@ -80,6 +80,7 @@ With $E$ being the total evaporation and $P$ the precipitation.
 \citeauthor{yang_moisture_2022} showed in their report \cite{yang_moisture_2022} the directions of moisture flux and its evolution in the last three decades. The analysis was done for all continental borders based on the big ERA5 reanalysis.
 The metrics used for this analysis were mostly the evaporation $E$, precipitation $P$ and the moisture transport convergence  $VIMC = \frac{1}{g} \int^{P_s}_0  \nabla \cdot q ~\binom{u}{v} \diff ~ p$ from Equation \ref{eq:moisture_budget}.
 
+While the integration in the previous equations integrates from the surface to the outer border of the atmosphere (0 Pa), it is quite common to integrate up until the limit of 300 hPa \cite{ayantobo_integrated_2022, zhu_proposed_1998, kim_ensos_2015, guirguis_circulation_2018}, since the amount of moisture in the regions from 300 hPa to 0 Pa is quite neglible and amounts in total to about 2-3 cm/year in terms of freshwater flux \cite{zhou_atmospheric_2005}.
 
 There are also some other notable other algorithms, namely stable oxygen isotope investigation \cite{ma_atmospheric_nodate} and langragian backwards trajectories \cite{zhao_lagrangian_2021}, but both rather look for the origin of the  water vapor instead of its destination and are therefor out of scope for this thesis.
 
@@ -135,6 +136,43 @@ Based on data from 91 weather stations, they computed the IVT of the whole north
 Statistical siginificance was determined by employing a Monte Carlo testing method. 
 EOF was computed on the IWV, the zonal and meridional IVT fields respectively, but they also evaluated an approach of combining both IVT components in one data vector. 
 They reported the significance of the primary mode of IWV, encoding nearly half (44 \%) of variance of the data. 
+
+
+\citeauthor{fernandez_analysis_2003} analyzed the precipitation modes in the mediterranean sea and linking them to the moisture transport in the same area. 
+A goal of this analysis was to contribute to the understanding of the reduction of precipitation which happened in the area as well as to the low-frequency precipitation variability, leading to multiyear drought periods.
+They employed multiple methods of validating their data: The precipitation data as well as the wind/moisture data for IVT were validated with data from actual weather stations. 
+The stability of the eigenvectors was tested with a Monte Carlo simulation, comparing the variability of actual data with random test data, while degeneracy of the EOF modes was tested using the method of \citeauthor{north_sampling_1982} \cite{north_sampling_1982}. 
+Results of the analysis identify the interpretation of the three main precipitation modes:
+The first mode (22 \% variance) seems to be linked to the NAO and Atlantic Storm tracks and associated moisture transports, while the second mode (16 \%) represents the internal redistribution of moisture in the mediterranean basin between the estern and western parts.  
+The third mode (11 \%) explains increased precipitation in the northern part of the domain. 
+Additionally, moisture transport during positive and negative phases of leading mode showed increased inflow of moisture from the west \cite{fernandez_analysis_2003}. 
+
+
+Similar to \cite{fernandez_analysis_2003}, \citeauthor{zhou_atmospheric_2005} analyzed the anoumalous summer rainfall patterns over China and link them to water vapor transport. 
+They confirmed their results by using a second dataset for IVT calculation. 
+They showed that the primary mode of anomalous rainfall is associated with heavier rainfall in the Yangtze river region, while the same applies to the second mode and the Huaihe river. 
+Connecting these patterns to moisture transport, they identified the different ways how these heavier rain areas are coming about by cerain convergences of water vapor transports. 
+Furthermore they compared the supply of anoumalous rainfall patterns to the one of normal monsoon rainfall, revealing that those differ significantly \cite{zhou_atmospheric_2005}.
+
+
+In \cite{guirguis_circulation_2018}, the authors calculate rotated EOF on IVT data and try to analyze the relation between the 15 most dominant modes and the occurence of atmospheric rivers (AR) on the USA west coast. 
+For this they divided the coast into different regions and linked the activity (positive and negative) of the corresponding temporal pattern of each mode to the occurence of atmospheric rivers. 
+It was found that a few modes seem very influational for certain reagions' AR activity, while others seem to play no role at all. 
+They also identfied favorable and unfavorable circulation states (e.g. amongst others a low pressure anomaly in a certain region) for AR occurce \cite{guirguis_circulation_2018}. 
+
+
+\citeauthor{kim_ensos_2015} showed in their analysis the connection of the IVT patterns in the western USA to three different ENSO events (eastern pacific El Niño (EPEN), central pacific El Niño (CPEN) and La Niña (NINA)). 
+While EPEN events are associated with large positive IVT anomalies from the subtropical Pacific to the north-western USA, CPEN events lead to enhanced moisture transport to the southern USA. 
+During NINA events the mean IVT anomaly is flipped in comparison to EPEN and CPEN. 
+Furthermore it was shown that IVT patterns computed for these events differ significantly from the ones computed for neutral years.
+Furthermore the results were connected to precipitation anomalies on the USA west coast, showing huge differences (especially for the northern part of the coast) for EPEN and CPEN events. 
+But the authors also emphasize that while the suggestions are strong, exceptions occur (e.g. one El Niño leading to a dry winter, another to the opposite) and need to be studied in greater detail.
+
+Similar to \cite{vietinghoff_visual_2021} and the approach of this thesis, \citeauthor{zou_interdecadal_2018} applied a sliding window approach to IVT patterns to analyze the evolution over time. 
+
+
+
+
 
 %
 % Explain some usages of EOF in data, but extremely important: Explain what \cite{ayantobo_integrated_2022} did since its quite similar. 
