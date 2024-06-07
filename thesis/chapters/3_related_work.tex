@@ -2,9 +2,18 @@
 \label{ch:related_work}
 
 % This chapter builds on the foundation of Chapter \ref{ch:basics}, explaining what dataset is actually used, the reason for this and its properties. 
-This section outlies the current state-of-the-art in the main parts of this thesis explained in Section \ref{sec:research_questions}: Qantifying Moisture (Transport), extracting spatio-temporal patterns, tracking their change over time and visualizing the uncertain results in the end.
+This section outlies the current state-of-the-art in the main parts of this thesis explained in Section \ref{sec:research_questions}: Quantifying Moisture (Transport), extracting spatio-temporal patterns, tracking their change over time and visualizing the uncertain results in the end.
 % Furthermore, it summarizes the current state-of-science in quantifying and calculating (patterns of) moisture transport and the usage of it.  
 
+\section{Motivation}
+
+As explained in Chapter \ref{ch:intro}, the approach of this thesis is motivated by the approach of \citeauthor{vietinghoff_visual_2021} in \cite{vietinghoff_visual_2021} and the affiliated dissertation \cite{vietinghoffdiss}, which tackles the issue of detecting critical points in unstable scalar fields.
+Hereby \cite{vietinghoff_visual_2021} analyzes the MPI GE \cite{maher_max_2019} from the 5th phase of CMIP, an ensemble simulation with 50 members. 
+The goal was to find the probable centers of pressure high/lows in the NAO pattern (see Section \ref{sec:climate}) and to track their shift over time. 
+They employed a sliding window approach, computing the dominant pattern (see Section \ref{sec:eof})  for each window and member, and determine the likely areas of critical points by merging the results of different memebers per timestep. 
+The centers of mass of these critical areas are then tracked over time to visualize the shift of the pressure high and low. 
+The results show that the patterns do change, and this change is more pronounced if climate change is stronger. 
+Also, there is no significant change if the climate remains stable.
 
 \section{Uncertainty Visualisation}
 
@@ -36,16 +45,17 @@ IWV = \frac{1}{g} \int^{P_s}_0 q ~\diff p
 
 % \subsection{Vertically Integrated Water Vapor Transport (IVT)}
 
-Similar to Equation \ref{eq:iwv},  \citeauthor{zhu_proposed_1998} proposed in \cite{zhu_proposed_1998} a way of moisture transport by vertically integrating over the different pressure levels the zonal (along latitude lines) and meridional (along longitude lines) fluxes $\overline{pu}$ and $\overline{pv}$.
-It became known by the name Vertical Integrated Moisture Transport (IVT) and has the unit $\frac{kg}{ms}$
-Here $u$ and $v$ stand for the zonal and meridional components of the horizontal wind vector. 
+Similar to Equation \ref{eq:iwv},  \citeauthor{zhu_proposed_1998} proposed in \cite{zhu_proposed_1998} \textbf{Vertical Integrated Moisture Transport (IVT)}, a way of moisture transport by vertically integrating over the different pressure levels the zonal (along latitude lines) and meridional (along longitude lines) fluxes.
 It became a popular metric for finding atmospheric rivers \cite{gimeno_atmospheric_2014}, sometimes alongside IWV \cite{eiras-barca_seasonal_2016}.
+IVT has the unit $\frac{kg}{ms}$ and is usually defined with
 
 \begin{equation}
 \label{eq:ivt}  
-IVT = \frac{1}{g} \int^{P_s}_0 q ~\binom{u}{v} ~ \diff p
+\overrightarrow{IVT} = \frac{1}{g} \int^{P_s}_0 q ~\binom{u}{v} ~ \diff p
 \end{equation}
 
+or in a mathematically equivalent form \cite{fernandez_analysis_2003}.
+Here $u$ and $v$ stand for the zonal and meridional components of the horizontal wind vector. 
 While Equation \ref{eq:ivt} yields a vector field, the euclidian norm of said vector field 
 
 \begin{equation}
@@ -55,7 +65,7 @@ While Equation \ref{eq:ivt} yields a vector field, the euclidian norm of said ve
 
 is also a popular choice in detecting atmospheric rivers \cite{sousa_north_2020, ramos_atmospheric_2016} and other use cases \cite{ayantobo_integrated_2022}.
 
-An example of using this method can be found in \cite{ayantobo_integrated_2022} with many more references why this method is working well for these kinds of approaches. 
+% An example of using this method can be found in \cite{ayantobo_integrated_2022} with many more references why this method is working well for these kinds of approaches. 
 
 Also, this paper lists some other methods of moisture transportation which are also used
 
@@ -73,36 +83,65 @@ The metrics used for this analysis were mostly the evaporation $E$, precipitatio
 
 There are also some other notable other algorithms, namely stable oxygen isotope investigation \cite{ma_atmospheric_nodate} and langragian backwards trajectories \cite{zhao_lagrangian_2021}, but both rather look for the origin of the  water vapor instead of its destination and are therefor out of scope for this thesis.
 
-\subsubsection{Usages of IVT and differences}
+% \subsubsection{Usages of IVT and differences}
+%
+% In \cite{ralph_dropsonde_2017} they used a vector field of the IVT: $\int_{p_{low}}^{p_{max}} qV dp$, where $p$ is the pressure level, $q$ is the humidity and $V$ the horizontal vector.
+%
+% In \cite{sousa_north_2020} they used a scalar field based on the euclidian norm of the vector field used by \cite{ralph_dropsonde_2017}.
+%
+%
+% In \cite{ayantobo_integrated_2022} they also used the euclidian norm on a similar field like \cite{ralph_dropsonde_2017} to measure the impact of  ENSO on south-chinese weather.
+% % They used it to measure the moisture and displayed the first graphics of the work, illustrating how an IVT map looks at a drought and during a flood.
+% % Also maps of the mean IVT during each months, displaying the intense raining/wet summers and dry winters
+%
+% % \subsection{Moisture Budget}
+%
+%
+% Furthermore, they evaluated the correlation between the moisture transport and the precipitation variability, which correlate to a significant extent.
+%
+% %\section{Atmospheric Rivers}
+% %\label{sec:atmo-rivers}
+%
+% \todo{I don't know where to put this, maybe it should go into the preliminaries}
+%
+% This section should explain atmospheric rivers, but since we don't know if they are even relevant so i write it in the end. 
 
-In \cite{ralph_dropsonde_2017} they used a vector field of the IVT: $\int_{p_{low}}^{p_{max}} qV dp$, where $p$ is the pressure level, $q$ is the humidity and $V$ the horizontal vector.
+\section{Pattern analysis regarding IVT}
+\label{sec:related_pattern_analysis}
 
-In \cite{sousa_north_2020} they used a scalar field based on the euclidian norm of the vector field used by \cite{ralph_dropsonde_2017}.
-
-
-In \cite{ayantobo_integrated_2022} they also used the euclidian norm on a similar field like \cite{ralph_dropsonde_2017} to measure the impact of  ENSO on south-chinese weather.
-% They used it to measure the moisture and displayed the first graphics of the work, illustrating how an IVT map looks at a drought and during a flood.
-% Also maps of the mean IVT during each months, displaying the intense raining/wet summers and dry winters
-
-% \subsection{Moisture Budget}
+While there are many areas of interest for the application of EOF, this Section will give an overview what kind of pattern analysis has been performed in relation with IVT data. 
+An overview of datasets, timescopes and other metadata is given in Table TODO
 
 
-Furthermore, they evaluated the correlation between the moisture transport and the precipitation variability, which correlate to a significant extent.
 
-%\section{Atmospheric Rivers}
-%\label{sec:atmo-rivers}
+Although most found related work uses EOF analysis, \citeauthor{teale_patterns_2020} employ an approach using Self Organizing Maps (SOMs) to detect patterns of moisture tronsport in the eastern United States.
+SOMs are a machine learning approach to reduce data dimensionality, producing a 2D map of higher dimensional data. \todo{CITE?}
+While they acknowledge the efficiency of EOF to extract dominant patterns, they emphasize the problem of required orthogonality of modes, which is not given for SOMs. 
+The results show that fluxes with the highest moisture content occur less frequently than those with less moisture. 
+But despite the higher moisture content, fluxes with lower moisture transport dominate water vapor movement due to their prevalence. 
+Many of these fluxes meet typical criteria for atmospheric rivers, with varying trajectories and sources suggesting diverse mechanisms of formation. 
+The temporal variability in monthly flux frequencies correlates with regional precipitation patterns, indicating that this approach is a valuable framework for studying precipitation changes \cite{teale_patterns_2020}.
 
-\todo{I don't know where to put this, maybe it should go into the preliminaries}
 
-This section should explain atmospheric rivers, but since we don't know if they are even relevant so i write it in the end. 
 
-\section{Pattern analysis}
+\citeauthor{ayantobo_integrated_2022} analysed the primary six modes of EOF in China, which was grouped in deifferent regions for comparison. 
+While the variances of IVT in eastern to southern China were quite high, the variances in northern China were quite low. 
+It was shown by comparing the temporal patterns of the primary mode of EOF with the ENSO, that these patterns were related. 
+The cross-wavelet coherence revealed that IVT and ENSO time-series were coherent, which implies that increased IVT was prevalent linked to increased ENSO activities \cite{ayantobo_integrated_2022}. 
 
-Explain some usages of EOF in data, but extremely important: Explain what \cite{ayantobo_integrated_2022} did since its quite similar. 
 
-% \subsection{Empirical Orthogonal Functions}
+Published in 1982, \citeauthor{salstein_modes_1983} provided the first example of calculating EOF on IVT. 
+Based on data from 91 weather stations, they computed the IVT of the whole northern hemisphere. 
+Statistical siginificance was determined by employing a Monte Carlo testing method. 
+EOF was computed on the IWV, the zonal and meridional IVT fields respectively, but they also evaluated an approach of combining both IVT components in one data vector. 
+They reported the significance of the primary mode of IWV, encoding nearly half (44 \%) of variance of the data. 
 
-See \cite{hannachi_empirical_2007} for a big overview of EOF in atmospheric science.
-
-See \cite{ayantobo_integrated_2022} for a similar approach as we plan it, except it only focuses on the past.
-They 
+%
+% Explain some usages of EOF in data, but extremely important: Explain what \cite{ayantobo_integrated_2022} did since its quite similar. 
+%
+% % \subsection{Empirical Orthogonal Functions}
+%
+% See \cite{hannachi_empirical_2007} for a big overview of EOF in atmospheric science.
+%
+% See \cite{ayantobo_integrated_2022} for a similar approach as we plan it, except it only focuses on the past.
+% They 
