@@ -15,7 +15,6 @@ The centers of mass of these critical areas are then tracked over time to visual
 The results show that the patterns do change, and this change is more pronounced if climate change is stronger. 
 Also, there is no significant change if the climate remains stable.
 
-\section{Uncertainty Visualisation}
 
 \section{Moisture Transport}
 
@@ -110,10 +109,51 @@ There are also some other notable other algorithms, namely stable oxygen isotope
 \section{Pattern analysis regarding IVT}
 \label{sec:related_pattern_analysis}
 
+% \usepackage{tabularray}
+
+
+
+
 While there are many areas of interest for the application of EOF, this Section will give an overview what kind of pattern analysis has been performed in relation with IVT data. 
-An overview of datasets, timescopes and other metadata is given in Table TODO
+An overview of datasets, timescopes and other metadata is given in Table \ref{tab:ivtpatterns-overview}.
 
 
+\begin{table}
+\centering
+\caption{Overview table of patterns with moisture transport}
+\tabcolsep=0.11cm
+\scalebox{0.5}{
+\begin{tblr}{
+  cell{2}{2} = {r},
+  cell{3}{2} = {r},
+  cell{4}{2} = {r},
+  cell{5}{2} = {r},
+  cell{6}{2} = {r},
+  cell{7}{2} = {r},
+  cell{8}{2} = {r},
+  cell{9}{2} = {r},
+  cell{10}{2} = {r},
+  cell{11}{2} = {r},
+  cell{12}{2} = {r},
+  vline{9} = {1,4,7-8,10}{},
+  hline{2} = {-}{},
+}
+\label{tab:ivtpatterns-overview}
+\textbf{Paper ID}                & \textbf{Release Year} & \textbf{Pattern extraction} & \textbf{Area of Interest} & \textbf{Timescope} & \textbf{Time Resolution} & \textbf{Studied Season} & \textbf{Variable used for EOF} \\
+\cite{teale_patterns_2020}       & 2020                  & SOMs                        & USA east                  & 1979 to 2017       & daily                    & all year                & IVT norm                       \\
+\cite{ayantobo_integrated_2022}  & 2022                  & EOF                         & China                     & 1979 to 2010       & daily                    & all year                & IVT norm                       \\
+\cite{salstein_modes_1983}       & 1982                  & EOF                         & Northern hemishpere       & 1958 to 1973       & monthly/yearly           & all year                & IWV, IVT\_u IVT\_v, combined   \\
+\cite{fernandez_analysis_2003}   & 2003                  & EOF                         & mediterranian sea         & 1948 to 1996       & 6hr                      & DJF                     & P                              \\
+\cite{zhou_atmospheric_2005}     & 2005                  & EOF                         & China                     & 1951 to 1999       & monthly                  & JJA                     & P                              \\
+\cite{guirguis_circulation_2018} & 2018                  & EOF                         & USA (west coast)          & 1948 to 2017       & daily                    & NDJF                    & IVT norm (assumed)             \\
+\cite{kim_ensos_2015}            & 2014                  & EOF                         & western USA               & 1979 to 2010       & 6hr                      & DJF                     & IVT norm (assumed)             \\
+\cite{zou_interdecadal_2018}     & 2018                  & EOF                         & TEIOWP                    & 1961 to 2015       & monthly                  & JJA                     & IVT                            \\
+\cite{zou_investigating_2020}    & 2020                  & EOF                         & TEIOWP                    & 1958 to 2018       & 6hr/monthly              & JJA                     & Integrated Water Vapor Sink    \\
+\cite{yao_simulation_2013}       & 2013                  & EOF                         & East Asia                 & 1997 to 2002       &                          & JJA                     & IVT\_u IVT\_v                  \\
+\cite{li_quasi-4-yr_2012}        & 2012                  & EOF                         & East Asia                 & 1979 to 2009       & monthly                  & summer                  & IVT                            
+\end{tblr}
+}
+\end{table}
 
 Although most found related work uses EOF analysis, \citeauthor{teale_patterns_2020} employ an approach using Self Organizing Maps (SOMs) to detect patterns of moisture tronsport in the eastern United States.
 SOMs are a machine learning approach to reduce data dimensionality, producing a 2D map of higher dimensional data. \todo{CITE?}
@@ -168,11 +208,65 @@ Furthermore it was shown that IVT patterns computed for these events differ sign
 Furthermore the results were connected to precipitation anomalies on the USA west coast, showing huge differences (especially for the northern part of the coast) for EPEN and CPEN events. 
 But the authors also emphasize that while the suggestions are strong, exceptions occur (e.g. one El Niño leading to a dry winter, another to the opposite) and need to be studied in greater detail.
 
-Similar to \cite{vietinghoff_visual_2021} and the approach of this thesis, \citeauthor{zou_interdecadal_2018} applied a sliding window approach to IVT patterns to analyze the evolution over time. 
+Similar to \cite{vietinghoff_visual_2021} and the approach of this thesis, \citeauthor{zou_interdecadal_2018} applied a sliding window approach to IVT patterns in the tropical Indian Ocean–western Pacific to analyze the evolution over time. 
+For the studied period from 1961 to 2015, they studied every 20 year period with a 5 year sliding window, computing Multivariate EOFs for each window, resulting in vector fields of patterns. 
+The results show that the two most significant modes show significant changes in the mid 80s: The primary mode is characterized by a anti-cyclonic pattern in the north-western Pacific, which shifts significantly to the south. 
+An analysis of the relation to sea surface temperature (SST) revealed that the correlation between the mode and SST rose in the mid 80s, from weakly correlated to significant positive correlation between IVT and SST anomalies. 
+Furthermore, the primary mode seems to be regulated significantly bei ENSO. 
+The second most significant mode is related to the variablility of the tropical Indian Ocean dipole (defined by the differences in average SST) \cite{zou_interdecadal_2018}.
+
+A different approach was employed by \cite{zou_investigating_2020}, evaluating the EOF patterns of vertically integrated apparent moisture sink. 
+Results indicate that the primary mode is a southwest-northeast oriented dipole, while the secondary mode is a southwest-northeast oriented tripole. 
+The primary mode seems to be heavily regulated by the ENSO in the previous winter season, while the second mode seems to originates from internal atmopheric variability. 
+Based on the much higher standard deviations in ENSO years, it seems that water vapor source and sink tend to be dominated by the primary mode in ENSO years, while the secondary mode is prevalent in non-ENSO years. 
+
+
+While the main focus of \cite{yao_simulation_2013} is to evaluate and compare a regional air-sea coupled model, they also performed EOF analysis on the zonal and meridional components of IVT, respectively. 
+They used the results to evaluate the connection to SST, revealing that the results from the regional coupled model aligns better with results from other datasets and reality than the regional uncoupled model. 
+
+
+\citeauthor{li_quasi-4-yr_2012} evaluated the connection of the IVT-EOF patterns to ENSO in the asian western northern Pacific.
+They used a different approach then most in applying EOF to IVT, by concatenating the meridional and zonal components in one matrix and calculating EOF on it. 
+To confirm their results, they compared the results with another reanalysis from the same (and a larger) region. 
+Furthermore, these IVT patterns were linked to the SST. 
+They revealed the characteristics of the two most significant modes, but most prominently they showed the quasi-4-year coupling of the two most prominent modes with ENSO \cite{li_quasi-4-yr_2012}. 
 
 
 
 
+
+
+\section{Uncertainity Visualisation}
+
+Since the used dataset (see Chapter \ref{ch:dataset}) is an ensemble simulation consisting of 50 members, most of the figures and other visual representations in this thesis need to display the uncertainity stemming from them. 
+This section summarizes advances fitting for this topic, giving a frame of references of current possibilities of vizualizing uncertainity.
+
+\citeauthor{kamal_recent_2021} give a recent overview over the whole topic of uncertainity visualization: From the introduction to  the whole concept of uncertainity, to the differentiation between different kinds of uncertainity in the visualisation process.
+They grouped all kinds of representing uncertainity in two categories: quatification, consisting of mostly mathematical approaches of handling uncertain data, and visualisation, displaying the uncertain data in a way directly. 
+An overview of the different kinds of uncertainity visualization were given: Manipulation of attributes (like shading), animation, visual variables (like color, hue, brightness), graphical techniques like box/scatter plots and glyphs. 
+Furthermore, recent advances in uncertainity visualization are given, with a special emphasis on ensemble (simulation) data, big data and machine learning, listing the most prominent areas where the presentation of uncertainity is crucial. 
+In the end, a framework for evaluating uncertainity visualization is presented, followed by an overview of possible future research directions \cite{kamal_recent_2021}. 
+
+
+A way of using animation to display uncertainity in scalar fields was shown by \citeauthor{coninx_visualization_2011}. 
+Their goal was to enrich the usual display of scalar fields with colormaps with additional uncertainity information. 
+The tool of choice here was animated Perlin noise, and the uncertainity was presented by modifying the noise mask with the uncertainity information at each point. 
+The results were tested using a psychophysical evaluation of contrast sensitivity thresholds \cite{coninx_visualization_2011}, evaluating effective parameters for proper presentation of the uncertain area \cite{coninx_visualization_2011}.
+
+\citeauthor{sanyal_noodles_2010} proposed Noodles, a tool for displaying uncertainity in weather ensemble simulations. 
+It employs three different ways of displaying uncertain isocontours: ribbon, glyphs and spaghetti plots. 
+Additionally, they added tools for exploring the uncertainity of datasets, like an colormap of the whole dataset uncertainity.  
+Uncertainity in spaghetti plots is clear (one line per member), but gets confusing and chaotic quickly. 
+The glyphs display the uncertainity by different sizes,  and can be displayed on the whole map or alogside means of isocontours. 
+Ribbons condense the information of multiple lines by adapting the ribbon width to the uncertainity of isolines at a specific gridpoint. 
+The resulting tool was tested by two meteorologists, and classified the results as beneficial \cite{sanyal_noodles_2010}.  
+
+
+Another way of visualizing groups of isocontours are contour boxplots proposed in \cite{whitaker_contour_2013}, grouping isocontours together in a similar way like conventional boxplots. 
+This means that the easiest default presentation (spaghetti plots) is replaced by popular boxplot stats: The median, the mean, the quartiles around that mean, the whole range and the outliers (not part of the whole range). 
+But the implementation is not as straight forward as in conventional boxplots. 
+To quantify the aforementioned statistics, \citeauthor{whitaker_contour_2013} propose a data depth based approach, which encodes how much a particular sample is centrally located in its function (or in this case: How central is a isocontour to a whole set of isocontours). 
+While the results look very promising, it lacks a publicly available implementation, making it hard to use the approach.
 
 %
 % Explain some usages of EOF in data, but extremely important: Explain what \cite{ayantobo_integrated_2022} did since its quite similar. 
