@@ -106,7 +106,7 @@ function prepare_data_for_eof(data; meanfield=nothing, weights=nothing, timedim=
     geo_shape = dims[geodims]
 
     # generate the needed factors
-    norm_factor = norm_withsqrt_timedim ? 1/sqrt(time_shape - 1) : 1
+    norm_factor = norm_withsqrt_timedim ? 1 / sqrt(time_shape - 1) : 1
     data_adjusted = isnothing(meanfield) ? data : data .- meanfield
     weights_reshaped = isnothing(weights) ? ones(1, dims[weightdim], 1) : reshape(weights, 1, dims[weightdim], 1)
 
@@ -157,7 +157,14 @@ function align_with_field(field, alignment_field; mode_dim_index=2)
     return result, flips
 end
 
+"""
+    eof(data; weights=nothing, timedim=3, weightdim=2, center=true, nmodes=-1, norm_withsqrt_timedim=false, align_eofs_with_mean=false)
 
+Compute the *nmodes* empirical orthogonal functions.  
+
+If `y` is unspecified, compute the Bar index between all pairs of columns of `x`.
+
+"""
 function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, nmodes=-1, norm_withsqrt_timedim=false, align_eofs_with_mean=false)
 
     old_dims = size(data)
@@ -168,10 +175,14 @@ function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, nmodes=
 
     other_dim = [i for i in 1:length(old_dims) if i != timedim && i != weightdim][1]
 
-    mean_over_time = mean(data, dims=timedim)
+    if center || align_eofs_with_mean
+        timemean = mean(data, dims=timedim)
+    else
+        timemean = nothing
+    end
 
     if center
-        mfield = mean_over_time
+        mfield = timemean
     else
         mfield = nothing
     end
@@ -202,28 +213,19 @@ function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, nmodes=
     pc_factor = norm_withsqrt_timedim ? sqrt(time_shape - 1) : 1
     temporal_modes = truncated_lsv .* pc_factor
 
-    if !isnothing(weights)
-        eofs = eofs ./ repeat(weights, inner=(old_dims[other_dim], 1))
-    end
 
     if align_eofs_with_mean
-        eofs, flip_factors = align_with_field(eofs, reshape(mean_over_time, (prod(spat_dims), 1)))
+        weighted_timemean = timemean .* reshape(weights, 1, old_dims[weightdim], 1)
+        # use the deviations from the spatial mean to compute the alignment, not the raw temporal mean
+        eofs, flip_factors = align_with_field(eofs, reshape(weighted_timemean .- mean(weighted_timemean), (prod(spat_dims), 1)))
         temporal_modes = temporal_modes .* reshape(flip_factors, 1, :)
     end
 
+    if !isnothing(weights)
+        eofs = eofs ./ repeat(weights, inner=(old_dims[other_dim], 1))
+    end
 
 
     return EOFResult(reshape(eofs, (old_dims[geodims]..., :)), temporal_modes, truncated_svals, sum(eigenvals), noscaling)
 end
 
-
-# data = rand(20, 30, 100) * 1000
-
-
-# weights = sqrt.(cos.(deg2rad.(51:80)))
-
-# eof_response = eof(data; weights=nothing, timedim=3, weightdim=2, center=true, nmodes=-1, norm_withsqrt_timedim=false, align_eofs_with_mean=true)
-# # eof_markert = get_eof_of_datachunk(data)
-# #eof_response.spatial_modes
-# # extrema(abs.(eof_response.spatial_modes .- eof_markert.spatial_modes))
-# size(eof_response.spatial_modes)

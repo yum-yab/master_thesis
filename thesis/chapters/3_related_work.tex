@@ -44,7 +44,8 @@ IWV = \frac{1}{g} \int^{P_s}_0 q ~\diff p
 
 % \subsection{Vertically Integrated Water Vapor Transport (IVT)}
 
-Similar to Equation \ref{eq:iwv},  \citeauthor{zhu_proposed_1998} proposed in \cite{zhu_proposed_1998} \textbf{Vertical Integrated Moisture Transport (IVT)}, a way of moisture transport by vertically integrating over the different pressure levels the zonal (along latitude lines) and meridional (along longitude lines) fluxes.
+Similar to Equation \ref{eq:iwv},  \citeauthor{zhu_proposed_1998} proposed in \cite{zhu_proposed_1998} to use \textbf{Vertical Integrated Moisture Transport (IVT)} for Atmospheric River detection. 
+It is calculated by vertically integrating over the different pressure levels the zonal (along latitude lines) and meridional (along longitude lines) fluxes.
 It became a popular metric for finding atmospheric rivers \cite{gimeno_atmospheric_2014}, sometimes alongside IWV \cite{eiras-barca_seasonal_2016}.
 IVT has the unit $\frac{kg}{ms}$ and is usually defined with
 
@@ -69,11 +70,10 @@ is also a popular choice in detecting atmospheric rivers \cite{sousa_north_2020,
 % Also, this paper lists some other methods of moisture transportation which are also used
 
 The IVT is also part of the atmospheric moisture budget \cite{yang_moisture_2022} (and similar in \cite{seager_mechanisms_2020}) given by 
-
-$$
+\begin{equation}
 \label{eq:moisture_budget}
 \frac{1}{g} \frac{\delta}{\delta t} \int^{P_s}_0 q ~ \diff p = - \nabla \cdot \frac{1}{g} \int^{P_s}_0 q ~\binom{u}{v} \diff p + E - P
-$$
+\end{equation}
 
 With $E$ being the total evaporation and $P$ the precipitation. 
 \citeauthor{yang_moisture_2022} showed in their report \cite{yang_moisture_2022} the directions of moisture flux and its evolution in the last three decades. The analysis was done for all continental borders based on the big ERA5 reanalysis.
