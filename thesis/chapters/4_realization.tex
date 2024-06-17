@@ -10,8 +10,10 @@ Here should be a graphic that explains the workflow that transforms a simulation
 
 \section{Preprocessing}
 
-The goal of this step is to generate an IVT field (see Chapter \ref{ch:related_work}) from the MPI GE CMIP6 (see Chapter \ref{ch:dataset}). 
-The steps to complete this task are quite straight forward:
+The goal of this step is to prepare the data for further usage. 
+One main goal is to reduce the size, so first of all the geographic region of interest is cut out, which is the Northern Atlantic (derived from \cite{vietinghoff_visual_2021}): $-90^\circ W - 40^\circ E$, $20^\circ - 80^\circ N$. 
+For the compared variables (preciptation, surface pressure) the preprocessing is already done, but in case of IVT it still needs to be calculated. 
+
 
 \begin{enumerate}
   \item Load four different fields for each time period in each member in each szenario: Specific humidity $hus$, eastward horizontal wind $ua$, northward horizontal wind $va$ and surface pressure $ps$. Here the geographical box around the area of interest is cut out: Europe and the North Atlantic (Longitude: $-90 \to 40$, Latitude: $20 \to 80$, based on \cite{vietinghoff_visual_2021})
@@ -42,7 +44,20 @@ In the following those will be explained with regard to the step they ocurred in
   
 \end{itemize}
 
+\subsection{Problems with Preprocessing}
 
+The steps described in the section before were just the final attempt. 
+The first (and many following) coding versions were implemented in Julia \cite{gao_julia_2020}, using just a NetCDF library\footnote{\url{https://alexander-barth.github.io/NCDatasets.jl/stable/}} while the rest was coded from scratch. 
+The algorithm was very simple: 
+
+\begin{enumerate}[itemsep=0mm]
+  \item Load all datasets into the RAM (as recommended by the NetCDF library itself) and cut out the used gegraphical limits. This should be feasible since all in all one dataset for one timescope-file accounts for \~12 GB\footnote{$70~lon * 32~lat * 47~levels * 29220~timesteps * 4~byte \approx 12 GB$}, so the maximum is around $36~GB$, since the surface pressure data is not that large (\~$260~MB$)   
+  \item Calculate the IVT with trapezoidial integration multithreaded by handling one timestep by one thread
+  \item Write the results (euklidian norm and the meridional/zonal component)
+\end{enumerate}
+
+Although julia promises high performance, it performed quite poorly on the HPC.
+The reason for this is the slow IO on the cluster: While the calculation itself took only $\tilde 235~s$ ($\approx 4~min$)
 % This should explain how you get a proper IVT field from a CMIP6 simulation, what the caveats are and what calculations are done. 
 %
 %
