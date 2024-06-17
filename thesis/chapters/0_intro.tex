@@ -7,13 +7,13 @@
 
 
 Since the discovery (and further confirmation) of the greenhouse effect in the years from 1824 to 1900 \cite{fourier1824remarques, foote1856circumstances} humans came a long way of fighting the consequences of the increased greenhouse gas concentration in earth's atmosphere. 
-In 1972 \citeauthor{sawyer1972man} summarized the knwoledge and predicted quite accurately the warming at the end of the century \cite{sawyer1972man}
+In 1972 \citeauthor{sawyer1972man} summarized the knwoledge and predicted quite accurately the warming at the end of the century \cite{sawyer1972man}.
 Especially the last decades the climate crisis gained more and more attention, leading to the creation of multiple international organizations and institutions (e.g. the International Panel on Climate Change (IPCC) in 1988).
 
 
-\begin{figure}[t]
+\begin{figure}[hbt]
   \begin{center}
-    \includegraphics[width=0.95\textwidth]{figures/ipcc_6th_report_impacts_climate_change.png}
+    \includegraphics[width=0.65\textwidth]{figures/ipcc_6th_report_impacts_climate_change.png}
   \end{center}
   \caption{Impact of Climate Change for Humans, taken from \cite{lee2024climate}}
   \label{fig:impacts_climate_change}
@@ -22,39 +22,59 @@ Especially the last decades the climate crisis gained more and more attention, l
 
 
 In 2019 more than 11,000  scientists from around the world released a declaration \cite{ripple_world_2019}, calling governments from around the world to action.
-The mid and long-term consequences are manyfold and go far beyond the general rising of the worlds' average temperature (see Figure \ref{fig:impacts_climate_change}), e.g. shifts in circulation systems like the North Atlantic Oscillation (NAO) \cite{vietinghoff_visual_2021}, which in turn also have varying consequences. 
-Understanding what consequences may lay ahead of us is a crucial step in tackling these challanges, and this thesis aims to follow up on the research of \citeauthor{vietinghoff_visual_2021}, trying to evaluate in a similar manner the systemic changes of moisture transport patterns in Europe and the northern Atlantic. 
+The consequences for the environment and humans are prevalent and are, in part, already visible today. 
+Figure \ref{fig:impacts_climate_change} shows likely consequences for humans from the latest IPCC report for policy makers \cite{lee2024climate}: Flooding, malnutrition, displacement, and damages to all kinds of ecosystems can attributed with high confidence to climate change. 
+The sources of such consequences are manyfold, but recent research shows that big circulation systems like the North Atlantic Oscillation\cite{vietinghoff_visual_2021} or the Atlantic Meridional Overturning Circulation \cite{lobelle_detectability_2020} change aswell. 
+% The mid and long-term consequences are manyfold and go far beyond the general rising of the worlds' average temperature (see Figure \ref{fig:impacts_climate_change}), e.g. shifts in circulation systems like the North Atlantic Oscillation (NAO) \cite{vietinghoff_visual_2021}, which in turn also have varying consequences. 
+
+Although the water vapor in the air accounts for only 0.001 \% of the water on the earth, it is the most active part of that cycle \cite{zou_investigating_2020}. 
+Also reaserch shows that the preciptation on land does not match the evaporation, meaning the water was transported (from the oceans) to land, providing water for the ecosystems there.  \todo{CITE!!! Where the fuck did I read this?}
+Analysing the structural change of this moisture transport could help predicting consequences. 
+Motivated by the research of \citeauthor{vietinghoff_visual_2021}, this thesis aims to evaluate in a similar manner the systemic changes of moisture transport patterns in Europe and the northern Atlantic. 
 
 
 \section{Climate and Climate Research}
 \label{sec:climate}
 
-This section should give an introduction to the current state of climate research. 
-Therefor it should explain what the current way of future climate predictions is (Coupled Models), how they work, and 
-It should explain some part of the politics, who is involed in what and what the backroud of the most important projects (CMIP, ScenarioMIP \dots). 
-It should be explained that the data used is the one that the highest council of fighting climate change uses for its report. 
-
-\begin{enumerate}
-  \item
-  
-\end{enumerate}
+% This section should give an introduction to the current state of climate research. 
+% Therefor it should explain what the current way of future climate predictions is (Coupled Models), how they work, and 
+% It should explain some part of the politics, who is involed in what and what the backroud of the most important projects (CMIP, ScenarioMIP \dots). 
+% It should be explained that the data used is the one that the highest council of fighting climate change uses for its report. 
 
 
-\textbf{Quick overview over Climate Systems}
+\subsection{Quick Overview over Climate Systems and Climate Change}
 
-Contents of this section: 
+% Contents of this section: 
+%
+% \begin{itemize}
+%   % \item What are climate systems? 
+%   % \item What are forcings? 
+%   \item What does variability in climate systems stem from?
+%   \item Give an example with the NAO
+% \end{itemize}
 
-\begin{itemize}
-  \item What are climate systems? 
-  \item What are forcings? 
-  \item What does variability in climate systems stem from?
-  \item 
-\end{itemize}
+Earth's climate system can be seen as complex interactions of its major components: atmosphere, hydrosphere, cryosphere, litho-
+sphere, and biosphere \cite{vietinghoffdiss, intergovernmental_panel_on_climate_change_ipcc_climate_2023}. 
+Changes in this system can have (roughly) two reasons: 
+Either \enquote{internal variations in form of redistributions of energy} \cite{vietinghoffdiss}, which can happen on arbitrary scales (see the discussion on the change of AMOC in \cite{lobelle_detectability_2020}) or in the form of external forcings. 
+Such forcings could be vulcanic activity, differences in solar radiation, and of course the emission of greenhouse gases (GHGs). 
+
+\begin{figure}[htb]
+  \begin{center}
+    \includegraphics[width=0.95\textwidth]{figures/ERF_change_with_forcings.png}
+  \end{center}
+  \caption{The evolution of the effective radiative forcing and contributing components, taken from \cite{intergovernmental_panel_on_climate_change_ipcc_climate_2023}}\label{fig:erf-with-forcings}
+\end{figure}
+
+Figure \ref{fig:erf-with-forcings} gives an example what effect such external forcing can have: It shows the change in effective radiative forcing (ERF) and its contributing components. 
+ERF (measured in $Wm^{-2}$) is a way of measuring how much energy from the sun is \enquote{trapped} instead of reflected back to space (greenhouse effect). 
+A positive value means warming, while a negative value is associated with cooling. 
+In can be seen in Figure \ref{fig:erf-with-forcings} that neither volcanic activity or solar radiotian changed that much, the main drivers of change in ERF are the man-made GHGs and cooling aerosols. \cite{intergovernmental_panel_on_climate_change_ipcc_climate_2023}
+
+Regarding the internal variations: Most of it is part of some oscillation 
 
 
-
-
-\textbf{IPCC and the Coupled Model Intercomparison Project (CMIP)}
+\subsection{Climate Research: The IPCC and the Coupled Model Intercomparison Project (CMIP)}
 
 
 The reason for the endorsement of the IPCC by the UN General Assembly 1988 was to prepare comprehensive reviews and report about the current state of scientific knowledge and research. 
@@ -69,12 +89,6 @@ CMIP is currently in its 6th phase, corresponding to the recently finished 6th A
 
 
 
-\textbf{The North Atlantic Oscillation}
-
-
-
-
- 
 \section{Research Questions and Thesis Structure}
 \label{sec:research_questions}
 
@@ -90,22 +104,4 @@ The following Chapter \ref{ch:dataset} gives a detailed overview about the used 
 Chapter \ref{ch:related_work} provides an overview of related work, the motivation for this thesis and the placement of this thesis in the academic context. 
 While the results are discussed and presented in Chapter \ref{ch:results}, Chapter \ref{ch:methodology} gives a detailed description how these results came about. 
 The thesis is concluded with Chapter \ref{ch:conclusions} and gives an outlook for future research. 
-
-
-
-% Structure:
-%
-% \begin{enumerate}
-%   \item \textbf{Preliminaries}: explain what climate simulations are, what cmip(6) is and its relation to the IPCC reports and what that means for the global fight against the climate crisis. 
-%     This chapter should prepare the reader to understand all the related work in Chapter \ref{ch:related_work}.
-%   \item \textbf{Problem Analysis}: explain what I want to do using the CMIP6 simulations: Describe what the general plan is: Visualization of the moisture transport in Europe with the help. 
-%     Also define what the goals of the visualizations are: Visualize different scenarios for comparison, visualize uncertainties of different members, visualize evolution over time, also try combining those. 
-%     Here should be a graphic that explains the workflow that transforms a simulation into some nice pictures
-%   \item \textbf{Related Work}: Show what efforts have already been done regarding analysis of moisture transport, future and past. 
-%     Maybe preparing a comparison table would be good. 
-%   \item \textbf{Realization}: Describe in a step by step way what measures had been taken. 
-%   \item \textbf{Evaluation}: A little bit unsure how far I (as a CS person) can evaluate this, have to come up with a concept
-%   \item \textbf{Conclusion}: Same as step before, but there will be something to write about after everything else is written
-%   
-% \end{enumerate}
 
