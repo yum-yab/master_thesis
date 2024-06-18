@@ -57,7 +57,16 @@ The algorithm was very simple:
 \end{enumerate}
 
 Although julia promises high performance, it performed quite poorly on the HPC.
-The reason for this is the slow IO on the cluster: While the calculation itself took only $\tilde 235~s$ ($\approx 4~min$)
+The reason for this is the slow IO on the cluster: While the calculation itself took only $\tilde 235~s$ ($\approx 4~min$)\footnote{Refering here and  in the following to one timescope of 20 years in one member}, the loading of the required datasets took around $\tilde 3350~s$ ($\approx 55~min$). 
+This results in roughly $5 h$ (including saving the data to disk) for one member of ScenarioMIP, which leads to $250~h$ node hours for one scenario. 
+Taking into account that it needs to run for historical simulations as well as other scenarios, this was not feasible according to the limited node hours provided\footnote{Also taking into account that the processes may need to run multiple times due to errors}.
+
+To reduce the loading time of the data multiple optimizations were evaluated. 
+
+\begin{itemize}
+  \item reducing the amount of data moved in RAM by preallocating the needed space
+  \item 
+\end{itemize}
 % This should explain how you get a proper IVT field from a CMIP6 simulation, what the caveats are and what calculations are done. 
 %
 %
