@@ -19,7 +19,6 @@ For the compared variables (preciptation, surface pressure) the preprocessing is
   \item Load four different fields for each time period in each member in each szenario: Specific humidity $hus$, eastward horizontal wind $ua$, northward horizontal wind $va$ and surface pressure $ps$. Here the geographical box around the area of interest is cut out: Europe and the North Atlantic (Longitude: $-90 \to 40$, Latitude: $20 \to 80$, based on \cite{vietinghoff_visual_2021})
   \item For each geographical gridpoint ($lon$, $lat$) and timestep: Calculate the integrals of hte product of wind components and specific humidity over the vertical pressure levels $\frac{1}{g}\int_{p_S}^0 hus * ua$ and  $\frac{1}{g}\int_{p_S}^0 hus * va$, with $g$ being the gravitational acceleration ($9.806 \frac{m}{s}$) 
   \item Save the results for each time period in each member in each szenario in a NetCDF file for the further steps. 
-  
 \end{enumerate}
 
 The calculations were performed on the high performance computing cluster\footnote{https://docs.dkrz.de/doc/levante/} of the German Climate Calculations Center (DKRZ), due to the MPI GE CMIP6 is saved there and downloading the data would take a lot of time. 
@@ -36,7 +35,7 @@ In the following those will be explained with regard to the step they ocurred in
   \item slow IO $\rightarrow$ started using dask+xarray 
 \end{itemize}
 
-\textbf{2. Vertical integration}
+\textbf{2. Vertical Integration}
 
 \begin{itemize}
   \item calculate hybrid  sigma pressure levels for each gridpoint and timestep to get the x values for integration
@@ -47,41 +46,33 @@ In the following those will be explained with regard to the step they ocurred in
 \subsection{Problems with Preprocessing}
 
 The steps described in the section before were just the final attempt. 
-The first (and many following) coding versions were implemented in Julia \cite{gao_julia_2020}, using just a NetCDF library\footnote{\url{https://alexander-barth.github.io/NCDatasets.jl/stable/}} while the rest was coded from scratch. 
+The first idea was using Climate Data Operators \cite{schulzweida2024}, a command line tool containing multiple operators for processing climate and similar data. 
+The operators consist of common statistical and mathematical functions (mean, add, sum), sampling and data selection tools (select geographical or time limits) and other helpful operators like interpolations and even EOF calculation. 
+Although this sounded very promising,, it quickly turned out to be very complicated to implement the desired vertical integration in CDO.
+The following idea was to implement the IVT calculation in Julia \cite{gao_julia_2020}, using just a NetCDF library \cite{} while the rest was coded from scratch. 
 The algorithm was very simple: 
 
 \begin{enumerate}[itemsep=0mm]
-  \item Load all datasets into the RAM (as recommended by the NetCDF library itself) and cut out the used gegraphical limits. This should be feasible since all in all one dataset for one timescope-file accounts for \~12 GB\footnote{$70~lon * 32~lat * 47~levels * 29220~timesteps * 4~byte \approx 12 GB$}, so the maximum is around $36~GB$, since the surface pressure data is not that large (\~$260~MB$)   
-  \item Calculate the IVT with trapezoidial integration multithreaded by handling one timestep by one thread
+  \item Load all datasets into the RAM (as recommended by the NetCDF library itself) and cut out the used geographical limits. This should be feasible since all in all one dataset for one timescope-file accounts for $\sim 12~GB$\footnote{$70~lon * 32~lat * 47~levels * 29220~timesteps * 4~byte \approx 12 GB$}, so the maximum is around $36~GB$, since the surface pressure data is not that large ($\sim 260~MB$)   
+  \item Calculate the IVT with trapezoidial integration multithreaded by handling one time\-step by one thread
   \item Write the results (euklidian norm and the meridional/zonal component)
 \end{enumerate}
 
 Although julia promises high performance, it performed quite poorly on the HPC.
-The reason for this is the slow IO on the cluster: While the calculation itself took only $\tilde 235~s$ ($\approx 4~min$)\footnote{Refering here and  in the following to one timescope of 20 years in one member}, the loading of the required datasets took around $\tilde 3350~s$ ($\approx 55~min$). 
+The reason for this is the slow IO on the cluster: While the calculation itself took only $\sim 235~s$ ($\approx 4~min$)\footnote{Refering here and  in the following to one timescope of 20 years in one member}, the loading of the required datasets took around $\sim 3350~s$ ($\approx 55~min$). 
 This results in roughly $5 h$ (including saving the data to disk) for one member of ScenarioMIP, which leads to $250~h$ node hours for one scenario. 
 Taking into account that it needs to run for historical simulations as well as other scenarios, this was not feasible according to the limited node hours provided\footnote{Also taking into account that the processes may need to run multiple times due to errors}.
 
 To reduce the loading time of the data multiple optimizations were evaluated. 
+First of all, the amount of moved data in memory was minimized by preallocating the needed RAM and writing directly to the preallocated space. 
+Furthermore, other NetCDF libraries were tested, but simple loading times were very similar. 
+Although this significantly reduced the amount of allocations, the effect on loading time was neglible. 
+To actually archive a significant boost in loading time it was tried to load the required datasets (located in different files) in paralllel. 
+Unfortunately, the used library \cite{barth_ncdatasetsjl_2024} encountered a segmentation fault used in multiple threads, so the alternative libraries NetCDF.jl and HDF5.jl were explored, since the HDF5 standard allows parrallel access to files \cite{folk_overview_2011}. 
+Although the parallel access to files using multiple threads (with HDF5.jl) lead to increased speeds in tests, the results did not yield any significant increased efficiency on the cluster itself.
+Even splitting up the loading according to the chunking in the files (all data from one timestep is one chunk) and loading each timestep seperately in one thread even increased the data loading time quite far.  
+The next approach was to split the task up into different processes, each one loading data from one variable. This actually reduced time spent to one third in tests, but testing it on the actual data sizes revealed that the $12~GB$ are too much to be returned from the child processes loading the file to the mother process. 
 
-\begin{itemize}
-  \item reducing the amount of data moved in RAM by preallocating the needed space
-  \item 
-\end{itemize}
-% This should explain how you get a proper IVT field from a CMIP6 simulation, what the caveats are and what calculations are done. 
-%
-%
-%
-% \begin{itemize}
-%   \item intitial implementation in julia $\rightarrow$ computation was fast, but the slow IO was a problem 
-%   \item also very established tools (like CDO) fail 
-%   \item multiple ideas of optimising the IO:
-%     \begin{enumerate}
-%       \item Multiple different libraries - similar results
-%       \item Parallel reading of different fields - no success or segmentation fault
-%     \end{enumerate}
-%     
-%   \item after asking the helpdesk $\rightarrow$ problem was discovered (few byte transmissions) but not the reason for it 
-%   \item helpdesk says that large portions of the datasets were never used
-%   \item after investigating: Turns out Pythons xarray+dask was quite performant
-% \end{itemize}
-%
+From here on some ather approaches could have been
+
+
