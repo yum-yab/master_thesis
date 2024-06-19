@@ -74,6 +74,7 @@ These scenarios are available in the MPI GE CMIP6, amongst some of Tier 2. \cite
 
 
 \subsection{Resolutions and Dimensions}
+\label{sec:dataset-description}
 
 In terms of spatial resolution, MPI GE CMIP6 comes in three variants: The low resolution variant MPI-ESM1.2-LR with a horizontal resolution of roughly $1.8^\circ$ longitude/latitude resolution in the atmospheric part and $0.4^\circ$ lon/lat for the ocean, the high resolution variant MPI-ESM1.2-HR with a horizontal resolution of $1.0^\circ$/$0.4^\circ$ for atmosphere/ocean and the extreme high resolution MPI-ESM1.2-XR with $0.5^\circ$/$0.4^\circ$ for atmosphere/ocean. 
 Each variant has a vertical resolution of 47 levels for the atmosphere and 40 for ocean.
@@ -147,4 +148,19 @@ The top pressure can be ignored in this dataset since the upper border is zero.
 
 \subsection{Structure of the data}
 
-The data is available in the HPC cluster of the DKRZ\footnote{Deutsches Klimarechenzentrum (en.: German Center for Climate Calculation)}, the structure can be seen in if Figure 
+The data is available in the HPC cluster of the DKRZ\footnote{Deutsches Klimarechenzentrum (en.: German Center for Climate Calculation)}, the structure can be seen in if Figure \ref{fig:data-structure}.
+
+\begin{figure}[htb]
+  \begin{center}
+    \includegraphics[width=0.75\textwidth]{figures/data_structure.png}
+  \end{center}
+  \caption{Structure the data is available on the DKRZ cluster. Example is given for ScenarioMIP, but applies aswell for CMIP DECK for historical and piControl.}\label{fig:data-structure}
+\end{figure}
+
+It starts in a root folder for one MIP, being ScenarioMIP or the CMIP core, followed by the institution and the resolution category (see Section~\ref{sec:dataset-description}). 
+After a hierarchy of Forcing Types (e.g. SSP, historical, piControl), member IDs, and time resolutions, the variable (e.g. \textit{hus} for specific humidity) can be selected. 
+After the grid type (only \textit{gn} is available) the version directory contains the actual data, serialized in the NetCDF4 format (which in turn is based on HDF5 \cite{folk_overview_2011}) and  split up in timescopes of up to 20 years. 
+The version is named after the date of the simulation, and since a later version indicates a problem fix in the older version, it is generally advisable to pick the latest version for each variable. 
+
+
+\todo{Explain NetCDF datasets, chunking etc.} 
