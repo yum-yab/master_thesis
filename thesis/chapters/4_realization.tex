@@ -10,6 +10,14 @@ Here should be a graphic that explains the workflow that transforms a simulation
 
 \section{Preprocessing}
 
+The purpose of this step is to prepare the datasets for generating the patterns via EOF and generating visualizations. For this the datasets need to be reduced to the area of interest (northern Atlantic and Europe), the directory structure shown in Figure~\ref{fig:data-structure} needs to be simplified, the necessary moisture transport (see Section~\ref{sec:moisture-transport}) needs to be calculated and data needs to be reduced to different time resolutions (daily, monthly). \todo{Still need to write somewhere why}
+
+The calculations were performed on the high performance computing cluster\footnote{https://docs.dkrz.de/doc/levante/} of the German Climate Calculations Center (DKRZ), due to the MPI GE CMIP6 is saved there and downloading the data would take a lot of time. 
+This also result in the goal of this step to minimize the hours on the HPC system since they get billed by the time using nodes. 
+Although these steps seem easy, due to the large sizes of the datasets and other issues many challenges were met. 
+In the following those will be explained with regard to the step they occurred in. 
+
+
 
 \subsection{Chosen Framework}
 \label{sec:preprocessing_framework}
@@ -20,10 +28,52 @@ Xarray is a library for handling n-dimensional, labeled arrays. It supports mult
 It comes with a great variety of features, making it easy to index and transform data and dimensions, joining different datasets (either along a dimension like time or multiple different variables having the same dimensions) and many more. 
 But most important, it leverages the Dask library, which enables xarray to actually use the infrastructure of the DKRZ HPC cluster. 
 Dask is enabling parallel and out-of-the-core\footnote{This usually means handling datasets larger than RAM, using disks (usually SSDs) as extension for RAM.} computing for the Scientific Python stack. 
-Its goal is to be a NumPy clone leveraging the full potential of modern hardware, which usually utilizes multiple computing cores, without the need for rewriting the already existing scientific Python stack. \cite{rocklin2015dask}
+Its goal is to be a NumPy clone leveraging the full potential of modern hardware, which usually utilizes multiple computing cores, without the need for rewriting the already existing scientific Python stack. 
+It uses an acyclic task graph, which distributes tasks efficiently over multiple workers, which can be either different threads or processes. \cite{rocklin2015dask}
 
 
 \subsection{Process}
+
+The following the process for handling one member of one scenario is described. Scaling it up for all the members is trivial by either running them in parallel on multiple nodes of the cluster (for the relatively computation-heavy IVT calculation) or by running different members iteratively (for simple variables). 
+
+\textbf{1. Loading the Dataset}
+
+In the first step the process is to actually load the datasets metadata into xarray. 
+Xarray offers different methods for either loading one dataset file or multiple, the latter is needed for the IVT calculation since multiple different variables need to be used. 
+Important choices are here setting the \texttt{compat} parameter and choosing the chunking for Dask. 
+The first one needs to be set to \textit{override}, which prevents xarray to check variables with the same label for compatibility (in this case here dimension like \textit{lon, lat, time} and the pressure fields \textit{ps}), which is useful e.g. when using dataset of different sources, but since all datasets conform to the same resolutions it is unnecessary. 
+
+\begin{figure}[htb]
+  \begin{center}
+    \includegraphics[width=0.95\textwidth]{figures/dask_dashboard_example.png}
+  \end{center}
+  \caption{Example of the general overview of the dask dashboard used for analyzing the efficiency of the process.}
+  \label{fig:dask-dashboard}
+\end{figure}
+
+
+The latter choice is far more important:  
+In NetCDF datasets data is often grouped into chunks of a certain, useful size and these chunks can then be compressed to reduce disk memory usage. 
+If the chunks are compressed reading anything smaller than a chunk is useless, since the whole chunk needs to be loaded anyway to decompress it. 
+Also reading too small chunks reduces the efficiency of dask, since the introduced scheduling overhead per task is too large and becomes overwhelming.
+Furthermore, reading too small chunks result in too much worker-to-worker communication, which also results in significantly decreased execution time. 
+On the other hand, reading too large chunks results in memory spills\footnote{This refers to a function in dask where overloaded workers save data on disk to prevent the worker from crashing} or workers crashing, which both significantly reduce execution time. 
+To find the sweet spot of dask chunk size, dask offers a handy dashboard which visualizes the process of the dask task graph execution (see Figure~\ref{fig:dask-dashboard}). 
+Grey areas in the \textit{Bytes stored per worker} section in Figure~\ref{fig:dask-dashboard} show memory spilled to disk, which is an indicator for too large chunk sizes. 
+Red sections in the \textit{Task Stream} section refer to worker-to-worker communication, which may be an indicator for too small chunk sizes if they dominate the \textit{Task Stream}. 
+So the Task overview given in Figure~\ref{fig:dask-dashboard} indicates a slightly too large chunk size, since too much is spilled to disk. \cite{buckley_choosing_nodate}
+
+The chunk size in the available datasets is $(192, 96, 47, 1)$\footnote{\label{vardims}Referring to $(lon, lat, lev, time)$}, which means one chunk corresponds to one time snapshot of the whole atmosphere. 
+Using the dask dashboard to evaluate different chunk sizes, the optimal chunk size with minimal spilled memory, worker communication and no crashing workers\footnote{For one of the DKRZ HPC cluster's nodes with 100 GB RAM} was $(192, 96, 47, 128)$\cref{vardims}.  
+
+
+\textbf{2. Reduction to Area of Interest}
+
+\textbf{3. Calculating IVT Field}
+
+\textbf{4. Saving Results to NetCDF dataset}
+
+\textbf{5. Generating daily/monthly means}
 
 One main goal is to reduce the size, so first the geographic region of interest is cut out, which is the Northern Atlantic (derived from \cite{vietinghoff_visual_2021} and \cite{hurrell_overview_2003}): $-90^\circ W - 40^\circ E$, $20^\circ - 80^\circ N$. 
 For the compared variables (precipitation, surface pressure) the preprocessing is already done, but in case of IVT it still needs to be calculated. 
@@ -35,10 +85,6 @@ For the compared variables (precipitation, surface pressure) the preprocessing i
   \item Save the results for each time period in each member in each scenario in a NetCDF file for the further steps. 
 \end{enumerate}
 
-The calculations were performed on the high performance computing cluster\footnote{https://docs.dkrz.de/doc/levante/} of the German Climate Calculations Center (DKRZ), due to the MPI GE CMIP6 is saved there and downloading the data would take a lot of time. 
-This also result in the goal of this step to minimize the hours on the HPC system since they get billed by the time using nodes. 
-Although these steps seem easy, due to the large sizes of the datasets and other issues many challenges were met. 
-In the following those will be explained with regard to the step they ocurred in. 
 
 
 
