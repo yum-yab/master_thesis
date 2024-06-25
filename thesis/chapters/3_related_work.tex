@@ -2,7 +2,7 @@
 \label{ch:related_work}
 
 % This chapter builds on the foundation of Chapter \ref{ch:basics}, explaining what dataset is actually used, the reason for this and its properties. 
-This section outlies the current state-of-the-art in the main parts of this thesis explained in Section \ref{sec:research_questions}: Quantifying Moisture (Transport), extracting spatio-temporal patterns, tracking their change over time and visualizing the uncertain results in the end.
+This section outlines the current state-of-the-art in the main parts of this thesis explained in Section \ref{sec:research_questions}: Quantifying Moisture (Transport), extracting spatio-temporal patterns, tracking their change over time and visualizing the uncertain results in the end.
 % Furthermore, it summarizes the current state-of-science in quantifying and calculating (patterns of) moisture transport and the usage of it.  
 
 \section{Motivation}
@@ -10,7 +10,7 @@ This section outlies the current state-of-the-art in the main parts of this thes
 As explained in Chapter \ref{ch:intro}, the approach of this thesis is motivated by the approach of \citeauthor{vietinghoff_visual_2021} in \cite{vietinghoff_visual_2021} and the affiliated dissertation \cite{vietinghoffdiss}, which tackles the issue of detecting critical points in unstable scalar fields.
 Hereby \cite{vietinghoff_visual_2021} analyzes the MPI GE \cite{maher_max_2019} from the 5th phase of CMIP, an ensemble simulation with 50 members. 
 The goal was to find the probable centers of pressure high/lows in the NAO pattern (see Section \ref{sec:climate}) and to track their shift over time. 
-They employed a sliding window approach, computing the dominant pattern (see Section \ref{sec:eof})  for each window and member, and determine the likely areas of critical points by merging the results of different memebers per timestep. 
+They employed a sliding window approach, computing the dominant pattern (see Section \ref{sec:eof})  for each window and member, and determine the likely areas of critical points by merging the results of different members per time step. 
 The centers of mass of these critical areas are then tracked over time to visualize the shift of the pressure high and low. 
 The results show that the patterns do change, and this change is more pronounced if climate change is stronger. 
 Also, there is no significant change if the climate remains stable.
@@ -21,13 +21,13 @@ Also, there is no significant change if the climate remains stable.
 % This section should explain in what ways moisture transport can be quantified and used, give a few examples for each and maybe motivate  why we do it like we want to. 
 
 To computationally extract any spatio-temporal patterns of moisture (transport), it first needs to be quantified in any way.
-The variable from the MPI GE CMIP6 used for this task is the \textit{specific humidity}, which has no unit and is a float value between 0.0 and 1.0, denoting the percentage of water in the air at a specific gridpoint. 
+The variable from the MPI GE CMIP6 used for this task is the \textit{specific humidity}, which has no unit and is a float value between 0.0 and 1.0, denoting the percentage of water in the air at a specific grid point. 
 The vast majority of literature regarding moisture transport use some form of vertically integrated humidity and the variants will be explained in the following section.  
 % \todo{Create a table showing how different quantification were used in different algorithms}
-A popular usage of these quantifications was to find a filamentary weather structure called \enquote{Atmospheric Rivers}\footnote{earlier or alternative name: \enquote{Tropospheric Rivers}}, a prominent way of water vapor transportation in the extratropic regions \cite{gimeno_atmospheric_2014}. 
+A popular usage of these quantifications was to find a filamentary weather structure called \enquote{Atmospheric Rivers}\footnote{Earlier or alternative name: \enquote{Tropospheric Rivers}}, a prominent way of water vapor transportation in the extratropic regions \cite{gimeno_atmospheric_2014}. 
 
 
-The most straightforward way of quantifying moisture is \textbf{Vertically Integrated Water Vapor (IWV)} \cite{gimeno_atmospheric_2014, schluessel_atmospheric_1990, bao_interpretation_2006, neiman_meteorological_2008, zhao_lagrangian_2021}, which is essentailly the vertical integral of the specific humidity $q$ over the pressure levels $p$ from earth's surface $P_S$ to some upper limit in the atmosphere:
+The most straightforward way of quantifying moisture is \textbf{Vertically Integrated Water Vapor (IWV)} \cite{gimeno_atmospheric_2014, schluessel_atmospheric_1990, bao_interpretation_2006, neiman_meteorological_2008, zhao_lagrangian_2021}, which is essentially the vertical integral of the specific humidity $q$ over the pressure levels $p$ from earth's surface $P_S$ to some upper limit in the atmosphere:
 
 
 \begin{equation}

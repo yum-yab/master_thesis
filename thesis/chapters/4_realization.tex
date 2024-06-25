@@ -3,22 +3,36 @@
 
 \section{Overview}
 
-Explain what I want to do using the CMIP6 simulations: Describe what the general plan is: Visualisation of the moisture transport in Europe with the help . 
-Also define what the goals of the visualisations are: Visualize different scenarios for comparison, visualize uncertainties of different members, visualize evolution over time, also try combining those. 
+Explain what I want to do using the CMIP6 simulations: Describe what the general plan is: Visualization of the moisture transport in Europe with the help. 
+Also define what the goals of the visualizations are: Visualize different scenarios for comparison, visualize uncertainties of different members, visualize evolution over time, also try combining those. 
 Here should be a graphic that explains the workflow that transforms a simulation into some nice pictures
 
 
 \section{Preprocessing}
 
+
+\subsection{Chosen Framework}
+\label{sec:preprocessing_framework}
+
 The goal of this step is to prepare the data for further usage. 
-One main goal is to reduce the size, so first of all the geographic region of interest is cut out, which is the Northern Atlantic (derived from \cite{vietinghoff_visual_2021}): $-90^\circ W - 40^\circ E$, $20^\circ - 80^\circ N$. 
-For the compared variables (preciptation, surface pressure) the preprocessing is already done, but in case of IVT it still needs to be calculated. 
+After a few failed attempts with other languages/tools (CDO and Julia, see Section~\ref{sec:preprocessing_problems}), the Python libraries xarray \cite{hoyer_xarray_2017} and dask \cite{rocklin2015dask} were chosen as the fitting tools for this step.
+Xarray is a library for handling n-dimensional, labeled arrays. It supports multiple input and output options (amongst others the required NetCDF format) and is compatible with the most popular scientific Python libraries (e.g. Pandas, NumPy). 
+It comes with a great variety of features, making it easy to index and transform data and dimensions, joining different datasets (either along a dimension like time or multiple different variables having the same dimensions) and many more. 
+But most important, it leverages the Dask library, which enables xarray to actually use the infrastructure of the DKRZ HPC cluster. 
+Dask is enabling parallel and out-of-the-core\footnote{This usually means handling datasets larger than RAM, using disks (usually SSDs) as extension for RAM.} computing for the Scientific Python stack. 
+Its goal is to be a NumPy clone leveraging the full potential of modern hardware, which usually utilizes multiple computing cores, without the need for rewriting the already existing scientific Python stack. \cite{rocklin2015dask}
+
+
+\subsection{Process}
+
+One main goal is to reduce the size, so first the geographic region of interest is cut out, which is the Northern Atlantic (derived from \cite{vietinghoff_visual_2021} and \cite{hurrell_overview_2003}): $-90^\circ W - 40^\circ E$, $20^\circ - 80^\circ N$. 
+For the compared variables (precipitation, surface pressure) the preprocessing is already done, but in case of IVT it still needs to be calculated. 
 
 
 \begin{enumerate}
-  \item Load four different fields for each time period in each member in each szenario: Specific humidity $hus$, eastward horizontal wind $ua$, northward horizontal wind $va$ and surface pressure $ps$. Here the geographical box around the area of interest is cut out: Europe and the North Atlantic (Longitude: $-90 \to 40$, Latitude: $20 \to 80$, based on \cite{vietinghoff_visual_2021})
-  \item For each geographical gridpoint ($lon$, $lat$) and timestep: Calculate the integrals of hte product of wind components and specific humidity over the vertical pressure levels $\frac{1}{g}\int_{p_S}^0 hus * ua$ and  $\frac{1}{g}\int_{p_S}^0 hus * va$, with $g$ being the gravitational acceleration ($9.806 \frac{m}{s}$) 
-  \item Save the results for each time period in each member in each szenario in a NetCDF file for the further steps. 
+  \item Load four different fields for each time period in each member in each scenario: Specific humidity $hus$, eastward horizontal wind $ua$, northward horizontal wind $va$ and surface pressure $ps$. Here the geographical box around the area of interest is cut out: Europe and the North Atlantic (Longitude: $-90 \to 40$, Latitude: $20 \to 80$, based on \cite{vietinghoff_visual_2021})
+  \item For each geographical grid point ($lon$, $lat$) and time step: Calculate the integrals of the product of wind components and specific humidity over the vertical pressure levels $\frac{1}{g}\int_{p_S}^0 hus * ua$ and  $\frac{1}{g}\int_{p_S}^0 hus * va$, with $g$ being the gravitational acceleration ($9.806 \frac{m}{s}$) 
+  \item Save the results for each time period in each member in each scenario in a NetCDF file for the further steps. 
 \end{enumerate}
 
 The calculations were performed on the high performance computing cluster\footnote{https://docs.dkrz.de/doc/levante/} of the German Climate Calculations Center (DKRZ), due to the MPI GE CMIP6 is saved there and downloading the data would take a lot of time. 
@@ -44,6 +58,7 @@ In the following those will be explained with regard to the step they ocurred in
 \end{itemize}
 
 \subsection{Problems with Preprocessing}
+\label{sec:preprocessing_problems}
 
 The steps described in the section before were just the final attempt. 
 The first idea was using Climate Data Operators \cite{schulzweida2024}, a command line tool containing multiple operators for processing climate and similar data. 
