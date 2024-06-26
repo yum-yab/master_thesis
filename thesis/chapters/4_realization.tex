@@ -9,6 +9,7 @@ Here should be a graphic that explains the workflow that transforms a simulation
 
 
 \section{Preprocessing}
+\label{sec:preprocessing}
 
 The purpose of this step is to prepare the datasets for generating the patterns via EOF and generating visualizations. For this the datasets need to be reduced to the area of interest (northern Atlantic and Europe), the directory structure shown in Figure~\ref{fig:data-structure} needs to be simplified, the necessary moisture transport (see Section~\ref{sec:moisture-transport}) needs to be calculated and data needs to be reduced to different time resolutions (daily, monthly). \todo{Still need to write somewhere why}
 
@@ -80,6 +81,8 @@ Unfortunately for this case, the longitude coordinate is saved in the range of $
 Therefor, the longitude coordinates are first transformed to the form $[-180, 180]^\circ$, with negative values being $^\circ W$ and positive values being $^\circ E$. 
 Then the area of interest can be cut out without problems and the result can either be used for further calculations (Step 3) or directly saved as a NetCDF file (Step 4). 
 
+The size of data could be further reduced in this timestep by selecting only the relevant winter months (see Section~\ref{sec:eof_calc}), but with future work in mind the whole year was kept in this stage. 
+
 \textbf{3. Calculating IVT Field}
 
 The first step to calculate the IVT field is to convert the hybrid sigma pressure levels (see Section \ref{sec:hybridsigma}) to actual pressure values. 
@@ -148,7 +151,7 @@ The algorithm was very simple:
 \end{enumerate}
 
 Although Julia promises high performance, it performed quite poorly on the HPC.
-The reason for this is the slow IO on the cluster: While the calculation itself took only $\sim 235~s$ ($\approx 4~min$)\footnote{Refering here and  in the following to one timescope of 20 years in one member}, the loading of the required datasets took around $\sim 3350~s$ ($\approx 55~min$). 
+The reason for this is the slow IO on the cluster: While the calculation itself took only $\sim 235~s$ ($\approx 4~min$)\footnote{Referring here and  in the following to one timescope of 20 years in one member}, the loading of the required datasets took around $\sim 3350~s$ ($\approx 55~min$). 
 This results in roughly $5 h$ (including saving the data to disk) for one member of ScenarioMIP, which leads to $250~h$ node hours for one scenario. 
 Taking into account that it needs to run for historical simulations as well as other scenarios, this was not feasible according to the limited node hours provided\footnote{Also taking into account that the processes may need to run multiple times due to errors}.
 
@@ -166,3 +169,24 @@ From here on some other approaches could have been explored, like splitting up d
 
 
 \section{EOF Calculation}
+\label{sec:eof_calc}
+
+In the next step, the patterns are calculated using Empirical Orthogonal Functions. While Section~\ref{sec:eof} gives the theoretical methamatical background, this Section describes the practical implementation, the sliding window approach and domain-specific challenges of calculating EOFs for different variables. The following description is for one member of the different scenarios, but is handled the same way for every member.  
+
+
+In general, the procedure of this step is based on the approach of \cite{vietinghoff_visual_2021}, but has differences in a few places. 
+In the very first step, the monthly data in form of multiple NetCDF files containing different time scopes are loaded. 
+Since the influence of the NAO especially significant in the boreal winter, this thesis focusses on the extended winter season like \cite{vietinghoff_visual_2021}, keeping only the months December, January, February and March (in the following DJFM). 
+So during loading the irrelevant months are filtered out, additionally to filtering out double values of months (a result of the monthly mean process with CDO), resulting in a timeline containing exactly one spatial map for each month value for each month. 
+Then the data is grouped in certain scopes for the sliding window approach. 
+For this the amount of winter seasons is counted, and realized with 30 and 50 winters, with one winter being the group of DJFM. 
+The next scope is then shifted by one winter season, and again counted for 30/50 seasons. 
+In difference to \cite{vietinghoff_visual_2021}, the winters themself are not reduced to one mean map since this has not been done by any related work using IVT fields, and smoothing out the data any further could potentially remove important features. 
+
+Now for each of these scopes EOFs are calculated in the following way: 
+First 
+
+
+
+\section{Visual analysis of Patterns}
+\label{sec:vis_analysis}
