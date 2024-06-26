@@ -57,11 +57,24 @@ IVT has the unit $\frac{kg}{ms}$ and is usually defined with
 
 or in a mathematically equivalent form \cite{fernandez_analysis_2003}.
 Here $u$ and $v$ stand for the zonal and meridional components of the horizontal wind vector. 
-While Equation \ref{eq:ivt} yields a vector field, the euclidian norm of said vector field 
+An equivalent way is to calculate the zonal and meridional component separately with 
+
+\begin{equation}
+\label{eq:zonal_ivt}
+IVT_z = \frac{1}{g} \int^{P_s}_0 q ~u ~ \diff p
+\end{equation}
+
+
+\begin{equation}
+\label{eq:meridional_ivt}
+IVT_m = \frac{1}{g} \int^{P_s}_0 q ~v ~ \diff p
+\end{equation}
+
+While Equation \ref{eq:ivt} yields a vector field, the Euclidean norm of said vector field 
 
 \begin{equation}
 \label{eq:ivtnorm}
-\lVert IVT \rVert = \frac{1}{g} \sqrt{(\int^{P_s}_0 qu ~ \diff p)^2 + (\int^{P_s}_0 qv ~ \diff p)^2}  
+\lVert IVT \rVert = \sqrt{(IVT_z)^2 + (IVT_m)^2}  
 \end{equation}
 
 is also a popular choice in detecting atmospheric rivers \cite{sousa_north_2020, ramos_atmospheric_2016} and other use cases \cite{ayantobo_integrated_2022}.
