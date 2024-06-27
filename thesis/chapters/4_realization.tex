@@ -141,7 +141,7 @@ The steps described in the section before were just the final attempt.
 The first idea was using Climate Data Operators \cite{schulzweida2024}, a command line tool containing multiple operators for processing climate and similar data. 
 The operators consist of common statistical and mathematical functions (mean, add, sum), sampling and data selection tools (select geographical or time limits) and other helpful operators like interpolations and even EOF calculation. 
 Although this sounded very promising, it quickly turned out to be very complicated to implement the desired vertical integration in CDO.
-The following idea was to implement the IVT calculation in Julia \cite{gao_julia_2020}, using just a NetCDF library \cite{} while the rest was coded from scratch. 
+The following idea was to implement the IVT calculation in Julia \cite{gao_julia_2020}, using just a NetCDF library \cite{barth_ncdatasetsjl_2024} while the rest was coded from scratch. 
 The algorithm was very simple: 
 
 \begin{enumerate}[itemsep=0mm]
