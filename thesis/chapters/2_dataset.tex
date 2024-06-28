@@ -163,4 +163,23 @@ After the grid type (only \textit{gn} is available) the version directory contai
 The version is named after the date of the simulation, and since a later version indicates a problem fix in the older version, it is generally advisable to pick the latest version for each variable. 
 
 
+\subsection{NetCDF Datasets}
+
+While the Network Common Data Format is an abstraction for storing multidimensional data, NetCDF itself is an implementation of said abstraction with a data format and a library supporting that data format. 
+It is modeled for supporting scientific datasets consisting of multiple, named, multidimensional variables together with their reference grid/coordinate system and some metadata properties.
+Every variable consists of a type (e.g. scalars, byte arrays, characters, floating-point numbers), a shape defined by a vector of dimensions and auxiliary properties as key-value pairs (like physical unit, other names, important notes). \cite{rew_netcdf_1990}
+
+\begin{figure}[htb]
+  \begin{center}
+    \includegraphics[width=0.95\textwidth]{figures/netcdf_visual_example.png}
+  \end{center}
+  \caption{An example of a named multidimensional dataset from \cite{hoyer_xarray_2017}: Precipitation and temperature are the variables while x, y and t are dimensions. Longitude and latitude are coordinates (also variables) defined by x and y.}
+  \label{fig:example_dataset_structure}
+\end{figure}
+
+Figure~\ref{fig:example_dataset_structure} gives an example of said structure in form of a meteorological dataset: x, y, and t are the dimensions, named integers representing the shape of variables. 
+Precipitation and temperature are three-dimensional variables, while longitude and latitude are coordinates of the grid, giving a reference for the location of the grid. The dimensions of the dataset are x, y and t, giving the both variables the shape $(x, y, t)$. \cite{hoyer_xarray_2017}
+
+
+
 \todo{Explain NetCDF datasets, chunking etc.} 
