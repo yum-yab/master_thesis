@@ -95,7 +95,7 @@ The metrics used for this analysis were mostly the evaporation $E$, precipitatio
 
 While the integration in the previous equations integrates from the surface to the outer border of the atmosphere (0 Pa), it is quite common to integrate up until the limit of 300 hPa \cite{ayantobo_integrated_2022, zhu_proposed_1998, kim_ensos_2015, guirguis_circulation_2018}, since the amount of moisture in the regions from 300 hPa to 0 Pa is quite neglible and amounts in total to about 2-3 cm/year in terms of freshwater flux \cite{zhou_atmospheric_2005}.
 
-There are also some other notable other algorithms, namely stable oxygen isotope investigation \cite{ma_atmospheric_nodate} and langragian backwards trajectories \cite{zhao_lagrangian_2021}, but both rather look for the origin of the  water vapor instead of its destination and are therefor out of scope for this thesis.
+There are also some other notable other algorithms, namely stable oxygen isotope investigation \cite{ma_atmospheric_2018} and langragian backwards trajectories \cite{zhao_lagrangian_2021}, but both rather look for the origin of the  water vapor instead of its destination and are therefor out of scope for this thesis.
 
 % \subsubsection{Usages of IVT and differences}
 %
@@ -249,34 +249,34 @@ They revealed the characteristics of the two most significant modes, but most pr
 
 
 
-\section{Uncertainity Visualisation}
+\section{Uncertainty Visualization}
 \label{sec:uncertainity_vis}
 
 Since the used dataset (see Chapter \ref{ch:dataset}) is an ensemble simulation consisting of 50 members, most of the figures and other visual representations in this thesis need to display the uncertainity stemming from them. 
 This section summarizes advances fitting for this topic, giving a frame of references of current possibilities of vizualizing uncertainity.
 
-\citeauthor{kamal_recent_2021} give a recent overview over the whole topic of uncertainity visualization: From the introduction to  the whole concept of uncertainity, to the differentiation between different kinds of uncertainity in the visualisation process.
-They grouped all kinds of representing uncertainity in two categories: quatification, consisting of mostly mathematical approaches of handling uncertain data, and visualisation, displaying the uncertain data in a way directly. 
-An overview of the different kinds of uncertainity visualization were given: Manipulation of attributes (like shading), animation, visual variables (like color, hue, brightness), graphical techniques like box/scatter plots and glyphs. 
-Furthermore, recent advances in uncertainity visualization are given, with a special emphasis on ensemble (simulation) data, big data and machine learning, listing the most prominent areas where the presentation of uncertainity is crucial. 
-In the end, a framework for evaluating uncertainity visualization is presented, followed by an overview of possible future research directions \cite{kamal_recent_2021}. 
+\citeauthor{kamal_recent_2021} give a recent overview over the whole topic of uncertainty visualization: From the introduction to  the whole concept of uncertainty, to the differentiation between different kinds of uncertainty in the visualization process.
+They grouped all kinds of representing uncertainty in two categories: quantification, consisting of mostly mathematical approaches of handling uncertain data, and visualization, displaying the uncertain data in a way directly. 
+An overview of the different kinds of uncertainty visualization were given: Manipulation of attributes (like shading), animation, visual variables (like color, hue, brightness), graphical techniques like box/scatter plots and glyphs. 
+Furthermore, recent advances in uncertainty visualization are given, with a special emphasis on ensemble (simulation) data, big data and machine learning, listing the most prominent areas where the presentation of uncertainty is crucial. 
+In the end, a framework for evaluating uncertainty visualization is presented, followed by an overview of possible future research directions \cite{kamal_recent_2021}. 
 
 
-A way of using animation to display uncertainity in scalar fields was shown by \citeauthor{coninx_visualization_2011}. 
-Their goal was to enrich the usual display of scalar fields with colormaps with additional uncertainity information. 
-The tool of choice here was animated Perlin noise, and the uncertainity was presented by modifying the noise mask with the uncertainity information at each point. 
+A way of using animation to display uncertainty in scalar fields was shown by \citeauthor{coninx_visualization_2011}. 
+Their goal was to enrich the usual display of scalar fields with color maps with additional uncertainty information. 
+The tool of choice here was animated Perlin noise, and the uncertainty was presented by modifying the noise mask with the uncertainty information at each point. 
 The results were tested using a psychophysical evaluation of contrast sensitivity thresholds \cite{coninx_visualization_2011}, evaluating effective parameters for proper presentation of the uncertain area \cite{coninx_visualization_2011}.
 
-\citeauthor{sanyal_noodles_2010} proposed Noodles, a tool for displaying uncertainity in weather ensemble simulations. 
+\citeauthor{sanyal_noodles_2010} proposed Noodles, a tool for displaying uncertainty in weather ensemble simulations. 
 It employs three different ways of displaying uncertain isocontours: ribbon, glyphs and spaghetti plots. 
-Additionally, they added tools for exploring the uncertainity of datasets, like an colormap of the whole dataset uncertainity.  
-Uncertainity in spaghetti plots is clear (one line per member), but gets confusing and chaotic quickly. 
-The glyphs display the uncertainity by different sizes,  and can be displayed on the whole map or alogside means of isocontours. 
-Ribbons condense the information of multiple lines by adapting the ribbon width to the uncertainity of isolines at a specific gridpoint. 
+Additionally, they added tools for exploring the uncertainty of datasets, like a color map of the whole dataset uncertainty.  
+Uncertainty in spaghetti plots is clear (one line per member), but gets confusing and chaotic quickly. 
+The glyphs display the uncertainty by different sizes,  and can be displayed on the whole map or alongside means of isocontours. 
+Ribbons condense the information of multiple lines by adapting the ribbon width to the uncertainty of isocontours at a specific grid point. 
 The resulting tool was tested by two meteorologists, and classified the results as beneficial \cite{sanyal_noodles_2010}.  
 
 
-Another way of visualizing groups of isocontours are contour boxplots proposed in \cite{whitaker_contour_2013}, grouping isocontours together in a similar way like conventional boxplots. 
+Another way of visualizing groups of isocontours are contour boxplots proposed in \cite{whitaker_contour_2013}, grouping isocontours together similar to conventional boxplots. 
 This means that the easiest default presentation (spaghetti plots) is replaced by popular boxplot stats: The median, the mean, the quartiles around that mean, the whole range and the outliers (not part of the whole range). 
 But the implementation is not as straight forward as in conventional boxplots. 
 To quantify the aforementioned statistics, \citeauthor{whitaker_contour_2013} propose a data depth based approach, which encodes how much a particular sample is centrally located in its function (or in this case: How central is a isocontour to a whole set of isocontours). 
@@ -296,13 +296,13 @@ While the results look very promising, it lacks a publicly available implementat
 \section{Position of this Thesis} % (fold)
 \label{sec:Position of this Thesis}
 
-As shown in Section~\ref{sec:related_pattern_analysis}, Empirical Orthogonal Functions are a relatively popular tool for analysing spatiotemporal patterns in moisture transport. 
-While mostly applied to water vapor transport in South East Asia and the Chinese Sea, there is not much coverage of the European Area, and especially the larger scope of the north east Atlantic. 
+As shown in Section~\ref{sec:related_pattern_analysis}, Empirical Orthogonal Functions are a relatively popular tool for analyzing spatio-temporal patterns in moisture transport. 
+While mostly applied to water vapor transport in South East Asia and the Chinese Sea, there is not much coverage of the European Area, and especially the larger scope of the north-east Atlantic (except for the work of \citeauthor{wypych_atmospheric_2018} \cite{wypych_atmospheric_2018}). 
 Additionally, there has been no EOF IVT analysis for ensemble-scale data, just for reanalysis data (see Table \ref{tab:ivtpatterns-overview}) or actual weather station data.
-To analyse the evolution of spatio-temporal patterns is also quite underrepresented, since most approaches apply the pattern analysis on the whole available dataset (in most cases around 50 years), exeptions are the motivational work for this theses from \citeauthor{vietinghoff_visual_2021} and \cite{zou_interdecadal_2018}. 
+To analyze the evolution of spatio-temporal patterns is also quite underrepresented, since most approaches apply the pattern analysis on the whole available dataset (in most cases around 50 years), exceptions are the motivational work for this thesis from \citeauthor{vietinghoff_visual_2021} and \cite{zou_interdecadal_2018}. 
 Additionally, to my knowledge no future scenario pattern analysis has been performed with IVT, especially not with data from CMIP datasets.  
 
-In terms of uncertainity visualization, most of the presented approaches could be quite useful in this thesis: The animated Perlin noise from \cite{coninx_visualization_2011} could be used to show the uncertainity in the scalar fields, while the ribbons and contour boxplots can be used to represent contours in the patterns (see Section \todo{ref to feature selection section} for the descision of the feature extraction). 
-Unfortunately, none of these algorithms is available as a library \todo{double check if this is true}, which hinders applicance to a great extent. 
+In terms of uncertainty visualization, most of the presented approaches could be quite useful in this thesis: The animated Perlin noise from \cite{coninx_visualization_2011} could be used to show the uncertainty in the scalar fields, while the ribbons and contour boxplots can be used to represent contours in the patterns (see Section \todo{ref to feature selection section} for the decision of the feature extraction). 
+Unfortunately, none of these algorithms is available as a library \todo{double check if this is true}, which hinders application to a great extent. 
 
 % section Position of this Thesis (end)
