@@ -171,20 +171,34 @@ From here on some other approaches could have been explored, like splitting up d
 \section{EOF Calculation}
 \label{sec:eof_calc}
 
-In the next step, the patterns are calculated using Empirical Orthogonal Functions. While Section~\ref{sec:eof} gives the theoretical methamatical background, this Section describes the practical implementation, the sliding window approach and domain-specific challenges of calculating EOFs for different variables. The following description is for one member of the different scenarios, but is handled the same way for every member.  
+In the next step, the patterns are calculated using Empirical Orthogonal Functions. While Section~\ref{sec:eof} gives the theoretical mathematical background, this Section describes the practical implementation, the sliding window approach and domain-specific challenges of calculating EOFs for different variables. The following description is for one member of the different scenarios, but is handled the same way for every member.  
 
 
 In general, the procedure of this step is based on the approach of \cite{vietinghoff_visual_2021}, but has differences in a few places. 
 In the very first step, the monthly data in form of multiple NetCDF files containing different time scopes are loaded. 
-Since the influence of the NAO especially significant in the boreal winter, this thesis focusses on the extended winter season like \cite{vietinghoff_visual_2021}, keeping only the months December, January, February and March (in the following DJFM). 
+Since the influence of the NAO especially significant in the boreal winter, this thesis focuses on the extended winter season like \cite{vietinghoff_visual_2021}, keeping only the months December, January, February and March (in the following DJFM). 
 So during loading the irrelevant months are filtered out, additionally to filtering out double values of months (a result of the monthly mean process with CDO), resulting in a timeline containing exactly one spatial map for each month value for each month. 
+The data is now available in the form of a three-dimensional array with the shape $(lon, lat, time)$, while longitude, latitude and time are stored separately as one-dimensional arrays. 
 Then the data is grouped in certain scopes for the sliding window approach. 
-For this the amount of winter seasons is counted, and realized with 30 and 50 winters, with one winter being the group of DJFM. 
+For this the data is grouped into winter seasons, one season is defined as a slice of data before a huge time threshold (e.g. 150 days, representing the spring/summer/autumn gap) to the next date. 
+Similar to \citeauthor{vietinghoff_visual_2021}, scopes of 30 and 50 winters are implemented.  
 The next scope is then shifted by one winter season, and again counted for 30/50 seasons. 
-In difference to \cite{vietinghoff_visual_2021}, the winters themself are not reduced to one mean map since this has not been done by any related work using IVT fields, and smoothing out the data any further could potentially remove important features. 
+In difference to \cite{vietinghoff_visual_2021}, the winters themselves are not reduced to one mean map since this has not been done by any related work using IVT fields, and smoothing out the data any further could potentially remove important features. 
 
-Now for each of these scopes EOFs are calculated in the following way: 
-First 
+In the following the EOF procedure for one such scope is described, but is executed the same for each scope. 
+
+\textbf{1. Preparation of the Data for SVD}
+
+Before calculating SVD, the data needs to be prepared accordingly. 
+After the scoping, the data for each scope is available as a 
+Following the argumentation from \cite{vietinghoffdiss} and Section~\ref{sec:eof} the first step is to multiply each datapoint with the factor $\sqrt{t-1}^{-1}$, with $t$ being the size in time dimension. 
+Then the geographical weights are applied, shifting the data into weighted space. 
+The geographical weights are applied depending on the latitude of the data, approximated by $\cos(lat)$. 
+Next, the data needs to be reshaped, since SVD only works for matrices (two-dimensional arrays): The geographical dimensions $(lon, lat)$ are reduced to one spatial dimension and then permuted, so the time is the first dimension. 
+Now the shape of the data is $(time, spat)$, and SVD can be calculated. 
+
+\textbf{2. Calculating EOFs with SVD}
+
 
 
 
