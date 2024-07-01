@@ -86,7 +86,7 @@ The size of data could be further reduced in this timestep by selecting only the
 \textbf{3. Calculating IVT Field}
 
 The first step to calculate the IVT field is to convert the hybrid sigma pressure levels (see Section \ref{sec:hybridsigma}) to actual pressure values. 
-For this Equation \ref{eq:mpige-sigma-hybrid-pressure} is used for calculating a new variable \texttt{plev} containing the pressure values at each gridpoint in each timestep. 
+For this Equation \ref{eq:mpige-sigma-hybrid-pressure} is used for calculating a new variable \texttt{plev} containing the pressure values at each grid point in each time step. 
 Then NumPy's trapezoidal integration function is used to calculate the zonal (Equation \ref{eq:zonal_ivt}) and meridional (Equation \ref{eq:meridional_ivt}) components of the IVT. 
 Similar to related literature \cite{ayantobo_integrated_2022}, a constant value for the gravitational acceleration $g = 9.806~ms^{-2}$ is used in the calculation. 
 Using the result of the zonal and meridional components, the norm field $\lVert IVT \rVert$ can be calculated using Equation \ref{eq:ivtnorm}. 
@@ -96,7 +96,7 @@ Using the result of the zonal and meridional components, the norm field $\lVert 
 \textbf{4. Saving Results to NetCDF dataset}
 
 The results of these calculations (or the geographical box cutout) are then again saved as NetCDF files, in the far less complex directory structure \texttt{time\_resolution}, \texttt{variable}, \texttt{member} and then the actual file \texttt{timescope.nc}. 
-In case of the IVT, both (zonal and merisional) components are saved alongside the Euclidean norm. 
+In case of the IVT, both (zonal and meridional) components are saved alongside the Euclidean norm. 
 
 
 \textbf{5. Generating daily/monthly means}
@@ -191,7 +191,7 @@ In the following the EOF procedure for one such scope is described, but is execu
 
 Before calculating SVD, the data needs to be prepared accordingly. 
 After the scoping, the data for each scope is available as a 
-Following the argumentation from \cite{vietinghoffdiss} and Section~\ref{sec:eof} the first step is to multiply each datapoint with the factor $\sqrt{t-1}^{-1}$, with $t$ being the size in time dimension. 
+Following the argumentation from \cite{vietinghoffdiss} and Section~\ref{sec:eof} the first step is to multiply each datapoint with the factor $\sqrt{m-1}^{-1}$\footnote{\label{timesize}$m$ being the time dimension size}. 
 Then the geographical weights are applied, shifting the data into weighted space. 
 The geographical weights are applied depending on the latitude of the data, approximated by $\cos(lat)$. 
 Next, the data needs to be reshaped, since SVD only works for matrices (two-dimensional arrays): The geographical dimensions $(lon, lat)$ are reduced to one spatial dimension and then permuted, so the time is the first dimension. 
@@ -199,8 +199,82 @@ Now the shape of the data is $(time, spat)$, and SVD can be calculated.
 
 \textbf{2. Calculating EOFs with SVD}
 
+In the next step the Singular Value Decomposition is applied to the geographically weighted two-dimensional data chunk. 
+For this the SVD implementation of Julia's \texttt{LinearAlgebra} package (which is part of the Standard Library) is used.
+This approach computes all $m$\cref{timesize} modes, although at most the top five modes are used in this thesis. 
+This was feasible for the monthly data used in this thesis, but once this approach is scaled up to daily or subdaily data it should be replaced by faster algorithms like Snapshot POD or the SLEPC implementation used by \citeauthor{vietinghoffdiss} \cite{vietinghoffdiss}.
+Those implementations compute only the first $n$ modes, which is significantly faster than the full SVD computation. 
+
+The result of the SVD of the weighted data chunk $D$ is then:
+
+\begin{equation}
+\label{eq:SVD}
+L,S,R = SVD(D)
+\end{equation}
+
+$L$ are the left singular vectors, $R$ the right singular vectors and $S$ a vector containing the singular values. 
+With time being the first dimension as a result of the previous step, $R$ contains the spatial modes, $L$ the temporal modes (also called principal components or EOF coefficients). 
+The values $S$ can be used to compute the share of variablity encoded in that corresponding mode $i$ with 
+
+\begin{equation}
+\label{eq:singularval variability}
+V_i = \frac{S_i}{\sum_{i=1}^{m} S_i}
+\end{equation}
+
+
+Then the modes are cut of at a limit $n$ (usually five) to reduce disk space usage and loading times in the visualization processes later. 
+
+
+\textbf{3. Post Processing of the EOFs}
+
+After the first $n$ modes of interest were cut off, a few more steps are required to be able to reconstruct the anomaly map generated in the preparation step.  
+First, the temporal modes are scaled with $\sqrt{m-1}$, then the modes are aligned to some vector (see Section~\ref{sec:mode_alignment}) and the weighting is reverted by multiplying the spatial modes depending on their latitude with $\cos(lat)^{-1}$.
+The results are then saved using a data structure serialization library called \texttt{JLD2}, which is based on HDF5 \cite{noauthor_juliaiojld2jl_2024}. 
+In contrast to \cite{vietinghoffdiss}, the scaling is done at the loading of the data to be more flexible (see Section~\ref{sec:mode_scaling}).
+
+\subsection{EOF Mode Scaling}
+\label{sec:mode_scaling}
 
 
 
-\section{Visual analysis of Patterns}
+\subsection{EOF Mode Alignment}
+\label{sec:mode_alignment}
+
+As explained in Section~\ref{sec:eof}, the resulting patterns are eigenvectors, meaning that scaled with any arbitrary scalar $\gamma$ is also a valid result. 
+Since basically only two scaling modes are useful (see Section~\ref{sec:mode_scaling}), the sign/direction of that vector is a last, but very important choice to make.
+While there is no inherent meaning in the sign of one certain pattern, it is crucial for understandability to align the results to a) compare modes across time and members and b) analyzing spatial and temporal patterns separated from each other. 
+Most of the related work in Section~\ref{sec:related_pattern_analysis} uses maximum of a few modes (since most don't compute multiple modes, and none use a ensemble scale simulation), which enables them to align the modes by hand to be useful or don't align them at all.
+Since this work has TODO patterns to align for one scenario, it's not feasible to do it by hand, the problem needs to be solved algorithmically. 
+The only work using such a large scale analysis is by \cite{vietinghoffdiss} \cite{vietinghoffdiss}.  
+Its solution for this is providing a field $F$ to which we compare our spatial mode and decide to whether flip it ($\equiv$ multiplying it with $-1$) or not. 
+
+The method chosen by \citeauthor{vietinghoffdiss} \cite{vietinghoffdiss} is to use the Scalar/Dot product of the spatial pattern with the mean field used to generate the anomaly maps in the data preparation step. 
+This mean field is then adjusted by the spatial mean, to reduce it to the actual values of variance. 
+This process is illustrated in the Figure TODO \todo{Make fig with the mean fieds, cleaned by spatial mean and the first EOF pattern} 
+This has the effect that positive values of patterns align with above-average values of the actual data mean and vice versa, making the sign of the EOFs interpretable (see Figure TODO). 
+
+Unfortunately, this works only well for the primary EOF mode, while the rest compared to yields not so successful results. 
+A way of testing the alignment of patterns is by computing the cross-correlation boxplots from Section~\ref{sec:Temporal Pattern Correlation} with and without absolute correlation values.
+Figure~\ref{fig:TODO} gives an example of such an analysis. 
+If the absolute correlation boxplot shows a clear trend (e.g. consistent values) but the plot with normal correlation values has either no visisble correlation (meaning the alignment is very arbitrary an alignment varies a lot) or there are many outliers on the opposite side of the zero line (alignment did not work for just some members). 
+
+To fix these problems and also measure correlation 
+
+
+
+\section{Visual Analysis of Patterns}
 \label{sec:vis_analysis}
+
+
+\subsection{Mode Comparison}
+\label{sec:mode comparison}
+
+\subsection{Temporal Pattern Correlation} % (fold)
+\label{sec:Temporal Pattern Correlation}
+
+% section Temporal Pattern Correlation (end)
+
+\subsection{Scenario Comparison} % (fold)
+\label{sec:Scenario Comparison}
+
+% section Scenario Comparison (end)
