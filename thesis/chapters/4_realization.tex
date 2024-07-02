@@ -200,7 +200,7 @@ Now the shape of the data is $(time, spat)$, and SVD can be calculated.
 \textbf{2. Calculating EOFs with SVD}
 
 In the next step the Singular Value Decomposition is applied to the geographically weighted two-dimensional data chunk. 
-For this the SVD implementation of Julia's \texttt{LinearAlgebra} package (which is part of the Standard Library) is used.
+For this the SVD implementation of Julia's \texttt{Linear\-Algebra} package (which is part of the Standard Library) is used.
 This approach computes all $m$\cref{timesize} modes, although at most the top five modes are used in this thesis. 
 This was feasible for the monthly data used in this thesis, but once this approach is scaled up to daily or subdaily data it should be replaced by faster algorithms like Snapshot POD or the SLEPC implementation used by \citeauthor{vietinghoffdiss} \cite{vietinghoffdiss}.
 Those implementations compute only the first $n$ modes, which is significantly faster than the full SVD computation. 
@@ -214,11 +214,11 @@ L,S,R = SVD(D)
 
 $L$ are the left singular vectors, $R$ the right singular vectors and $S$ a vector containing the singular values. 
 With time being the first dimension as a result of the previous step, $R$ contains the spatial modes, $L$ the temporal modes (also called principal components or EOF coefficients). 
-The values $S$ can be used to compute the share of variablity encoded in that corresponding mode $i$ with 
+The singular values $S$ can be used to compute the share of variablity encoded in that corresponding mode $i$ with 
 
 \begin{equation}
 \label{eq:singularval variability}
-V_i = \frac{S_i}{\sum_{i=1}^{m} S_i}
+V_i = \frac{\sigma_i^2}{\sum_{i=1}^{m}\sigma_i^2}
 \end{equation}
 
 
@@ -230,35 +230,38 @@ Then the modes are cut of at a limit $n$ (usually five) to reduce disk space usa
 After the first $n$ modes of interest were cut off, a few more steps are required to be able to reconstruct the anomaly map generated in the preparation step.  
 First, the temporal modes are scaled with $\sqrt{m-1}$, then the modes are aligned to some vector (see Section~\ref{sec:mode_alignment}) and the weighting is reverted by multiplying the spatial modes depending on their latitude with $\cos(lat)^{-1}$.
 The results are then saved using a data structure serialization library called \texttt{JLD2}, which is based on HDF5 \cite{noauthor_juliaiojld2jl_2024}. 
-In contrast to \cite{vietinghoffdiss}, the scaling is done at the loading of the data to be more flexible (see Section~\ref{sec:mode_scaling}).
+As stated in Section~\ref{sec:eof}, the spatial as well as the temporal patterns from the SVD are in unit scale, and since they are eigenvectors, any combination of a scalar $c$ and the EOF modes $cg^{(k)}$ and their corresponding temporal pattern $\alpha^{(j)}_k c^{-1}$ are also viable solutions to the problem. 
+This leaves room for the scaling and choosing the sign of the spatial/temporal patterns in a way that simplifies interpretation of the patterns. 
+The former is explained in Section~\ref{sec:mode_scaling}, the latter  in Section~\ref{sec:mode_alignment}.
 
 \subsection{EOF Mode Scaling}
 \label{sec:mode_scaling}
 
-
+As explained by \citeauthorwork{vietinghoffdiss}, there are two particularly useful ways of scaling the results: 
+Either by multiplying the temporal patterns (or here: the left singular vectors) with their corresponding singular value $\sigma_i$, which yields EOF coefficients in the original unit of measurement, or by multiplying the spatial pattern (or right singular vectors) with their corresponding singular value $\sigma_i$, which yields EOFs in the original unit of measurement. 
+Depending on the type of used visualization, the former or latter are more fitting, so in contrast to \cite{vietinghoffdiss}, the scaling is done at the loading of the data to be more flexible.
 
 \subsection{EOF Mode Alignment}
 \label{sec:mode_alignment}
 
-As explained in Section~\ref{sec:eof}, the resulting patterns are eigenvectors, meaning that scaled with any arbitrary scalar $\gamma$ is also a valid result. 
 Since basically only two scaling modes are useful (see Section~\ref{sec:mode_scaling}), the sign/direction of that vector is a last, but very important choice to make.
 While there is no inherent meaning in the sign of one certain pattern, it is crucial for understandability to align the results to a) compare modes across time and members and b) analyzing spatial and temporal patterns separated from each other. 
 Most of the related work in Section~\ref{sec:related_pattern_analysis} uses maximum of a few modes (since most don't compute multiple modes, and none use a ensemble scale simulation), which enables them to align the modes by hand to be useful or don't align them at all.
 Since this work has TODO patterns to align for one scenario, it's not feasible to do it by hand, the problem needs to be solved algorithmically. 
-The only work using such a large scale analysis is by \cite{vietinghoffdiss} \cite{vietinghoffdiss}.  
+The only work using such a large scale analysis is by \citeauthor{vietinghoffdiss} \cite{vietinghoffdiss}.  
 Its solution for this is providing a field $F$ to which we compare our spatial mode and decide to whether flip it ($\equiv$ multiplying it with $-1$) or not. 
 
 The method chosen by \citeauthor{vietinghoffdiss} \cite{vietinghoffdiss} is to use the Scalar/Dot product of the spatial pattern with the mean field used to generate the anomaly maps in the data preparation step. 
 This mean field is then adjusted by the spatial mean, to reduce it to the actual values of variance. 
-This process is illustrated in the Figure TODO \todo{Make fig with the mean fieds, cleaned by spatial mean and the first EOF pattern} 
-This has the effect that positive values of patterns align with above-average values of the actual data mean and vice versa, making the sign of the EOFs interpretable (see Figure TODO). 
+If the result of the scalar product is less than zero, meaning the spatial pattern is closer to the mean of the data. 
+This process is illustrated in the Figure TODO \todo{Make fig with the mean fields, cleaned by spatial mean and the first EOF pattern} 
+This has the effect that positive values of patterns align with above-average values of the actual data mean and vice versa, making the sign of the EOFs interpretable \cite{vietinghoffdiss} (see Figure TODO). 
 
 Unfortunately, this works only well for the primary EOF mode, while the rest compared to yields not so successful results. 
 A way of testing the alignment of patterns is by computing the cross-correlation boxplots from Section~\ref{sec:Temporal Pattern Correlation} with and without absolute correlation values.
 Figure~\ref{fig:TODO} gives an example of such an analysis. 
-If the absolute correlation boxplot shows a clear trend (e.g. consistent values) but the plot with normal correlation values has either no visisble correlation (meaning the alignment is very arbitrary an alignment varies a lot) or there are many outliers on the opposite side of the zero line (alignment did not work for just some members). 
-
-To fix these problems and also measure correlation 
+If the absolute correlation boxplot shows a clear trend (e.g. consistent values) but the plot with normal correlation values has either no visible correlation (meaning the alignment is very arbitrary and varies a lot) or there are many outliers on the opposite side of the zero line (alignment did not work for just some members). 
+To fix these problems and also measure correlation, the secondary (or less) mode of the first scope in the historical simulation is used as the field to align to, since it was already shown that for the most part there is collapsing of the patters, and they look vaguely similar over the years of the simulation. 
 
 
 
