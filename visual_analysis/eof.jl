@@ -5,8 +5,8 @@ using EmpiricalOrthogonalFunctions
 
 @enum EOFScaling begin
     noscaling = 1
-    svalmult = 2
-    svaldivide = 3
+    tempmodescale = 2
+    spatmodescale = 3
 end
 
 struct EOFResult
@@ -18,23 +18,39 @@ struct EOFResult
 end
 
 
-function scale_eof_result(eof_result::EOFResult; scale_mode::EOFScaling=svalmult)
+function scale_eof_result(eof_result::EOFResult; scale_mode::EOFScaling=spatmodescale)::EOFResult
     # now scale the eofs in different ways
 
     if eof_result.scaling != noscaling
         ArgumentError("You cannot scale an already scaled response!")
     end
 
+    if scale_mode == spatmodescale 
+        broadcast_svals = reshape(eof_result.singularvals, 1, 1, :)
+        return EOFResult(eof_result.spatial_modes .* broadcast_svals, eof_result.temporal_modes, eof_result.singularvals, eof_result.sum_all_eigenvals, scale_mode)
+    elseif scale_mode == tempmodescale
+        broadcast_svals = reshape(eof_result.singularvals, 1, :)
+        return EOFResult(eof_result.spatial_modes, eof_result.temporal_modes .* broadcast_svals, eof_result.singularvals, eof_result.sum_all_eigenvals, scale_mode)
+    end
+end
 
-    if scale_mode == svalmult
-        new_eofs = eof_result.spatial_modes .* reshape(eof_result.singularvals, 1, 1, :)
-        new_temp_signal = eof_result.temporal_modes .* reshape(eof_result.singularvals, 1, :)
-    elseif scale_mode == svaldivide
-        new_eofs = eof_result.spatial_modes ./ reshape(eof_result.singularvals, 1, 1, :)
-        new_temp_signal = eof_result.temporal_modes ./ reshape(eof_result.singularvals, 1, :)
+
+function scale_eof_result!(eof_result::EOFResult; scale_mode::EOFScaling=spatmodescale)
+    # now scale the eofs in different ways
+
+    if eof_result.scaling != noscaling
+        ArgumentError("You cannot scale an already scaled response!")
     end
 
-    return EOFResult(new_eofs, new_temp_signal, eof_result.singularvals, eof_result.sum_all_eigenvals, scale_mode)
+    if scale_mode == spatmodescale 
+        broadcast_svals = reshape(eof_result.singularvals, 1, 1, :)
+        eof_result.spatial_modes .*= broadcast_svals
+    elseif scale_mode == tempmodescale
+        broadcast_svals = reshape(eof_result.singularvals, 1, :)
+        eof_result.temporal_modes .*= broadcast_svals
+    end
+
+    eof_result.scaling = scale_mode
 end
 
 function get_modes_variability(eof_result::EOFResult)::Vector{Float64}
@@ -49,6 +65,45 @@ function truncate_eof_result(eof_result::EOFResult, n::Int)
         eof_result.sum_all_eigenvals,
         eof_result.scaling
     )
+end
+
+
+
+function realign_modes!(eof_result::EOFResult, alignment_fields::Vector{Union{Nothing, Vector{<:Union{Missing,AbstractFloat}}}})
+    
+    for (i, align_field) in enumerate(alignment_fields)
+
+        if isnothing(align_field)
+            continue
+        end
+
+        factor = check_alignment_of_fields(eof_result.spatial_modes[:, :, i], align_field)
+
+        eof_result.spatial_modes[:, :, i] *=  factor
+        eof_result.temporal_modes[:, i] *=  factor
+    end
+
+
+end
+
+function realign_modes(eof_result::EOFResult, alignment_fields)::EOFResult
+
+    new_spatial_modes = similar(eof_result.spatial_modes)
+    new_temporal_modes = similar(eof_result.temporal_modes)
+    
+    for (i, align_field) in enumerate(alignment_fields)
+
+        if isnothing(align_field)
+            continue
+        end
+
+        factor = check_alignment_of_fields(eof_result.spatial_modes[:, :, i], align_field)
+
+        new_spatial_modes[:, :, i] = eof_result.spatial_modes[:, :, i] .* factor
+        new_temporal_modes[:, i] = eof_result.temporal_modes[:, i] .* factor
+    end
+
+    return EOFResult(new_spatial_modes, new_temporal_modes, eof_result.singularvals, eof_result.sum_all_eigenvals, eof_result.scaling)
 end
 
 function reconstruct_data(eof_response::EOFResult; original_data_timemean::Union{Nothing,AbstractArray{<:Union{Missing,AbstractFloat},3}}=nothing)
@@ -69,12 +124,12 @@ function reconstruct_data(eof_response::EOFResult; original_data_timemean::Union
 
     else
         broadcasting_svals = reshape(eof_response.singularvals, 1, :)
-        if eof_response.scaling == svalmult
+        if eof_response.scaling == tempmodescale
             L = eof_response.temporal_modes ./ broadcasting_svals
+            R = reshaped_spatial
+        elseif eof_response.scaling == spatmodescale
+            L = eof_response.temporal_modes
             R = reshaped_spatial ./ broadcasting_svals
-        elseif eof_response.scaling == svaldivide
-            L = eof_response.temporal_modes .* broadcasting_svals
-            R = reshaped_spatial .* broadcasting_svals
         else
             ArgumentError("Unknown scaling: $(eof_response.scaling)")
         end
@@ -123,7 +178,18 @@ function prepare_data_for_eof(data; meanfield=nothing, weights=nothing, timedim=
     return reshape(data, (time_shape, prod(geo_shape)))
 end
 
-function align_with_field(field, alignment_field; mode_dim_index=2)
+function check_alignment_of_fields(spatial_field, alignment_field)::Int
+
+    scalar_product = dot(spatial_field, alignment_field)
+
+    if scalar_product < 0
+        return -1
+    else
+        return 1
+    end
+end
+
+function align_all_modes_with_field(field, alignment_field; mode_dim_index=2)
 
     dims = size(field)
     dimension = length(dims)
@@ -134,23 +200,13 @@ function align_with_field(field, alignment_field; mode_dim_index=2)
         field = reshape(field, (prod(spat_dims), mode_dim))
     end
 
-    function handle_slice(slice)
-        scalar_product = dot(slice, alignment_field)
-
-        if scalar_product < 0
-            return -1, slice * -1
-        else
-            return 1, slice
-        end
-    end
-
     result = similar(field)
 
     flips = ones(length(axes(field, mode_dim_index)))
 
     for modenum in axes(field, mode_dim_index)
-        factor, sliceresult = handle_slice(field[:, modenum])
-        result[:, modenum] = sliceresult
+        factor = check_alignment_of_fields(field[:, modenum], alignment_field)
+        result[:, modenum] = field[:, modenum] * factor
         flips[modenum] = factor
     end
 
@@ -217,7 +273,7 @@ function eof(data; weights=nothing, timedim=3, weightdim=2, center=true, nmodes=
     if align_eofs_with_mean
         weighted_timemean = timemean .* reshape(weights, 1, old_dims[weightdim], 1)
         # use the deviations from the spatial mean to compute the alignment, not the raw temporal mean
-        eofs, flip_factors = align_with_field(eofs, reshape(weighted_timemean .- mean(weighted_timemean), (prod(spat_dims), 1)))
+        eofs, flip_factors = align_all_modes_with_field(eofs, reshape(weighted_timemean .- mean(weighted_timemean), (prod(spat_dims), 1)))
         temporal_modes = temporal_modes .* reshape(flip_factors, 1, :)
     end
 
