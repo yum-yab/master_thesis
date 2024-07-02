@@ -48,6 +48,14 @@ struct EOFEnsembleResult
     ps_ensemble_eofs::Dict{String,Vector{EOFResult}}
 end
 
+struct EOFEnsemble
+    variable_id::String
+    time::Vector{DateTime}
+    scopes::Vector{UnitRange{Int}}
+    piControl::Vector{EOFResult}
+    ensemble::Dict{String,Vector{EOFResult}}
+end
+
 function get_member_id_string(member_nr::Int)::String
     return "r$(member_nr)i1p1f1"
 end
@@ -113,12 +121,33 @@ function build_timeline_data(base_path, member, scenarios...; file_range_selecti
     return TimelineData(lons, lats, time, collect(scenarios))
 end
 
+function is_different_month(date1, date2)
+        
+    return !(year(date1) == year(date2) && month(date1) == month(date2))
+end
+
+
+# function check_time_alignment(time_axis...)
+
+#     size_set = Set([length(a) for a in time_axis])
+
+#     if length(size_set) != 1
+#         return false
+#     end
+
+#     for i in range(1, collect(size_set)[1])
+
+        
+
+
 function build_ensemble_data(base_path, scenarios...; file_range_selection=:, data_field_id="ivt", member_range=1:50, silent=false, filterfun=nothing)
 
     lons = ncread(get_files_of_member(base_path, scenarios[1], 1)[1], "lon")
     lats = get_field(get_files_of_member(base_path, scenarios[1], 1)[1], "lat")
 
     result = EnsembleSimulation[]
+
+
 
 
     for scenario in scenarios
@@ -128,7 +157,9 @@ function build_ensemble_data(base_path, scenarios...; file_range_selection=:, da
 
         time = get_time_data(base_path, scenario, 1; file_range_selection=file_range_selection)
 
-        time_selector = isnothing(filterfun) ? Colon() : [i for i in eachindex(time) if filterfun(time[i])]
+        last_value_vec = isnothing(filterfun) || filterfun(time[end]) ? [eachindex(time)[end]] : []
+
+        time_selector = isnothing(filterfun) ? vcat([i for i in eachindex(time)[1:end-1] if is_different_month(time[i], time[i+1])], last_value_vec) : vcat([i for i in eachindex(time)[1:end-1] if filterfun(time[i]) && is_different_month(time[i], time[i+1])], last_value_vec)
         time = time[time_selector]
 
 
@@ -211,7 +242,7 @@ function concat_ensemble_data(ensemble_simulations::EnsembleSimulation...; id::S
             ArgumentError("Not aligning members: $member_id_set at index $index")
         end
 
-        members[index] = EnsembleMember(pop!(member_id_set), cat([es.members[index].data for es in ensemble_simulations]..., dims=3))
+        members[index] = EnsembleMember(pop!(member_id_set), cat([es.members[index].data[:, :, 1:last_indeces_ensemble[i]] for (i, es) in enumerate(ensemble_simulations)]..., dims=3))
 
     end
 
@@ -407,6 +438,28 @@ function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=fa
         ps_piControl,
         ivt_eof,
         ps_eof
+    )
+end
+
+function load_eof_ensemble(base_path, scope_id, scenario_id, field_id::String; sqrtscale=true, modes=5, scale_eofs::Union{Nothing,EOFScaling}=nothing)::EOFEnsemble
+
+    sqrt_string = sqrtscale ? "sqrtscale" : "nosqrtscale"
+    ds = load(joinpath(base_path, field_id, scenario_id, scope_id, "$(field_id)_eofs_$(modes)modes_$(scenario_id)_$(scope_id)_$(sqrt_string).jld2"))
+
+    if isnothing(scale_eofs)
+        piControl = convert(Vector{EOFResult}, ds["piControl"]["r1i1p1f1"])
+        eof_data = convert(Dict{String,Vector{EOFResult}}, ds["scenario_data"])
+    else
+        piControl = scale_eof_result.(convert(Vector{EOFResult}, ds["piControl"]["r1i1p1f1"]); scale_mode=scale_eofs)
+        eof_data = Dict(member_id => scale_eof_result.(eof_results; scale_mode=scale_eofs) for (member_id, eof_results) in convert(Dict{String,Vector{EOFResult}}, ds["scenario_data"]))
+    end
+
+    return EOFEnsemble(
+        convert(String, ds["variable_id"]),
+        convert(Vector{DateTime}, ds["time"]),
+        convert(Vector{UnitRange{Int}}, ds["scopes"]),
+        piControl,
+        eof_data
     )
 end
 

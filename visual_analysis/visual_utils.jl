@@ -665,7 +665,7 @@ end
 function compare_ensembles(
     nmodes,
     filename,
-    ensembles_eof_tuples::Tuple{EnsembleSimulation,EOFEnsembleResult,Symbol,String,Float64}...;
+    ensembles_eof_tuples::Tuple{EnsembleSimulation,EOFEnsemble,String,Float64}...;
     framerate::Int=30,
     colormap=:viridis,
     coastline_color=:white,
@@ -689,7 +689,7 @@ function compare_ensembles(
     end
 
 
-    for (i, (ensemble, eof_data, field_id, data_label, data_scaling)) in enumerate(ensembles_eof_tuples)
+    for (i, (ensemble, eof_data, data_label, data_scaling)) in enumerate(ensembles_eof_tuples)
 
         current_row = i
 
@@ -701,7 +701,6 @@ function compare_ensembles(
             current_scope_index,
             current_row,
             nmodes;
-            field=field_id,
             contour_levels=[0],
             contours_for_slice=contours_for_slice,
             colormap=colormap,
@@ -731,12 +730,11 @@ end
 function display_eof_modes!(
     fig::Figure,
     ensemble_simulation::EnsembleSimulation,
-    eof_result::EOFEnsembleResult,
+    eof_result::EOFEnsemble,
     data_id::String,
     current_scope_index,
     row_id,
     nmodes;
-    field=:ivt,
     contour_levels=[0],
     contours_for_slice=:,
     contour_mode=:spaghetti,
@@ -749,7 +747,6 @@ function display_eof_modes!(
     lonmin, lonmax = extrema(ensemble_simulation.lons)
     latmin, latmax = extrema(ensemble_simulation.lats)
 
-    ensemble_eofs, piControl_eofs = pick_correct_field(eof_result, field)
 
     all_scopes = eof_result.scopes
     # mean_axis = local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=@lift("$(ensemble_simulation.id) $(year(ensemble_simulation.time[all_scopes[$current_scope_index].start]))-$(year(ensemble_simulation.time[all_scopes[$current_scope_index].stop])) Mean map"), figure_row=row_id, figure_col=nmodes + 2)
@@ -757,11 +754,11 @@ function display_eof_modes!(
 
     # dataset_mean_observable = @lift(dropdims(mean(get_mean_of_multiple_arrays([member.data[:, :, all_scopes[$current_scope_index]] * scale_value for member in ensemble_simulation.members]...), dims=3), dims=3))
 
-    picontrol_observable = @lift(piControl_eofs[$current_scope_index].spatial_modes[:, :, 1] * scale_value)
+    picontrol_observable = @lift(eof_result.piControl[$current_scope_index].spatial_modes[:, :, 1] * scale_value)
 
     contour_colors = distinguishable_colors(50)
 
-    eof_extremas = [extrema(res.spatial_modes .* scale_value) for (_, eofresarray) in ensemble_eofs for res in eofresarray]
+    eof_extremas = [extrema(res.spatial_modes .* scale_value) for (_, eofresarray) in eof_result.ensemble for res in eofresarray]
 
     _, maxval = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), eof_extremas)
 
@@ -814,14 +811,14 @@ function display_eof_modes!(
 
         column = mode >= hexbin_cb_col ? mode + 2 : mode
 
-        title = @lift("$(ensemble_simulation.id) $(year(ensemble_simulation.time[all_scopes[$current_scope_index].start]))-$(year(ensemble_simulation.time[all_scopes[$current_scope_index].stop])) Mode $mode Variability $(round(mean([get_modes_variability(resarray[$current_scope_index])[mode] for (_, resarray) in ensemble_eofs]), digits = 2) * 100) %")
+        title = @lift("$(ensemble_simulation.id) $(year(ensemble_simulation.time[all_scopes[$current_scope_index].start]))-$(year(ensemble_simulation.time[all_scopes[$current_scope_index].stop])) Mode $mode Variability $(round(mean([get_modes_variability(resarray[$current_scope_index])[mode] for (_, resarray) in eof_result.ensemble]), digits = 2) * 100) %")
         axis = local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=title, figure_row=row_id, figure_col=column)
 
         surface!(
             axis,
             lonmin .. lonmax,
             latmin .. latmax,
-            @lift(get_mean_of_multiple_arrays([res_array[$current_scope_index].spatial_modes[:, :, mode] * scale_value for (_, res_array) in ensemble_eofs]...));
+            @lift(get_mean_of_multiple_arrays([res_array[$current_scope_index].spatial_modes[:, :, mode] * scale_value for (_, res_array) in eof_result.ensemble]...));
             shading=shading,
             colormap=colormap,
             colorrange=limits,
@@ -833,7 +830,7 @@ function display_eof_modes!(
         if mode in mode_iterator[contours_for_slice]
 
             if contour_mode == :spaghetti
-                for (i, (_, eofres_array)) in enumerate(ensemble_eofs)
+                for (i, (_, eofres_array)) in enumerate(eof_result.ensemble)
                     contour!(
                         axis,
                         lonmin .. lonmax,
@@ -846,7 +843,7 @@ function display_eof_modes!(
                 end
             elseif contour_mode == :hexbin
 
-                contours_observable = @lift([contours(ensemble_simulation.lons, ensemble_simulation.lats, eofres_array[$current_scope_index].spatial_modes[:, :, mode], contour_levels) for (i, (_, eofres_array)) in enumerate(ensemble_eofs)])
+                contours_observable = @lift([contours(ensemble_simulation.lons, ensemble_simulation.lats, eofres_array[$current_scope_index].spatial_modes[:, :, mode], contour_levels) for (i, (_, eofres_array)) in enumerate(eof_result.ensemble)])
 
                 vertices_observable = @lift(vcat(sample_along_line.(get_isocontour_vertices($contours_observable...); dx=0.01)...))
 
@@ -871,9 +868,9 @@ function display_eof_modes!(
 
 end
 
-function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_axis; compare_modes=1 => 1, compare_keys=(:ivt, :ps), data_name="", size=Makie.autmatic, value_mode=:normal, transformation=nothing)
+function generate_correlation_boxplot(first_eof_data::EOFEnsemble, second_eof_data::EOFEnsemble; compare_modes=1 => 1, data_name="", size=Makie.autmatic, value_mode=:normal, transformation=nothing)
 
-    available_members = intersect(keys(eof_result_data.ps_ensemble_eofs), keys(eof_result_data.ivt_ensemble_eofs))
+    available_members = intersect(keys(first_eof_data.ensemble), keys(second_eof_data.ensemble))
 
     println("Available members in both datasets: $(length(available_members))")
 
@@ -883,14 +880,16 @@ function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_a
 
     lagvals = Int[]
 
-    control_correlation = Vector{Float64}(undef, length(eof_result_data.scopes))
-    control_lag = Vector{Int}(undef, length(eof_result_data.scopes))
+    scopes = first_eof_data.scopes
 
-    xvals = eachindex(eof_result_data.scopes)
 
-    first_ensemble_eof, first_piControl = pick_correct_field(eof_result_data, compare_keys[1])
+    control_correlation = Vector{Float64}(undef, length(scopes))
+    control_lag = Vector{Int}(undef, length(scopes))
 
-    second_ensemble_eofs, second_piControl = pick_correct_field(eof_result_data, compare_keys[2])
+    xvals = eachindex(scopes)
+
+    time_axis = first_eof_data.time
+
 
 
     function transform_data(data)
@@ -901,16 +900,22 @@ function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_a
         end
     end
 
-    for scope_index in eachindex(eof_result_data.scopes)
+    for scope_index in eachindex(scopes)
 
-        lag_extent = Int(floor(length(eof_result_data.scopes[scope_index]) / 2))
+        lag_extent = Int(floor(length(scopes[scope_index]) / 2))
 
         lag = collect(-1*lag_extent:lag_extent)
 
         for member_id in available_members
 
-            first_eof_temporalpattern = first_ensemble_eof[member_id][scope_index].temporal_modes[:, compare_modes.second]
-            second_eof_temporalpattern = second_ensemble_eofs[member_id][scope_index].temporal_modes[:, compare_modes.first]
+            first_eof_temporalpattern = first_eof_data.ensemble[member_id][scope_index].temporal_modes[:, compare_modes.second]
+            second_eof_temporalpattern = second_eof_data.ensemble[member_id][scope_index].temporal_modes[:, compare_modes.first]
+
+
+            if length(first_eof_temporalpattern) != (length(second_eof_temporalpattern))
+                println("Scope $(scope_index): Size fisrt: $(length(first_eof_temporalpattern))\tSize Second: $(length(second_eof_temporalpattern))")
+                continue
+            end
 
             # println("Length of signals: $(length(ps_eof_temporalpattern)) $(length(ivt_eof_temporalpattern))")
             # half_signal = trunc(Int, round(length(ivt_eof_temporalpattern) * 0.5))
@@ -934,7 +939,7 @@ function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_a
 
 
 
-        crosscor_piControl_result = crosscor(transform_data(first_piControl[scope_index].temporal_modes[:, compare_modes.first]), transform_data(second_piControl[scope_index].temporal_modes[:, compare_modes.second]), lag)
+        crosscor_piControl_result = crosscor(transform_data(first_eof_data.piControl[scope_index].temporal_modes[:, compare_modes.first]), transform_data(second_eof_data.piControl[scope_index].temporal_modes[:, compare_modes.second]), lag)
 
         (maximal_correlation, index) = findmax(abs.(crosscor_piControl_result))
 
@@ -962,10 +967,10 @@ function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_a
 
     axislegend(ax_boxplot)
     axislegend(ax_lagval)
-    seasonslice = 1:3:length(eof_result_data.scopes)
+    seasonslice = 1:3:length(first_eof_data.scopes)
 
     for axis in [ax_boxplot, ax_lagval]
-        axis.xticks = (seasonslice, ["$(year(time_axis[eof_result_data.scopes[i].start])) - $(year(time_axis[eof_result_data.scopes[i].stop]))" for i in seasonslice])
+        axis.xticks = (seasonslice, ["$(year(time_axis[scopes[i].start])) - $(year(time_axis[scopes[i].stop]))" for i in seasonslice])
         axis.xticklabelrotation = π / 4
         axis.xticklabelalign = (:right, :center)
         axis
@@ -978,9 +983,6 @@ function generate_correlation_boxplot(eof_result_data::EOFEnsembleResult, time_a
 
 end
 
-function add_()
-
-end
 
 function compare_data_reconstruction(
     ensemble_simulation::EnsembleSimulation,
@@ -1126,7 +1128,7 @@ function draw_reconstruction_field!(
     figure,
     row_id,
     ensemble_simulation::EnsembleSimulation,
-    eof_result::EOFEnsembleResult,
+    eof_result::EOFEnsemble,
     member::Int,
     field::Symbol,
     modes::Int,
@@ -1142,7 +1144,7 @@ function draw_reconstruction_field!(
     factor_for_data_transform=1
 )
 
-    ensemble_eofs, _ = pick_correct_field(eof_result, field)
+    
 
     lonmin, lonmax = extrema(ensemble_simulation.lons)
     latmin, latmax = extrema(ensemble_simulation.lats)
@@ -1164,7 +1166,7 @@ function draw_reconstruction_field!(
     end
 
 
-    eof_res = ensemble_eofs[get_member_id_string(member)][scope_index]
+    eof_res = eof_result.ensemble[get_member_id_string(member)][scope_index]
 
     spatial_modes = eof_res.spatial_modes .* factor_for_data_transform
 
