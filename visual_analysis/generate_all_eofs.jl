@@ -24,8 +24,8 @@ function filter_winter_season(time_element)
     return false
 end
 
-function piControl_winter_timelimit(timeelement)
-    return filter_winter_season(timeelement) && timeelement < DateTime(2101, 2, 1)
+function winter_timelimit(timeelement)
+    return filter_winter_season(timeelement) && timeelement < DateTime(2100, 12, 31)
 end
 
 
@@ -34,10 +34,10 @@ function generate_access_dict(data_base_path, data_field_id)
 
 
 
-    (historical, ssp126, ssp585) = build_ensemble_data(data_base_path, "historical", "ssp126", "ssp585"; file_range_selection=:, data_field_id=data_field_id, member_range=1:50, filterfun=filter_winter_season)
+    (historical, ssp126, ssp585) = build_ensemble_data(data_base_path, "historical", "ssp126", "ssp585"; file_range_selection=:, data_field_id=data_field_id, member_range=1:50, filterfun=winter_timelimit)
 
 
-    (piControl,) = build_ensemble_data(data_base_path, "piControl"; file_range_selection=1:13, data_field_id=data_field_id, member_range=1:1, filterfun=piControl_winter_timelimit)
+    (piControl,) = build_ensemble_data(data_base_path, "piControl"; file_range_selection=1:13, data_field_id=data_field_id, member_range=1:1, filterfun=winter_timelimit)
 
     ssp126_full_timeline = concat_ensemble_data(historical, ssp126; id="$(uppercase(data_field_id)) SSP126 full timeline")
     ssp585_full_timeline = concat_ensemble_data(historical, ssp585; id="$(uppercase(data_field_id)) SSP585 full timeline")
@@ -113,7 +113,8 @@ end
 
 function main(data_base_path, target_base_path)
 
-    for (variable_id, dirname) in [("pr", "precipitation_data"), ("ivt", "ivt_fields_v1"), ("ps", "ps_data")]
+    # for (variable_id, dirname) in [("pr", "preciptation_data_monthly"), ("ivt", "ivt_fields_monthly"), ("ps", "ps_data_monthly")]
+    for (variable_id, dirname) in [("psl", "psl_data_monthly")]
 
         access_dict = generate_access_dict(joinpath(data_base_path, dirname), variable_id)
         generate_eof_data(
