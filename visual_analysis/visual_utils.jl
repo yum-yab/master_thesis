@@ -8,6 +8,7 @@ using Statistics
 using StatsBase
 using Colors
 using Contour
+using NumericalIntegration
 
 include("utils.jl")
 
@@ -868,7 +869,7 @@ function display_eof_modes!(
 
 end
 
-function generate_correlation_boxplot(first_eof_data::EOFEnsemble, second_eof_data::EOFEnsemble; compare_modes=1 => 1, data_name="", size=Makie.autmatic, value_mode=:normal, transformation=nothing)
+function generate_correlation_boxplot(first_eof_data::EOFEnsemble, second_eof_data::EOFEnsemble; compare_modes=1 => 1, data_name="", size=Makie.autmatic, value_mode=:normal, transformation=nothing, legend_position = :rt)
 
     available_members = intersect(keys(first_eof_data.ensemble), keys(second_eof_data.ensemble))
 
@@ -960,13 +961,13 @@ function generate_correlation_boxplot(first_eof_data::EOFEnsemble, second_eof_da
     ax_lagval = Axis(fig[2, 1], title="Lags of Maximum Crosscorrelation of $data_name", yminorticksvisible=true)
     scatter!(ax_lagval, xvals, control_lag; color=:red, label="piControl simulation")
 
-    boxplot!(ax_boxplot, xmappings, yvals)
-    boxplot!(ax_lagval, xmappings, lagvals)
+    boxplot!(ax_boxplot, xmappings, yvals, label="Ensemble Correlation Boxplot")
+    boxplot!(ax_lagval, xmappings, lagvals, label="Lag Boxplot")
 
     scatter!(ax_boxplot, xvals, control_correlation; color=:red, label="piControl simulation")
 
-    axislegend(ax_boxplot)
-    axislegend(ax_lagval)
+    axislegend(ax_boxplot, position = legend_position)
+    axislegend(ax_lagval, position = legend_position)
     seasonslice = 1:3:length(first_eof_data.scopes)
 
     for axis in [ax_boxplot, ax_lagval]
@@ -1338,5 +1339,70 @@ function compare_ivt_ps_reconstruction(
 
 
     return fig
+
+end
+
+
+function temporal_pattern_integration(eof_data::EOFEnsemble; mode = 1, data_name="", size=Makie.autmatic, value_mode=:normal, transformation=nothing, legend_position = :rt)
+
+    xmappings = Int[]
+
+    yvals = Float64[]
+
+    scopes = eof_data.scopes
+
+
+    control_integration = Vector{Float64}(undef, length(scopes))
+
+    xvals = eachindex(scopes)
+
+    time_axis = eof_data.time
+
+
+
+    function transform_data(data)
+        if isnothing(transformation)
+            return data
+        else
+            return standardize(transformation, data)
+        end
+    end
+
+    for scope_index in eachindex(scopes)
+
+        for member_id in keys(eof_data.ensemble)
+
+            eof_temporalpattern = eof_data.ensemble[member_id][scope_index].temporal_modes[:, mode]
+
+
+            integration_result = integrate(collect(1:length(eof_temporalpattern)), transform_data(eof_temporalpattern))
+
+
+            push!(xmappings, scope_index)
+            push!(yvals, integration_result)
+
+        end
+
+        control_integration[scope_index] = integrate(collect(1:length(scopes[scope_index])), transform_data(eof_data.piControl[scope_index].temporal_modes[:, mode]))
+    end
+
+
+    fig = Figure(size=size)
+
+    ax_boxplot = Axis(fig[1, 1], title="Integration of $data_name", yminorticksvisible=true)
+
+    boxplot!(ax_boxplot, xmappings, yvals, label="Ensemble Integration Boxplot")
+
+    scatter!(ax_boxplot, xvals, control_integration; color=:red, label="piControl Simulation")
+
+    axislegend(ax_boxplot, position = legend_position)
+    seasonslice = 1:3:length(eof_data.scopes)
+
+    ax_boxplot.xticks = (seasonslice, ["$(year(time_axis[scopes[i].start])) - $(year(time_axis[scopes[i].stop]))" for i in seasonslice])
+    ax_boxplot.xticklabelrotation = π / 4
+    ax_boxplot.xticklabelalign = (:right, :center)
+
+    return fig
+
 
 end
