@@ -86,7 +86,7 @@ The size of data could be further reduced in this timestep by selecting only the
 \textbf{3. Calculating IVT Field}
 
 The first step to calculate the IVT field is to convert the hybrid sigma pressure levels (see Section \ref{sec:hybridsigma}) to actual pressure values. 
-For this Equation \ref{eq:mpige-sigma-hybrid-pressure} is used for calculating a new variable \texttt{plev} containing the pressure values at each gridpoint in each timestep. 
+For this Equation \ref{eq:mpige-sigma-hybrid-pressure} is used for calculating a new variable \texttt{plev} containing the pressure values at each grid point in each time step. 
 Then NumPy's trapezoidal integration function is used to calculate the zonal (Equation \ref{eq:zonal_ivt}) and meridional (Equation \ref{eq:meridional_ivt}) components of the IVT. 
 Similar to related literature \cite{ayantobo_integrated_2022}, a constant value for the gravitational acceleration $g = 9.806~ms^{-2}$ is used in the calculation. 
 Using the result of the zonal and meridional components, the norm field $\lVert IVT \rVert$ can be calculated using Equation \ref{eq:ivtnorm}. 
@@ -96,7 +96,7 @@ Using the result of the zonal and meridional components, the norm field $\lVert 
 \textbf{4. Saving Results to NetCDF dataset}
 
 The results of these calculations (or the geographical box cutout) are then again saved as NetCDF files, in the far less complex directory structure \texttt{time\_resolution}, \texttt{variable}, \texttt{member} and then the actual file \texttt{timescope.nc}. 
-In case of the IVT, both (zonal and merisional) components are saved alongside the Euclidean norm. 
+In case of the IVT, both (zonal and meridional) components are saved alongside the Euclidean norm. 
 
 
 \textbf{5. Generating daily/monthly means}
@@ -141,7 +141,7 @@ The steps described in the section before were just the final attempt.
 The first idea was using Climate Data Operators \cite{schulzweida2024}, a command line tool containing multiple operators for processing climate and similar data. 
 The operators consist of common statistical and mathematical functions (mean, add, sum), sampling and data selection tools (select geographical or time limits) and other helpful operators like interpolations and even EOF calculation. 
 Although this sounded very promising, it quickly turned out to be very complicated to implement the desired vertical integration in CDO.
-The following idea was to implement the IVT calculation in Julia \cite{gao_julia_2020}, using just a NetCDF library \cite{} while the rest was coded from scratch. 
+The following idea was to implement the IVT calculation in Julia \cite{gao_julia_2020}, using just a NetCDF library \cite{barth_ncdatasetsjl_2024} while the rest was coded from scratch. 
 The algorithm was very simple: 
 
 \begin{enumerate}[itemsep=0mm]
@@ -171,22 +171,113 @@ From here on some other approaches could have been explored, like splitting up d
 \section{EOF Calculation}
 \label{sec:eof_calc}
 
-In the next step, the patterns are calculated using Empirical Orthogonal Functions. While Section~\ref{sec:eof} gives the theoretical methamatical background, this Section describes the practical implementation, the sliding window approach and domain-specific challenges of calculating EOFs for different variables. The following description is for one member of the different scenarios, but is handled the same way for every member.  
+In the next step, the patterns are calculated using Empirical Orthogonal Functions. While Section~\ref{sec:eof} gives the theoretical mathematical background, this Section describes the practical implementation, the sliding window approach and domain-specific challenges of calculating EOFs for different variables. The following description is for one member of the different scenarios, but is handled the same way for every member.  
 
 
 In general, the procedure of this step is based on the approach of \cite{vietinghoff_visual_2021}, but has differences in a few places. 
 In the very first step, the monthly data in form of multiple NetCDF files containing different time scopes are loaded. 
-Since the influence of the NAO especially significant in the boreal winter, this thesis focusses on the extended winter season like \cite{vietinghoff_visual_2021}, keeping only the months December, January, February and March (in the following DJFM). 
+Since the influence of the NAO especially significant in the boreal winter, this thesis focuses on the extended winter season like \cite{vietinghoff_visual_2021}, keeping only the months December, January, February and March (in the following DJFM). 
 So during loading the irrelevant months are filtered out, additionally to filtering out double values of months (a result of the monthly mean process with CDO), resulting in a timeline containing exactly one spatial map for each month value for each month. 
+The data is now available in the form of a three-dimensional array with the shape $(lon, lat, time)$, while longitude, latitude and time are stored separately as one-dimensional arrays. 
 Then the data is grouped in certain scopes for the sliding window approach. 
-For this the amount of winter seasons is counted, and realized with 30 and 50 winters, with one winter being the group of DJFM. 
+For this the data is grouped into winter seasons, one season is defined as a slice of data before a huge time threshold (e.g. 150 days, representing the spring/summer/autumn gap) to the next date. 
+Similar to \citeauthor{vietinghoff_visual_2021}, scopes of 30 and 50 winters are implemented.  
 The next scope is then shifted by one winter season, and again counted for 30/50 seasons. 
-In difference to \cite{vietinghoff_visual_2021}, the winters themself are not reduced to one mean map since this has not been done by any related work using IVT fields, and smoothing out the data any further could potentially remove important features. 
+In difference to \cite{vietinghoff_visual_2021}, the winters themselves are not reduced to one mean map since this has not been done by any related work using IVT fields, and smoothing out the data any further could potentially remove important features. 
 
-Now for each of these scopes EOFs are calculated in the following way: 
-First 
+In the following the EOF procedure for one such scope is described, but is executed the same for each scope. 
+
+\textbf{1. Preparation of the Data for SVD}
+
+Before calculating SVD, the data needs to be prepared accordingly. 
+After the scoping, the data for each scope is available as a 
+Following the argumentation from \cite{vietinghoffdiss} and Section~\ref{sec:eof} the first step is to multiply each datapoint with the factor $\sqrt{m-1}^{-1}$\footnote{\label{timesize}$m$ being the time dimension size}. 
+Then the geographical weights are applied, shifting the data into weighted space. 
+The geographical weights are applied depending on the latitude of the data, approximated by $\cos(lat)$. 
+Next, the data needs to be reshaped, since SVD only works for matrices (two-dimensional arrays): The geographical dimensions $(lon, lat)$ are reduced to one spatial dimension and then permuted, so the time is the first dimension. 
+Now the shape of the data is $(time, spat)$, and SVD can be calculated. 
+
+\textbf{2. Calculating EOFs with SVD}
+
+In the next step the Singular Value Decomposition is applied to the geographically weighted two-dimensional data chunk. 
+For this the SVD implementation of Julia's \texttt{Linear\-Algebra} package (which is part of the Standard Library) is used.
+This approach computes all $m$\cref{timesize} modes, although at most the top five modes are used in this thesis. 
+This was feasible for the monthly data used in this thesis, but once this approach is scaled up to daily or subdaily data it should be replaced by faster algorithms like Snapshot POD or the SLEPC implementation used by \citeauthor{vietinghoffdiss} \cite{vietinghoffdiss}.
+Those implementations compute only the first $n$ modes, which is significantly faster than the full SVD computation. 
+
+The result of the SVD of the weighted data chunk $D$ is then:
+
+\begin{equation}
+\label{eq:SVD}
+L,S,R = SVD(D)
+\end{equation}
+
+$L$ are the left singular vectors, $R$ the right singular vectors and $S$ a vector containing the singular values. 
+With time being the first dimension as a result of the previous step, $R$ contains the spatial modes, $L$ the temporal modes (also called principal components or EOF coefficients). 
+The singular values $S$ can be used to compute the share of variablity encoded in that corresponding mode $i$ with 
+
+\begin{equation}
+\label{eq:singularval variability}
+V_i = \frac{\sigma_i^2}{\sum_{i=1}^{m}\sigma_i^2}
+\end{equation}
+
+
+Then the modes are cut of at a limit $n$ (usually five) to reduce disk space usage and loading times in the visualization processes later. 
+
+
+\textbf{3. Post Processing of the EOFs}
+
+After the first $n$ modes of interest were cut off, a few more steps are required to be able to reconstruct the anomaly map generated in the preparation step.  
+First, the temporal modes are scaled with $\sqrt{m-1}$, then the modes are aligned to some vector (see Section~\ref{sec:mode_alignment}) and the weighting is reverted by multiplying the spatial modes depending on their latitude with $\cos(lat)^{-1}$.
+The results are then saved using a data structure serialization library called \texttt{JLD2}, which is based on HDF5 \cite{noauthor_juliaiojld2jl_2024}. 
+As stated in Section~\ref{sec:eof}, the spatial as well as the temporal patterns from the SVD are in unit scale, and since they are eigenvectors, any combination of a scalar $c$ and the EOF modes $cg^{(k)}$ and their corresponding temporal pattern $\alpha^{(j)}_k c^{-1}$ are also viable solutions to the problem. 
+This leaves room for the scaling and choosing the sign of the spatial/temporal patterns in a way that simplifies interpretation of the patterns. 
+The former is explained in Section~\ref{sec:mode_scaling}, the latter  in Section~\ref{sec:mode_alignment}.
+
+\subsection{EOF Mode Scaling}
+\label{sec:mode_scaling}
+
+As explained by \citeauthorwork{vietinghoffdiss}, there are two particularly useful ways of scaling the results: 
+Either by multiplying the temporal patterns (or here: the left singular vectors) with their corresponding singular value $\sigma_i$, which yields EOF coefficients in the original unit of measurement, or by multiplying the spatial pattern (or right singular vectors) with their corresponding singular value $\sigma_i$, which yields EOFs in the original unit of measurement. 
+Depending on the type of used visualization, the former or latter are more fitting, so in contrast to \cite{vietinghoffdiss}, the scaling is done at the loading of the data to be more flexible.
+
+\subsection{EOF Mode Alignment}
+\label{sec:mode_alignment}
+
+Since basically only two scaling modes are useful (see Section~\ref{sec:mode_scaling}), the sign/direction of that vector is a last, but very important choice to make.
+While there is no inherent meaning in the sign of one certain pattern, it is crucial for understandability to align the results to a) compare modes across time and members and b) analyzing spatial and temporal patterns separated from each other. 
+Most of the related work in Section~\ref{sec:related_pattern_analysis} uses maximum of a few modes (since most don't compute multiple modes, and none use a ensemble scale simulation), which enables them to align the modes by hand to be useful or don't align them at all.
+Since this work has TODO patterns to align for one scenario, it's not feasible to do it by hand, the problem needs to be solved algorithmically. 
+The only work using such a large scale analysis is by \citeauthor{vietinghoffdiss} \cite{vietinghoffdiss}.  
+Its solution for this is providing a field $F$ to which we compare our spatial mode and decide to whether flip it ($\equiv$ multiplying it with $-1$) or not. 
+
+The method chosen by \citeauthor{vietinghoffdiss} \cite{vietinghoffdiss} is to use the Scalar/Dot product of the spatial pattern with the mean field used to generate the anomaly maps in the data preparation step. 
+This mean field is then adjusted by the spatial mean, to reduce it to the actual values of variance. 
+If the result of the scalar product is less than zero, meaning the spatial pattern is closer to the mean of the data. 
+This process is illustrated in the Figure TODO \todo{Make fig with the mean fields, cleaned by spatial mean and the first EOF pattern} 
+This has the effect that positive values of patterns align with above-average values of the actual data mean and vice versa, making the sign of the EOFs interpretable \cite{vietinghoffdiss} (see Figure TODO). 
+
+Unfortunately, this works only well for the primary EOF mode, while the rest compared to yields not so successful results. 
+A way of testing the alignment of patterns is by computing the cross-correlation boxplots from Section~\ref{sec:Temporal Pattern Correlation} with and without absolute correlation values.
+Figure~\ref{fig:TODO} gives an example of such an analysis. 
+If the absolute correlation boxplot shows a clear trend (e.g. consistent values) but the plot with normal correlation values has either no visible correlation (meaning the alignment is very arbitrary and varies a lot) or there are many outliers on the opposite side of the zero line (alignment did not work for just some members). 
+To fix these problems and also measure correlation, the secondary (or less) mode of the first scope in the historical simulation is used as the field to align to, since it was already shown that for the most part there is collapsing of the patters, and they look vaguely similar over the years of the simulation. 
 
 
 
-\section{Visual analysis of Patterns}
+\section{Visual Analysis of Patterns}
 \label{sec:vis_analysis}
+
+
+\subsection{Mode Comparison}
+\label{sec:mode comparison}
+
+\subsection{Temporal Pattern Correlation} % (fold)
+\label{sec:Temporal Pattern Correlation}
+
+% section Temporal Pattern Correlation (end)
+
+\subsection{Scenario Comparison} % (fold)
+\label{sec:Scenario Comparison}
+
+% section Scenario Comparison (end)
