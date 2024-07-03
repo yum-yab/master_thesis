@@ -441,17 +441,51 @@ function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=fa
     )
 end
 
-function load_eof_ensemble(base_path, scope_id, scenario_id, field_id::String; sqrtscale=true, modes=5, scale_eofs::Union{Nothing,EOFScaling}=nothing)::EOFEnsemble
+function load_eof_ensemble(base_path, scope_id, scenario_id, field_id::String; sqrtscale=true, modes=5, scale_eofs::Union{Nothing,EOFScaling}=nothing, align_with_first::Union{Nothing, UnitRange} = nothing)::EOFEnsemble
 
     sqrt_string = sqrtscale ? "sqrtscale" : "nosqrtscale"
     ds = load(joinpath(base_path, field_id, scenario_id, scope_id, "$(field_id)_eofs_$(modes)modes_$(scenario_id)_$(scope_id)_$(sqrt_string).jld2"))
 
-    if isnothing(scale_eofs)
-        piControl = convert(Vector{EOFResult}, ds["piControl"]["r1i1p1f1"])
-        eof_data = convert(Dict{String,Vector{EOFResult}}, ds["scenario_data"])
-    else
-        piControl = scale_eof_result.(convert(Vector{EOFResult}, ds["piControl"]["r1i1p1f1"]); scale_mode=scale_eofs)
-        eof_data = Dict(member_id => scale_eof_result.(eof_results; scale_mode=scale_eofs) for (member_id, eof_results) in convert(Dict{String,Vector{EOFResult}}, ds["scenario_data"]))
+
+    function transform_eof_result(eof_res::EOFResult, results)::EOFResult
+
+        if !isnothing(align_with_first)
+
+            alignment_fields = []
+
+            if align_with_first.start != 1
+
+                for i in 1:align_with_first.start-1
+                    push!(alignment_fields, nothing)
+                end
+            end
+
+            for i in align_with_first
+
+                first_field = results[1].spatial_modes[:, :, i]
+                alignment_field = reshape(first_field, :)
+                push!(alignment_fields, alignment_field)
+            end
+                
+            eof_res = realign_modes(eof_res, alignment_fields)
+        end
+
+        if !isnothing(scale_eofs)
+
+            eof_res = scale_eof_result(eof_res; scale_mode=scale_eofs)
+        end 
+
+        return eof_res
+    end
+
+
+    piControl = convert(Vector{EOFResult}, ds["piControl"]["r1i1p1f1"])
+    piControl = transform_eof_result.(piControl, Ref(piControl))
+    eof_data = convert(Dict{String,Vector{EOFResult}}, ds["scenario_data"])
+
+
+    foreach(eof_data) do kv
+        eof_data[kv[1]] = transform_eof_result.(kv[2], Ref(eof_data[get_member_id_string(1)]))
     end
 
     return EOFEnsemble(

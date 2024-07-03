@@ -69,7 +69,7 @@ end
 
 
 
-function realign_modes!(eof_result::EOFResult, alignment_fields::Vector{Union{Nothing, Vector{<:Union{Missing,AbstractFloat}}}})
+function realign_modes!(eof_result::EOFResult, alignment_fields)
     
     for (i, align_field) in enumerate(alignment_fields)
 
@@ -94,6 +94,8 @@ function realign_modes(eof_result::EOFResult, alignment_fields)::EOFResult
     for (i, align_field) in enumerate(alignment_fields)
 
         if isnothing(align_field)
+            new_spatial_modes[:, :, i] = eof_result.spatial_modes[:, :, i]
+            new_temporal_modes[:, i] = eof_result.temporal_modes[:, i]
             continue
         end
 
