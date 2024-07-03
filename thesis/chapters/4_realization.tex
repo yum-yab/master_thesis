@@ -179,8 +179,12 @@ In the very first step, the monthly data in form of multiple NetCDF files contai
 Since the influence of the NAO especially significant in the boreal winter, this thesis focuses on the extended winter season like \cite{vietinghoff_visual_2021}, keeping only the months December, January, February and March (in the following DJFM). 
 So during loading the irrelevant months are filtered out, additionally to filtering out double values of months (a result of the monthly mean process with CDO), resulting in a timeline containing exactly one spatial map for each month value for each month. 
 The data is now available in the form of a three-dimensional array with the shape $(lon, lat, time)$, while longitude, latitude and time are stored separately as one-dimensional arrays. 
+To make changes from the (pre)industrial time to future scenarios visible, each scenario is concatenated with the historical simulation. 
 Then the data is grouped in certain scopes for the sliding window approach. 
 For this the data is grouped into winter seasons, one season is defined as a slice of data before a huge time threshold (e.g. 150 days, representing the spring/summer/autumn gap) to the next date. 
+Following the argumentation of \citeauthorwork{vietinghoff_visual_2021}, the window size affects the smoothing of the data: The larger the time window, the better the noise is smoothed out.
+But as a drawback small scale features are smoothed out along the noise. 
+But since the focu sof this thesis is monthly mean data, we are interested in the large scale structure of IVT and its connection to other variables, so rather large windows of 30 and 50 years were chosen, similar to \citeauthorwork{vietinghoff_visual_2021}.  
 Similar to \citeauthor{vietinghoff_visual_2021}, scopes of 30 and 50 winters are implemented.  
 The next scope is then shifted by one winter season, and again counted for 30/50 seasons. 
 In difference to \cite{vietinghoff_visual_2021}, the winters themselves are not reduced to one mean map since this has not been done by any related work using IVT fields, and smoothing out the data any further could potentially remove important features. 
@@ -214,7 +218,7 @@ L,S,R = SVD(D)
 
 $L$ are the left singular vectors, $R$ the right singular vectors and $S$ a vector containing the singular values. 
 With time being the first dimension as a result of the previous step, $R$ contains the spatial modes, $L$ the temporal modes (also called principal components or EOF coefficients). 
-The singular values $S$ can be used to compute the share of variablity encoded in that corresponding mode $i$ with 
+The singular values $\Sigma$ can be used to compute the eigenvalues ($\sigma_i^2$), which are  the share of variability encoded in that corresponding mode $i$ with 
 
 \begin{equation}
 \label{eq:singularval variability}
@@ -230,6 +234,7 @@ Then the modes are cut of at a limit $n$ (usually five) to reduce disk space usa
 After the first $n$ modes of interest were cut off, a few more steps are required to be able to reconstruct the anomaly map generated in the preparation step.  
 First, the temporal modes are scaled with $\sqrt{m-1}$, then the modes are aligned to some vector (see Section~\ref{sec:mode_alignment}) and the weighting is reverted by multiplying the spatial modes depending on their latitude with $\cos(lat)^{-1}$.
 The results are then saved using a data structure serialization library called \texttt{JLD2}, which is based on HDF5 \cite{noauthor_juliaiojld2jl_2024}. 
+For this the five most significant modes of the spatial and temporal patterns are persisted, alongside the singular values (for scaling and variability computation) and the sum of all eigenvalues
 As stated in Section~\ref{sec:eof}, the spatial as well as the temporal patterns from the SVD are in unit scale, and since they are eigenvectors, any combination of a scalar $c$ and the EOF modes $cg^{(k)}$ and their corresponding temporal pattern $\alpha^{(j)}_k c^{-1}$ are also viable solutions to the problem. 
 This leaves room for the scaling and choosing the sign of the spatial/temporal patterns in a way that simplifies interpretation of the patterns. 
 The former is explained in Section~\ref{sec:mode_scaling}, the latter  in Section~\ref{sec:mode_alignment}.
@@ -261,16 +266,47 @@ Unfortunately, this works only well for the primary EOF mode, while the rest com
 A way of testing the alignment of patterns is by computing the cross-correlation boxplots from Section~\ref{sec:Temporal Pattern Correlation} with and without absolute correlation values.
 Figure~\ref{fig:TODO} gives an example of such an analysis. 
 If the absolute correlation boxplot shows a clear trend (e.g. consistent values) but the plot with normal correlation values has either no visible correlation (meaning the alignment is very arbitrary and varies a lot) or there are many outliers on the opposite side of the zero line (alignment did not work for just some members). 
-To fix these problems and also measure correlation, the secondary (or less) mode of the first scope in the historical simulation is used as the field to align to, since it was already shown that for the most part there is collapsing of the patters, and they look vaguely similar over the years of the simulation. 
+To fix these problems and also measure correlation of the secondary or lesser modes, the spatial pattern of the first scope in the historical simulation is used as the field to align to, since it was already shown that for the most part there is no collapsing of the patters, and they look vaguely similar over the years of the simulation. 
 
 
 
-\section{Visual Analysis of Patterns}
+\section{Analysis of EOF Patterns}
 \label{sec:vis_analysis}
 
+After generating and storing the EOF results, they can be used for analysis. 
+This section contains the techniques and reasoning for decisions, while Chapter~\ref{ch:results} contains the descriptions and analysis of the full results. 
+This section also takes reference to techniques used in related work. 
+
+
+\subsection{Mode Reconstruction} % (fold)
+\label{sec:Mode Reconstruction}
+
+
+This analysis uses EOF's ability of reconstructing the original data with a subset of modes.  
+The goal of this visualization is not to analyze the whole timeline, let alone the whole ensemble, but rather explaining what the EOF actually does and how certain modes contribute to the actual data. 
+
+The reconstruction is pretty straight forward, basically the steps taken in Section~\ref{sec:eof_calc} need to be reversed to reconstruct the data: 
+First the spatial patterns need to be reshaped to a two-dimensional matrix, then the approximated reconstruction of the original anomaly maps $\hat{D}$ is given as 
+
+\begin{equation}
+  \hat{D} = \hat{L} \cdot \hat{S} \cdot \hat{R}'
+  \label{eq:eof reconstruction}
+\end{equation}
+
+with $\hat{L}$ being the remaining temporal patterns, $\hat{S}$ the singular values, and $\hat{R}'$ the transposed, reshaped spatial modes. 
+Additionally, the original mean of the EOF scope can be added to the anomaly maps, resulting in an approximation of the actual data. 
+
+To help to understand before unknown patterns, it is useful to depict better understood patterns (i.e. patterns of Sea Level Pressure) next to other, rather unknown patterns (like IVT patterns) to maybe get insight about possible correlations and the original data. 
+To get insight about specific events, the generation function allows passing a filter function searching for certain values of the temporal patterns, e.g. looking for months when a certain pattern was particularly positively (or negatively) active, or not active at all. 
+The result can then either be presented as a visual analysis tool with a slider or as a video which can easily be shared.
+
+% subsubsection Mode Reconstruction (end)
 
 \subsection{Mode Comparison}
 \label{sec:mode comparison}
+
+
+
 
 \subsection{Temporal Pattern Correlation} % (fold)
 \label{sec:Temporal Pattern Correlation}
