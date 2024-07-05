@@ -128,6 +128,13 @@ CMIP is currently in its 6th phase, corresponding to the recently finished 6th A
 The 6th phase describes an inner core (DECK + historical simulations), required for participating in CMIP, and some endorsed Model intercomparison Projects (MIPs). 
 The latter are optional and consist of e.g. ScenarioMIP (future scenario simulations), HighResMIP (for exploring Models with higher resolutions), and GeoMIP (exploring effects of geoengineering).
 
+The simulations are usually set up as so-called ensemble simulations, consisting of different members which are a simulation themself. 
+The members use the same forcings, but different starting conditions and are independet from each other. 
+Using multiple simulations makes it possible to separate the internal variability from the responses to the external forcing, enabling researchers to better quantify the consequences of climate change (for example). 
+Additionally, it makes the research of extreme weather phenomena (e.g. droughts, floods etc.) more robust in spite of their rare occurrences \cite{maher_large_2021}.
+This results in the challenge of working with more than one field (see Section~\ref{sec:uncertainfields}) and visualizing the variability introduced by multiple members. 
+
+
 
 \section{Research Questions and Thesis Structure}
 \label{sec:research_questions}
@@ -138,7 +145,33 @@ Following up the previous sections, the research question for this thesis is:
   \larger{\enquote{How do the Patterns of Moisture Transport change in the face of various climate scenarios in the North-East Atlantic?}}
 \end{center}
 
+The goal of this thesis is not to interpret the results, but rather providing ideas, algorithms and visualizations for actual climate scientists to interpret the results of changing moisture transport EOF patterns. 
+With this goal the broad research question can be broken down into smaller milestones for this thesis: 
 
+\textbf{M1 Generate the patterns of moisture transport}
+
+For this moisture transport needs to be somehow quantified and this quantification needs to be calculated based on the data available in the chosen dataset (Chapter~\ref{ch:dataset}). 
+Furthermore, a similar sliding window approach as in \cite{vietinghoff_visual_2021} needs to be implemented to study the evolution of the patterns. 
+
+\textbf{M2 Study the relationships with other variables and related data}
+
+To get a grasp of the meaning of the moisture transport, the connection or relation to other variables (see Section~\ref{sec:Position of this Thesis}) needs to be explored. 
+This can be achieved by analyzing the connection of moisture transport patterns with precipitation or the activity of the North Atlantic Oscillation. 
+
+\textbf{M3 Visualize the results}
+
+The results of the previous steps need to visualized so that they can properly be interpreted. 
+Important is here  to visualize the variability introduced by uncertain fields (introduced by multiple members of the ensemble simulation).  
+This includes choosing a feature in the results on which this variability as well as the change over time can be analyzed. 
+
+% \begin{itemize}[noitemsep]
+%   \item[\textbf{M1}] How to quantify the moisture transport for calculating the patterns of it? 
+%   \item[\textbf{M2}] How do the most significant patterns look?
+%   \item[\textbf{M3}] How to implement a sliding window EOF pattern calculation similar to \citeauthorwork{vietinghoffdiss}?
+%   \item[\textbf{M4}] How to visualize the moisture transport patterns over time?
+%   \item[\textbf{M5}] How to visualize the variability introduced by multiple members of an ensemble simulation?
+% \end{itemize}
+\vspace{.3cm}
 The remaining thesis is structured as follows: Chapter \ref{ch:basics} gives the theoretical background on fields and pattern analysis. 
 The following Chapter \ref{ch:dataset} gives a detailed overview about the used CMIP6 based dataset. 
 Chapter \ref{ch:related_work} provides an overview of related work, the motivation for this thesis and the placement of this thesis in the academic context. 

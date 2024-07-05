@@ -24,7 +24,7 @@ In the following those will be explained with regard to the step they occurred i
 \label{sec:preprocessing_framework}
 
 The goal of this step is to prepare the data for further usage. 
-After a few failed attempts with other languages/tools (CDO and Julia, see Section~\ref{sec:preprocessing_problems}), the Python libraries xarray \cite{hoyer_xarray_2017} and dask \cite{rocklin2015dask} were chosen as the fitting tools for this step.
+After a few failed attempts with other languages/tools (CDO and Julia, see Section~\ref{sec:preprocessing challanges}), the Python libraries xarray \cite{hoyer_xarray_2017} and dask \cite{rocklin2015dask} were chosen as the fitting tools for this step.
 Xarray is a library for handling n-dimensional, labeled arrays. It supports multiple input and output options (amongst others the required NetCDF format) and is compatible with the most popular scientific Python libraries (e.g. Pandas, NumPy). 
 It comes with a great variety of features, making it easy to index and transform data and dimensions, joining different datasets (either along a dimension like time or multiple different variables having the same dimensions) and many more. 
 But most important, it leverages the Dask library, which enables xarray to actually use the infrastructure of the DKRZ HPC cluster. 
@@ -134,8 +134,8 @@ The higher resolutions are still saved and can be used in future work.
 %   
 % \end{itemize}
 %
-\subsection{Problems with Preprocessing}
-\label{sec:preprocessing_problems}
+\subsection{Challanges of Preprocessing}
+\label{sec:preprocessing challanges}
 
 The steps described in the section before were just the final attempt. 
 The first idea was using Climate Data Operators \cite{schulzweida2024}, a command line tool containing multiple operators for processing climate and similar data. 
