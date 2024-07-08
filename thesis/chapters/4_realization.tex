@@ -106,34 +106,6 @@ Monthly IVT is also called stationary moisture transport and dominates the total
 Both are important parts of total moisture transport, but since a comparison of stationary and transient components is beyond the scope of this thesis, only monthly data will be used for the further analysis. 
 The higher resolutions are still saved and can be used in future work. 
 
-% One main goal is to reduce the size, so first the geographic region of interest is cut out, which is the Northern Atlantic (derived from \cite{vietinghoff_visual_2021} and \cite{hurrell_overview_2003}): $-90^\circ W - 40^\circ E$, $20^\circ - 80^\circ N$. 
-% For the compared variables (precipitation, surface pressure) the preprocessing is already done, but in case of IVT it still needs to be calculated. 
-%
-%
-% \begin{enumerate}
-%   \item Load four different fields for each time period in each member in each scenario: Specific humidity $hus$, eastward horizontal wind $ua$, northward horizontal wind $va$ and surface pressure $ps$. Here the geographical box around the area of interest is cut out: Europe and the North Atlantic (Longitude: $-90 \to 40$, Latitude: $20 \to 80$, based on \cite{vietinghoff_visual_2021})
-%   \item For each geographical grid point ($lon$, $lat$) and time step: Calculate the integrals of the product of wind components and specific humidity over the vertical pressure levels $\frac{1}{g}\int_{p_S}^0 hus * ua$ and  $\frac{1}{g}\int_{p_S}^0 hus * va$, with $g$ being the gravitational acceleration ($9.806 \frac{m}{s}$) 
-%   \item Save the results for each time period in each member in each scenario in a NetCDF file for the further steps. 
-% \end{enumerate}
-%
-%
-%
-%
-% \textbf{1. Data Loading}
-%
-% \begin{itemize}
-%   \item cutting out geobox
-%   \item slow IO $\rightarrow$ started using dask+xarray 
-% \end{itemize}
-%
-% \textbf{2. Vertical Integration}
-%
-% \begin{itemize}
-%   \item calculate hybrid  sigma pressure levels for each gridpoint and timestep to get the x values for integration
-%   \item describe my idea of testing the integration
-%   
-% \end{itemize}
-%
 \subsection{Challenges of Preprocessing}
 \label{sec:preprocessing challanges}
 
