@@ -134,7 +134,7 @@ The higher resolutions are still saved and can be used in future work.
 %   
 % \end{itemize}
 %
-\subsection{Challanges of Preprocessing}
+\subsection{Challenges of Preprocessing}
 \label{sec:preprocessing challanges}
 
 The steps described in the section before were just the final attempt. 
@@ -173,8 +173,19 @@ From here on some other approaches could have been explored, like splitting up d
 
 In the next step, the patterns are calculated using Empirical Orthogonal Functions. While Section~\ref{sec:eof} gives the theoretical mathematical background, this Section describes the practical implementation, the sliding window approach and domain-specific challenges of calculating EOFs for different variables. The following description is for one member of the different scenarios, but is handled the same way for every member.  
 
+This step was implemented in the Julia programming language \cite{bezanson_julia_2017}.
+Although it was tried using it for the preprocessing and failed (see Section~\ref{sec:preprocessing challanges}), the reduction of the data was enough to make it easy working with  the NetCDF library  \cite{barth_ncdatasetsjl_2024} implemented in Julia. 
+Julia has the advantage of making it particularly easy and intuitive working with matrices and high dimensional arrays. 
+Additionally, it is (usually) also very computationally efficient doing so, which is the reason it was chosen for the implementation of this step. 
+Other factors are the great reproducibility of code and the fact the Makie framework (based on Julia) was chosen for the visual analysis step (see Section~\ref{sec:vis_analysis}), which made it possible to reuse some already written code. 
+
 
 In general, the procedure of this step is based on the approach of \cite{vietinghoff_visual_2021}, but has differences in a few places. 
+
+% \subsection{EOF Calculation of one Time Window}
+
+\textbf{1. Preparation of the Datasets for Sliding Window Approach}
+
 In the very first step, the monthly data in form of multiple NetCDF files containing different time scopes are loaded. 
 Since the influence of the NAO especially significant in the boreal winter, this thesis focuses on the extended winter season like \cite{vietinghoff_visual_2021}, keeping only the months December, January, February and March (in the following DJFM). 
 So during loading the irrelevant months are filtered out, additionally to filtering out double values of months (a result of the monthly mean process with CDO), resulting in a timeline containing exactly one spatial map for each month value for each month. 
@@ -184,12 +195,16 @@ Then the data is grouped in certain scopes for the sliding window approach.
 For this the data is grouped into winter seasons, one season is defined as a slice of data before a huge time threshold (e.g. 150 days, representing the spring/summer/autumn gap) to the next date. 
 Following the argumentation of \citeauthorwork{vietinghoff_visual_2021}, the window size affects the smoothing of the data: The larger the time window, the better the noise is smoothed out.
 But as a drawback small scale features are smoothed out along the noise. 
-But since the focu sof this thesis is monthly mean data, we are interested in the large scale structure of IVT and its connection to other variables, so rather large windows of 30 and 50 years were chosen, similar to \citeauthorwork{vietinghoff_visual_2021}.  
+But since the focus of this thesis is monthly mean data, we are interested in the large scale structure of IVT and its connection to other variables, so rather large windows of 30 and 50 years were chosen, similar to \citeauthorwork{vietinghoff_visual_2021}.  
 Similar to \citeauthor{vietinghoff_visual_2021}, scopes of 30 and 50 winters are implemented.  
 The next scope is then shifted by one winter season, and again counted for 30/50 seasons. 
 In difference to \cite{vietinghoff_visual_2021}, the winters themselves are not reduced to one mean map since this has not been done by any related work using IVT fields, and smoothing out the data any further could potentially remove important features. 
 
-In the following the EOF procedure for one such scope is described, but is executed the same for each scope. 
+
+From here on steps are described for one time window of any variable. 
+These steps are then computed the same for any other time scope of any member of any variable. 
+
+
 
 \textbf{1. Preparation of the Data for SVD}
 
@@ -277,6 +292,14 @@ After generating and storing the EOF results, they can be used for analysis.
 This section contains the techniques and reasoning for decisions, while Chapter~\ref{ch:results} contains the descriptions and analysis of the full results. 
 This section also takes reference to techniques used in related work. 
 
+For this task Julia's Makie Framework \cite{danisch_makiejl_2021} was chosen. 
+It allows to easily create a complex layout for figures and allows creating animations as well as interactive visualizations. 
+It was made to \enquote{create high-performance, GPU-powered, interactive visualizations, as well as publication-quality vector graphics with one unified interface} \cite{danisch_makiejl_2021}. 
+Additionally, there is a library\footnote{GeoMakie.jl: \url{https://geo.makie.org/}} available for projecting data onto different map projections. 
+
+
+While the previous two Sections had the goal of generating the spatio-temporal EOF patterns (\textbf{M1} from Section~\ref{sec:research_questions}), this Section has the goal of fulfilling the other two milestones:  
+Studying the relationships wih other variables (\textbf{M2}) to get a sense of the meaning of the IVT EOF patterns as well as displaying the variability introduced by the multiple members of the chosen dataset. 
 
 \subsection{Mode Reconstruction} % (fold)
 \label{sec:Mode Reconstruction}
@@ -302,8 +325,13 @@ The result can then either be presented as a visual analysis tool with a slider 
 
 % subsubsection Mode Reconstruction (end)
 
-\subsection{Mode Comparison}
+\subsection{Spatial Pattern Analysis}
 \label{sec:mode comparison}
+
+
+\todo{Make a simple picture of the primary spatial patterns of all variables}
+
+The main focus of this thesis lies in the visualization of the spatial patterns. 
 
 
 
