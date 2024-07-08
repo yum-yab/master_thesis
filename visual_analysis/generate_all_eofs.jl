@@ -114,7 +114,7 @@ end
 function main(data_base_path, target_base_path)
 
     # for (variable_id, dirname) in [("pr", "preciptation_data_monthly"), ("ivt", "ivt_fields_monthly"), ("ps", "ps_data_monthly")]
-    for (variable_id, dirname) in [("psl", "psl_data_monthly"), ("pr", "preciptation_data_monthly"), ("ivt", "ivt_fields_monthly")]
+    for (variable_id, dirname) in [("psl", "psl_data_monthly")]
 
         access_dict = generate_access_dict(joinpath(data_base_path, dirname), variable_id)
         generate_eof_data(

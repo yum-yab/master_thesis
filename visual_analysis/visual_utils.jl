@@ -694,11 +694,17 @@ function display_eof_modes!(
 
     mode_iterator = 1:nmodes
 
+    use_hexbin_cb = contour_mode == :hexbin ? true : false
+
     hexbin_cb_position = contours_for_slice == Colon() ? length(mode_iterator) + 1 : contours_for_slice.stop + 1
 
     function get_position(mode_id)
 
-        inline_position = mode_id >= hexbin_cb_position ? mode_id + 1 : mode_id
+        if use_hexbin_cb
+            inline_position = mode_id >= hexbin_cb_position ? mode_id + 1 : mode_id
+        else
+            inline_position = mode_id
+        end
 
         if use_rows
 
@@ -711,8 +717,6 @@ function display_eof_modes!(
 
 
     for mode in mode_iterator
-
-        column = mode >= hexbin_cb_position ? mode + 1 : mode
 
         row, column = get_position(mode)
 
@@ -777,13 +781,19 @@ function display_eof_modes!(
 
     end
 
-    hexbin_cb_row, hexbin_cb_col = use_rows ? (ensemble_position, hexbin_cb_position) : (hexbin_cb_position, ensemble_position)
+    if use_hexbin_cb
+        hexbin_cb_row, hexbin_cb_col = use_rows ? (ensemble_position, hexbin_cb_position) : (hexbin_cb_position, ensemble_position)
 
-    cb_hb = Colorbar(fig[hexbin_cb_row, hexbin_cb_col], colormap=hexbin_colormap, label="Percentage of Isolines hitting bin", colorrange=(0, 100), vertical=use_rows)
+        cb_hb = Colorbar(fig[hexbin_cb_row, hexbin_cb_col], colormap=hexbin_colormap, label="Percentage of Isolines hitting bin", colorrange=(0, 100), vertical=use_rows)
 
-    cb_hb.ticks = 0:20:100
+        cb_hb.ticks = 0:20:100
 
-    cb_row, cb_col = use_rows ? (ensemble_position, nmodes + 2) : (nmodes + 2, ensemble_position)
+        real_cb_shift = 2
+    else
+        real_cb_shift = 1
+    end
+
+    cb_row, cb_col = use_rows ? (ensemble_position, nmodes + real_cb_shift) : (nmodes + real_cb_shift, ensemble_position)
 
     Colorbar(fig[cb_row, cb_col], limits=limits, colormap=colormap, vertical=use_rows, label=get_var_unit_string(eof_result))
 
@@ -1402,4 +1412,118 @@ function temporal_pattern_integration(eof_data::EOFEnsemble; mode=1, data_name="
     return fig
 
 
+end
+
+function draw_contour_mode(
+    axis,
+    eof_result,
+    scope_index;
+    single_color = nothing, 
+    hexbin_colormap=:algae,
+
+)
+
+    contour_colors = distinguishable_colors(50)
+
+    result = []
+
+    if contour_mode == :spaghetti
+        for (i, (_, eofres_array)) in enumerate(eof_result.ensemble)
+
+            color = isnothing(single_color) ? contour_colors[i] : single_color
+            contour = contour!(
+                axis,
+                lonmin .. lonmax,
+                latmin .. latmax,
+                @lift(eofres_array[$scope_index].spatial_modes[:, :, mode] * scale_value),
+                levels=contour_levels,
+                color=color,
+                transformation=(; translation=(0, 0, 1100))
+            )
+
+            push!(result, contour)
+        end
+    elseif contour_mode == :hexbin
+
+        picontrol_observable = @lift(eof_result.piControl[$current_scope_index].spatial_modes[:, :, mode] * scale_value)
+
+        contour!(
+            axis,
+            lonmin .. lonmax,
+            latmin .. latmax,
+            picontrol_observable,
+            levels=contour_levels,
+            color=:red,
+            transformation=(; translation=(0, 0, 1100))
+        )
+
+
+        contours_observable = @lift([contours(eof_result.lon, eof_result.lat, eofres_array[$current_scope_index].spatial_modes[:, :, mode], contour_levels) for (i, (_, eofres_array)) in enumerate(eof_result.ensemble)])
+
+        vertices_observable = @lift(vcat(sample_along_line.(get_isocontour_vertices($contours_observable...); dx=0.01)...))
+
+        hb = hexbin!(axis, vertices_observable, cellsize=2.0, colormap=hexbin_colormap, threshold=1)
+
+
+    else
+        ArgumentError("Use either :spaghetti or :hexbin")
+    end
+    
+end
+
+function interactive_mode_analysis(
+    nmodes,
+    filename,
+    scenario_ensembles::EOFEnsemble...;
+    colormap = :vik100,
+    value_scaling = 1.0,
+    framerate::Int=30,
+    coastline_color=:white,
+    shading=Makie.automatic,
+    resolution::Union{Nothing,Tuple{Int,Int}}=nothing,
+    fontsize::Int=12,
+    whole_figure_title=nothing,
+    contours_for_slice=:,
+    contour_mode=:spaghetti,
+    hexbin_colormap=:amp,
+    testmode=false,
+    horizontal=true
+)
+
+    simple_ref_ensemble = scenario_ensembles[1]
+
+    time_slider = Slider(fig[3, :], range = eachindex(simple_ref_ensemble.scopes), startvalue = 1)
+
+    current_scope = lift(time_slider.value) do i
+        return simple_ref_ensemble.scopes[i]
+    end
+
+    lonlims = extrema(simple_ref_ensemble.lon)
+    latlims = extrema(simple_ref_ensemble.lat)
+
+
+    for mode in 1:nmodes
+
+        layout = fig[1, mode] = GridLayout()
+
+        var_observable = @lift(round(mean([get_modes_variability(resarray[$time_slider])[mode] for (_, resarray) in eof_result.ensemble]) * 100, digits = 2))
+
+        geoaxis = GeoAxis(layout[:, 1]; dest="+proj=merc", limits=(lonlims, latlims), title=@lift("Mode $mode Var: $var_observable %"))
+
+
+
+        for scenario_index in eachindex(scenario_ensembles)
+
+            scenario_ensemble = scenario_ensembles[scenario_index]
+
+            toggle = Toggle(layout[scenario_index, 2], active = false)
+
+            t_label = Label(layout[scenario_index, 3], "$contour_mode $(scenario_ensemble.variable_id)")
+
+
+
+        
+
+
+    
 end
