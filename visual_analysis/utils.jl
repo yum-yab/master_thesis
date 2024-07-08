@@ -51,6 +51,8 @@ end
 struct EOFEnsemble
     variable_id::String
     time::Vector{DateTime}
+    lon::Vector{Union{Missing,<:AbstractFloat}}
+    lat::Vector{Union{Missing,<:AbstractFloat}}
     scopes::Vector{UnitRange{Int}}
     piControl::Vector{EOFResult}
     ensemble::Dict{String,Vector{EOFResult}}
@@ -62,6 +64,20 @@ end
 
 function get_files_of_member(data_path, scenario_id, member_nr)
     return readdir(joinpath(data_path, scenario_id, get_member_id_string(member_nr)), join=true)
+end
+
+
+
+function quick_unit_lookup(field_id)
+
+    unit_dict = Dict(
+        "psl" => "hPa",
+        "pr" => "mm/month",
+        "ivt" => "kg s-1 m-1"
+    )
+
+    return unit_dict[field_id]
+    
 end
 
 function get_data(data_path, scenario_id, member_nr; file_range_selection=:, field_id="ivt")
@@ -106,7 +122,7 @@ end
 
 function build_timeline_data(base_path, member, scenarios...; file_range_selection=:, data_field_id="ivt")
 
-    lons = ncread(get_files_of_member(base_path, scenarios[1], member)[1], "lon")
+    lons = get_field(get_files_of_member(base_path, scenarios[1], member)[1], "lon")
     lats = get_field(get_files_of_member(base_path, scenarios[1], member)[1], "lat")
 
     time = get_time_data(base_path, scenarios[1], member; file_range_selection=file_range_selection)
@@ -491,6 +507,8 @@ function load_eof_ensemble(base_path, scope_id, scenario_id, field_id::String; s
     return EOFEnsemble(
         convert(String, ds["variable_id"]),
         convert(Vector{DateTime}, ds["time"]),
+        convert(Vector{Float64}, ds["lon"]),
+        convert(Vector{Float64}, ds["lat"]),
         convert(Vector{UnitRange{Int}}, ds["scopes"]),
         piControl,
         eof_data
