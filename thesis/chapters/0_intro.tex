@@ -30,7 +30,7 @@ The sources of such consequences are manyfold, but recent research shows that bi
 Although the water vapor in the air accounts for only 0.001 \% of the water on the earth, it is the most active part of that cycle \cite{zou_investigating_2020}. 
 Also, research shows that the precipitation on land does not match the evaporation, meaning the water was transported (from the oceans) to land, providing water for the ecosystems there.  \todo{CITE!!! Where the fuck did I read this?}
 Analyzing the structural change of this moisture transport could help predict consequences. 
-Motivated by the research of \citeauthor{vietinghoff_visual_2021}, this thesis aims to evaluate similarly the systemic changes of moisture transport patterns in Europe and the northern Atlantic. 
+Motivated by the research of \citeauthor{vietinghoff_visual_2021}, this thesis aims to evaluate similarly the systemic changes of moisture transport and precipitation patterns in Europe and the northern Atlantic. 
 
 
 \section{Climate and Climate Research}
@@ -77,6 +77,7 @@ Prominent examples for such oscillations are the El Niño Southern Oscillation (
 
 
 \subsection{The North Atlantic Oscillation}
+\label{sec:nao}
 
 The aforementioned NAO is \enquote{... one of the most recurrent and prominent patterns of atmospheric circulation variability} \cite{hurrell_overview_2003}. 
 It is also one of the oldest known weather patterns, since some descriptions of Scandinavians exist from a few centuries back. 
@@ -97,8 +98,9 @@ It's basis is a characteristic dipole in the Sea Level Pressure Field (SLP) of t
 Due to the Coriolis Force, air flows clockwise around high pressure and counterclockwise around low pressure in the Northern Hemisphere, leading to the transport of the maritime air from the Atlantic towards Europe (see Figure~\ref{fig:naopattern}) \cite{hurrell_overview_2003, vietinghoffdiss}. 
 Depending on the pressure differences, the effect varies: High pressure differences lead to higher transport of mild, humid air to Europe, which in turn results in milder European winters. In contrast, a low difference leads to a less pronounced effect and therefor to colder winters. 
 This varies on an interannual scale, and this effect is called the North Atlantic Oscillation. 
-The difference per year is called the NAO index and can be seen in Figure \ref{fig:naoindex_comparison}. 
-
+% The difference per year is called the NAO index and can be seen in Figure \ref{fig:naoindex_comparison}. 
+Figure~\ref{fig:naoindex_comparison} shows the actual index based on measurements of weather stations in Iceland and the Azores (top row), which was the usual way of defining the NAO. 
+Another method is by computing the first/dominant Empirical Orthogonal Function (the pattern analysis technique employed in this Thesis, see Section~\ref{sec:eof}) of the sea level pressure field in wintry North Atlantic/Europe, the temporal coefficients (or Principal Components) are very similar to the measured Index (middle row). 
 
 \begin{figure}[htb]
   \begin{center}
@@ -111,7 +113,6 @@ The difference per year is called the NAO index and can be seen in Figure \ref{f
 A large fraction of the recent warming in Europe can be linked to the behavior of the NAO in the last decades: it shifted from large amplitude anomalies in the negative to similar anomalies in the opposite direction in the later years. 
 Therefor, \citeauthor{hurrell_overview_2003} points out the need to study the relationship of anthropogenic climate change and the NAO. 
 Following this, the motivation of thesis \cite{vietinghoff_visual_2021} by \citeauthor{vietinghoff_visual_2021} tried to track the shift of the centers of the dipoles in different climate scenarios.   
-
 
 \subsection{Climate Research: The IPCC and the Coupled Model Intercomparison Project (CMIP)}
 
@@ -142,27 +143,32 @@ This results in the challenge of working with more than one field (see Section~\
 Following up the previous sections, the research question for this thesis is: 
 
 \begin{center}
-  \larger{\enquote{How do the Patterns of Moisture Transport change in the face of various climate scenarios in the North-East Atlantic?}}
+  \larger{\enquote{How do the Patterns of Moisture Transport and precipitation change in the face of different climate scenarios in the North-East Atlantic?}}
 \end{center}
 
 The goal of this thesis is not to interpret the results, but rather providing ideas, algorithms and visualizations for actual climate scientists to interpret the results of changing moisture transport EOF patterns. 
 With this goal the broad research question can be broken down into smaller milestones for this thesis: 
 
-\textbf{M1 Generate the patterns of moisture transport}
+\textbf{M1 Generate the patterns of moisture transport and other variables}
 
-For this moisture transport needs to be somehow quantified and this quantification needs to be calculated based on the data available in the chosen dataset (Chapter~\ref{ch:dataset}). 
-Furthermore, a similar sliding window approach as in \cite{vietinghoff_visual_2021} needs to be implemented to study the evolution of the patterns. 
+For this moisture transport needs to be somehow quantified, and this quantification needs to be calculated based on the data available in the chosen dataset (Chapter~\ref{ch:dataset}). 
+Furthermore, a similar sliding window approach as in \cite{vietinghoff_visual_2021} needs to be implemented to study the evolution of the patterns.
+% THos include the patterns of the quantified moisture transport, preciptation and surface level pressure (PSL), which can be used as the NAO index (see Figure~\ref{fig:naoindex_comparison}) and can be used t
 
-\textbf{M2 Study the relationships with other variables and related data}
+\textbf{M2 Study the relationships with other variables and patterns}
 
-To get a grasp of the meaning of the moisture transport, the connection or relation to other variables (see Section~\ref{sec:Position of this Thesis}) needs to be explored. 
-This can be achieved by analyzing the connection of moisture transport patterns with precipitation or the activity of the North Atlantic Oscillation. 
+To get a grasp of the meaning of the moisture transport, the connection or relation to other variables (see Section~\ref{sec:Position of this Thesis}) and patterns needs to be explored. 
+% This can be achieved by analyzing the connection of moisture transport patterns with precipitation or the activity of sea level pressure patterns. 
+The first connection should be to the NAO, or generally, patterns of surface pressure levels (like the East Atlantic Pattern, the second most significant mode of PSL EOF). 
+The second connection should be precipitation (patterns), as one of the most important consequences of transported moisture and the great influence on ecological and economic systems. 
+
 
 \textbf{M3 Visualize the results}
 
-The results of the previous steps need to visualized so that they can properly be interpreted. 
+The patterns, its components and their relationships with each other and variables need to visualized so that they can properly be interpreted. 
 Important is here  to visualize the variability introduced by uncertain fields (introduced by multiple members of the ensemble simulation).  
 This includes choosing a feature in the results on which this variability as well as the change over time can be analyzed. 
+
 
 % \begin{itemize}[noitemsep]
 %   \item[\textbf{M1}] How to quantify the moisture transport for calculating the patterns of it? 
