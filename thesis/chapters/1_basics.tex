@@ -16,7 +16,7 @@ This section should explain the basic math to understand the aforementioned topi
 Empirical Orthogonal Functions (short: EOFs) analysis, also known as geographically weighted PCA or Proper Orthogonal Decomposition \cite{vietinghoffdiss}, \enquote{is among the most widely and extensively used methods in atmospheric science} \cite{hannachi_empirical_2007}. 
 One of its goals is to reduce the usually very high dimensionality of atmospheric data and can be used to link certain modes/patterns to the physics/dynamics of the analyzed system.  
 EOFs are a statistical procedure to decompose spatio-temporal data into two components: On the one hand orthogonal spatial patterns, on the other hand corresponding uncorrelated temporal coefficients, representing the activity of their corresponding pattern in certain time steps \cite{hannachi_empirical_2007, vietinghoffdiss}. 
-The naming of the components is for from being consistent: The spatial patterns are also called spatial modes or EOFs, while the temporal coefficients are also named principal components (PCs), temporal loadings or EOF coefficients. 
+The naming of the components is for from being consistent: The spatial patterns are also called spatial modes, PC loadings, EOFs or even sometimes PCs, while the temporal coefficients are also named principal components (PCs), EOF amplitudes or EOF (expansion) coefficients \cite{hannachi_empirical_2007}. 
 So as a formula, a spatio-temporal field $X(t, s)$ (e.g. a sea level pressure field over time mentioned in Section~\ref{sec:nao}) can be described as
 
 \begin{equation}
@@ -34,24 +34,80 @@ So the first of $M$ modes captures the most variance, the second one the second 
 The goal of this Section is to give an overview of the mathematical origins of EOFs based on the work of \citeauthorwork{hannachi_empirical_2007} as well as their actual practical computation. 
 For a more in depth history and derivation, please refer to \cite{hannachi_empirical_2007} and their references, while \citeauthorwork{weiss_tutorial_2019} gives a great hands-on tutorial on POD/EOFs and their interpretation and computation. 
 
-As already explained, the starting point of EOFs is usually a spatio-temporal field $X(t, s)$ defined on a Grid $G$ over $m$ time steps, for example the precipitation analyzed in this Thesis. 
+As already explained, the starting point of EOFs is usually a spatio-temporal field $X(t, s)$ defined on a Grid $G$ over $n$ time steps, for example the precipitation analyzed in this Thesis. 
 The value at each grid point at geographical location $s_j$ and time $t_i$ is given as $x_{ij}$, with $i = 1, ..., n$  and $j = 1, ..., p$.  
 The first step is usually to remove the climatology of the dataset to turn it into anomaly maps. 
 The climatology is usually defined as the temporal mean $\bar{x}$ of the analyzed datachunk, so 
 \begin{align}
-  \bar{x}_i = \frac{1}{n} \sum^{m}_{k=1} x_{ki} \\
+  \bar{x}_i = \frac{1}{n} \sum^{n}_{k=1} x_{ki} \\
   \bar{x} = (\bar{x}_1, ..., \bar{x}_p)^T .
   \label{eq:climatology}
 \end{align}
 
-So the values of anomaly maps $x'_{ij}$ at each gridpoint are given as the departure of $X$ from its climatology: 
+So the values of anomaly maps $x'_{ij}$ at each grid point are given as the departure of $X$ from its climatology: 
+
+
 
 \begin{equation}
-  x'_{ij} = x_{ij} - \bar{x}_j
+  x'_{ij} = x_{ij} - \bar{x}_j \\
+  \label{eq:anomaly map elements}
+\end{equation}
+
+And so the final anomaly map $X'$ is: 
+\begin{equation}
+  X' = \begin{pmatrix}
+x'_{11} & x'_{12} & \cdots & x'_{1j} \\
+x'_{21} & x'_{22} & \cdots & x'_{2j} \\
+\vdots & \vdots & \ddots & \vdots \\
+x'_{i1} & x'_{i2} & \cdots & x'_{ij}
+\end{pmatrix}
   \label{eq:anomaly map}
 \end{equation}
 
-Since from here on only anomaly maps are considered in the derivation and calcculation of EOFs, the $'$ gets omitted and $X$ stands now for the anomaly data.  
+Since from here on only anomaly maps are considered in the derivation and calculation of EOFs, the $'$ gets omitted and $X$ stands now for the anomaly data.  
+The first usual step for generating EOFs is the covariance matrix defined by 
+
+\begin{equation}
+  S = \frac{1}{n} X^T X 
+  \label{eq:covariance map}
+\end{equation}
+
+This covariance matrix with the values $s_{ab}$ with $a,b = 1, \cdots, p$ contains the covariance of any gridpoint with any other grid point over the time. 
+To find EOFs means determining a unit length direction $u = (u_1, \cdots, u_p)$ that explains the most variability. 
+This problem is therefor equivalent to the solution to the eigenvalue problem, so finding all the eigenvectors ($\equiv$ EOFs) and their eigenvalue. Which means that the vector $u$ multiplied by the covariance matrix $S$ is equivalent to the multiplication with a scalar $\lambda^2$ (the eigenvalue):  
+
+\begin{equation}
+  Su = \lambda^2 u
+  \label{eq:eigenvalue problem} 
+\end{equation}
+
+So to find the $k$th EOF of a Covariance matrix, the eigenvectors $u$ are sorted by the (largest first) value of their corresponding eigenvalue $\lambda^2$. 
+The primary (or dominant) EOF the first in this order, the secondary EOF the second and so on. 
+The variance $v_k$ of the original dataset associated with the $k$th EOF can then be calculated with: 
+
+\begin{equation}
+  v_k = \frac{\lambda^2_k}{\sum^{p}_{i=1} \lambda^2_i}
+  \label{eq:eof variance calculation}
+\end{equation}
+
+The temporal coefficients can then in turn be calculated projecting the eigenvectors $u_k$ on the original anomaly map $X$ with: 
+
+\begin{equation}
+  a_{k} = Xu_k
+\end{equation}
+
+Together they fulfill the requirements of the decomposition in Equation~\ref{eq:eof decomposition}. 
+% So the coefficients in Equation~\ref{eq:eof decomposition}
+
+\subsection{Calculation and Application to the geographical Domain}
+
+Fortunately, there is no need to calculate the covariance matrix and solve the eigenvalue problem. 
+Linear Algebra provides a tool called \textit{Singular Value Decomposition}, which decomposes any matrix $x$ into three components: 
+
+\begin{equation}
+  X = A \Lambda U^T 
+  \label{eq:svd definition}
+\end{equation}
 
 Since geographical data is usually given on a regular 2D grid which depicts the earth's surface, the influence of grid point density (same degree resolution is far more sparse in equatorial regions than in the Arctic) need to be corrected with geographical weights given as a weighting matrix $W$ \cite{vietinghoffdiss}. 
 
