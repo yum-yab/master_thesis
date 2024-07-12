@@ -64,15 +64,15 @@ x'_{i1} & x'_{i2} & \cdots & x'_{ij}
   \label{eq:anomaly map}
 \end{equation}
 
-Since from here on only anomaly maps are considered in the derivation and calculation of EOFs, the $'$ gets omitted and $X$ stands now for the anomaly data.  
+% Since from here on only anomaly maps are considered in the derivation and calculation of EOFs, the $'$ gets omitted and $X$ stands now for the anomaly data.  
 The first usual step for generating EOFs is the covariance matrix defined by 
 
 \begin{equation}
-  S = \frac{1}{n} X^T X 
+  S = \frac{1}{n} X'^T X' 
   \label{eq:covariance map}
 \end{equation}
 
-This covariance matrix with the values $s_{ab}$ with $a,b = 1, \cdots, p$ contains the covariance of any gridpoint with any other grid point over the time. 
+This covariance matrix with the values $s_{ab}$ with $a,b = 1, \cdots, p$ contains the covariance of any grid point with any other grid point over the time. 
 To find EOFs means determining a unit length direction $u = (u_1, \cdots, u_p)$ that explains the most variability. 
 This problem is therefor equivalent to the solution to the eigenvalue problem, so finding all the eigenvectors ($\equiv$ EOFs) and their eigenvalue. Which means that the vector $u$ multiplied by the covariance matrix $S$ is equivalent to the multiplication with a scalar $\lambda^2$ (the eigenvalue):  
 
@@ -90,25 +90,55 @@ The variance $v_k$ of the original dataset associated with the $k$th EOF can the
   \label{eq:eof variance calculation}
 \end{equation}
 
-The temporal coefficients can then in turn be calculated projecting the eigenvectors $u_k$ on the original anomaly map $X$ with: 
+The temporal coefficients can then in turn be calculated projecting the eigenvectors $u_k$ on the original anomaly map $X'$ with: 
 
 \begin{equation}
-  a_{k} = Xu_k
+  a_{k} = X'u_k
 \end{equation}
 
 Together they fulfill the requirements of the decomposition in Equation~\ref{eq:eof decomposition}. 
 % So the coefficients in Equation~\ref{eq:eof decomposition}
+Note here that the solutions being eigenvectors means that the multiplication by any scalar $\alpha$ (i.e. $\alpha u_k$ and $\alpha^{-1} a_k$) is also a valid solution to the problem. 
+This leaves room of choosing scale and direction in a useful way (see Section~\ref{sec:eof_calc} for a practical implementation) \cite{vietinghoffdiss}. 
 
 \subsection{Calculation and Application to the geographical Domain}
 
-Fortunately, there is no need to calculate the covariance matrix and solve the eigenvalue problem. 
-Linear Algebra provides a tool called \textit{Singular Value Decomposition}, which decomposes any matrix $x$ into three components: 
+
+Since geographical data is usually given on a regular 2D grid which depicts the earth's surface, the influence of grid point density (same degree resolution is far more sparse in equatorial regions than in the Arctic) need to be corrected with geographical weights. 
+Those can be approximated by the square root of the cosine of the respective latitude \cite{hannachi_primer_nodate, vietinghoffdiss} with a similar diagonal matrix as depicted in \cite{hannachi_primer_nodate}: 
 
 \begin{equation}
-  X = A \Lambda U^T 
+  W = \begin{pmatrix}
+    \cos(\theta_1) & 0 & \cdots & 0 \\
+0 & \cos(\theta_2) & \cdots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \cdots & \cos(\theta_p)
+\end{pmatrix}
+  \label{eq:geographical weighting}
+\end{equation}
+  
+
+Fortunately, there is no need to calculate the covariance matrix and solve the eigenvalue problem. 
+Linear Algebra provides a tool called \textit{Singular Value Decomposition} (SVD), which decomposes any matrix $X$ into three components: 
+
+\begin{equation}
+  X = L \Lambda R^T 
   \label{eq:svd definition}
 \end{equation}
 
-Since geographical data is usually given on a regular 2D grid which depicts the earth's surface, the influence of grid point density (same degree resolution is far more sparse in equatorial regions than in the Arctic) need to be corrected with geographical weights given as a weighting matrix $W$ \cite{vietinghoffdiss}. 
+$L$ contains the left singular vectors, $R$ the right singular vectors and $\Lambda$ a diagonal matrix containing the singular values $\lambda_k$ (as used in Equation~\ref{eq:eof variance calculation} above). 
 
-  
+Now all of the above is used to calculate the EOFs of geographical data by applying SVD to the matrix (like in \citeauthorwork{vietinghoffdiss}): 
+
+\begin{equation}
+  \tilde{X} = \frac{1}{\sqrt{n - 1}} W^{\frac{1}{2}} X' 
+  \label{eq:complete data preperation}
+\end{equation}
+
+
+When using SVD of $\tilde{X}$ with time as the first dimension (like depicted here), the columns of $R^T$ are the EOFs and the columns of $L$ multiplied with $\sqrt{n - 1}$ are the principal components or EOF coefficients.
+As explained above, this result can be scaled, which is explained in detail in Section~\ref{sec:eof_calc}.
+\todo{go over this whole section and check everything for being correct!!!!}
+
+
+
