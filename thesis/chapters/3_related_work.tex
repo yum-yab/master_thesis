@@ -134,7 +134,7 @@ The procedure is quite similar in most of the related work:
 
 \begin{enumerate}[noitemsep]
   \item Generate the EOF patterns alongside their temporal patterns. Usually those are visualized for an overview. 
-  \item Use other variables to interpret the patterns. For this the so-called \enquote{teleconnections} are calculated, using methods like linear regression or (cross)correlation. Those methods are usually applied on the temporal patterns of the analyzed mode and the actual data of other variables. Other variables typically include indexes of oscillations like ENSO \cite{ayantobo_integrated_2022, kim_ensos_2015} or the raw data of precipitation. 
+  \item Use other variables to interpret the patterns. For this process methods like linear regression or (cross)correlation are used to explore the relationships between different variables. Those methods are usually applied on the temporal patterns of the analyzed mode and the actual data of other variables. Other variables typically include indexes of oscillations like ENSO \cite{ayantobo_integrated_2022, kim_ensos_2015} or the raw data of precipitation. 
   \item Visualize the results using maps. 
 \end{enumerate}
 
@@ -143,7 +143,7 @@ An overview of datasets, timescopes and other metadata is given in Table \ref{ta
 Published in 1982, \citeauthor{salstein_modes_1983} provided the first example of calculating EOF on IVT. 
 Based on data from 91 weather stations, they computed the IVT of the whole Northern Hemisphere. 
 Statistical significance was determined by employing a Monte Carlo testing method. 
-EOF was computed on the IWV, the zonal and meridional IVT fields respectively, but they also evaluated an approach of combining both IVT components in one data vector. 
+The EOFs were computed on the IWV, the zonal and meridional IVT fields respectively, but they also evaluated an approach of combining both IVT components in one data vector. 
 They reported the significance of the primary mode of IWV, encoding nearly half (44 \%) of variance of the data.
 
 Although most found related work uses EOF analysis, \citeauthor{teale_patterns_2020} employ an approach using Self Organizing Maps (SOMs) to detect patterns of moisture transport in the eastern United States.
@@ -172,28 +172,28 @@ Noticable was also the lack of correlation between the atmospheric circulation a
  
 
 
-\citeauthor{fernandez_analysis_2003} analyzed the precipitation modes in the mediterranean sea and linking them to the moisture transport in the same area. 
+\citeauthor{fernandez_analysis_2003} analyzed the precipitation modes in the Mediterranean Sea and linking them to the moisture transport in the same area. 
 A goal of this analysis was to contribute to the understanding of the reduction of precipitation which happened in the area as well as to the low-frequency precipitation variability, leading to multiyear drought periods.
 They employed multiple methods of validating their data: The precipitation data as well as the wind/moisture data for IVT were validated with data from actual weather stations. 
 The stability of the eigenvectors was tested with a Monte Carlo simulation, comparing the variability of actual data with random test data, while degeneracy of the EOF modes was tested using the method of \citeauthor{north_sampling_1982} \cite{north_sampling_1982}. 
 Results of the analysis identify the interpretation of the three main precipitation modes:
-The first mode (22 \% variance) seems to be linked to the NAO and Atlantic Storm tracks and associated moisture transports, while the second mode (16 \%) represents the internal redistribution of moisture in the mediterranean basin between the estern and western parts.  
+The first mode (22 \% variance) seems to be linked to the NAO and Atlantic Storm tracks and associated moisture transports, while the second mode (16 \%) represents the internal redistribution of moisture in the Mediterranean basin between the eastern and western parts.  
 The third mode (11 \%) explains increased precipitation in the northern part of the domain. 
 Additionally, moisture transport during positive and negative phases of leading mode showed increased inflow of moisture from the west \cite{fernandez_analysis_2003}. 
 
 
 
-Similar to \cite{fernandez_analysis_2003}, \citeauthor{zhou_atmospheric_2005} analyzed the anoumalous summer rainfall patterns over China and link them to water vapor transport. 
+Similar to \cite{fernandez_analysis_2003}, \citeauthor{zhou_atmospheric_2005} analyzed the anomalous summer rainfall patterns over China and link them to water vapor transport. 
 They confirmed their results by using a second dataset for IVT calculation. 
 They showed that the primary mode of anomalous rainfall is associated with heavier rainfall in the Yangtze river region, while the same applies to the second mode and the Huaihe river. 
-Connecting these patterns to moisture transport, they identified the different ways how these heavier rain areas are coming about by cerain convergences of water vapor transports. 
-Furthermore they compared the supply of anoumalous rainfall patterns to the one of normal monsoon rainfall, revealing that those differ significantly \cite{zhou_atmospheric_2005}.
+Connecting these patterns to moisture transport, they identified the different ways how these heavier rain areas are coming about by certain convergences of water vapor transports. 
+Furthermore, they compared the supply of anomalous rainfall patterns to the one of normal monsoon rainfall, revealing that those differ significantly \cite{zhou_atmospheric_2005}.
 
 
-In \cite{guirguis_circulation_2018}, the authors calculate rotated EOF on IVT data and try to analyze the relation between the 15 most dominant modes and the occurence of atmospheric rivers (AR) on the USA west coast. 
-For this they divided the coast into different regions and linked the activity (positive and negative) of the corresponding temporal pattern of each mode to the occurence of atmospheric rivers. 
-It was found that a few modes seem very influational for certain reagions' AR activity, while others seem to play no role at all. 
-They also identfied favorable and unfavorable circulation states (e.g. amongst others a low pressure anomaly in a certain region) for AR occurce \cite{guirguis_circulation_2018}. 
+In \cite{guirguis_circulation_2018}, the authors calculate rotated EOF on IVT data and try to analyze the relation between the 15 most dominant modes and the occurrence of atmospheric rivers (AR) on the USA west coast. 
+For this they divided the coast into different regions and linked the activity (positive and negative) of the corresponding temporal pattern of each mode to the occurrence of atmospheric rivers. 
+It was found that a few modes seem very influential for certain regions' AR activity, while others seem to play no role at all. 
+They also identified favorable and unfavorable circulation states (e.g. amongst others a low pressure anomaly in a certain region) for AR occurrence \cite{guirguis_circulation_2018}. 
 
 
 \citeauthor{kim_ensos_2015} showed in their analysis the connection of the IVT patterns in the western USA to three different ENSO events (eastern pacific El Niño (EPEN), central pacific El Niño (CPEN) and La Niña (NINA)). 
@@ -204,11 +204,11 @@ Furthermore the results were connected to precipitation anomalies on the USA wes
 But the authors also emphasize that while the suggestions are strong, exceptions occur (e.g. one El Niño leading to a dry winter, another to the opposite) and need to be studied in greater detail.
 
 Similar to \cite{vietinghoff_visual_2021} and the approach of this thesis, \citeauthor{zou_interdecadal_2018} applied a sliding window approach to IVT patterns in the tropical Indian Ocean–western Pacific to analyze the evolution over time. 
-For the studied period from 1961 to 2015, they studied every 20 year period with a 5 year sliding window, computing Multivariate EOFs for each window, resulting in vector fields of patterns. 
-The results show that the two most significant modes show significant changes in the mid 80s: The primary mode is characterized by a anti-cyclonic pattern in the north-western Pacific, which shifts significantly to the south. 
+For the studied period from 1961 to 2015, they studied every 20-year period with a 5-year sliding window, computing Multivariate EOFs for each window, resulting in vector fields of patterns. 
+The results show that the two most significant modes show significant changes in the mid 80s: The primary mode is characterized by an anti-cyclonic pattern in the north-western Pacific, which shifts significantly to the south. 
 An analysis of the relation to sea surface temperature (SST) revealed that the correlation between the mode and SST rose in the mid 80s, from weakly correlated to significant positive correlation between IVT and SST anomalies. 
 Furthermore, the primary mode seems to be regulated significantly bei ENSO. 
-The second most significant mode is related to the variablility of the tropical Indian Ocean dipole (defined by the differences in average SST) \cite{zou_interdecadal_2018}.
+The second most significant mode is related to the variability of the tropical Indian Ocean dipole (defined by the differences in average SST) \cite{zou_interdecadal_2018}.
 
 A different approach was employed by \cite{zou_investigating_2020}, evaluating the EOF patterns of vertically integrated apparent moisture sink. 
 Results indicate that the primary mode is a southwest-northeast oriented dipole, while the secondary mode is a southwest-northeast oriented tripole. 
@@ -252,7 +252,7 @@ They revealed the characteristics of the two most significant modes, but most pr
 \end{tblr}
 }
 \end{table}
-
+\todo{Check again, fill gaps and improve Variable used for eof (maybe also add here compared vars, like SST and so on)}
 
 
 
@@ -314,6 +314,13 @@ In terms of uncertainty visualization, most of the presented approaches could be
 Unfortunately, none of these algorithms is available as a library \todo{double check if this is true}, which hinders application to a great extent. 
 
 
-Following the common analysis methods from related work, the milestones for the research question are extended as follows 
-
+So this Thesis tries filling the identified gap in related work in the following way: 
+Implement a sliding window EOF analysis to study the evolution of moisture-related patterns (\textbf{M1}, similar to \cite{vietinghoffdiss, zou_interdecadal_2018}). 
+The variables chosen for this are of course the IVT, but also Sea Level Pressure, representing the most influential oscillations of that area (NAO and EAP), and precipitation, since it is very significant for ecological as well as economic reasons and is one of the most popular choices of related work. 
+The next step is to compare the relationships of patterns and variables using (cross)correlation and/or linear regression (\textbf{M2}), similar to \cite{zou_interdecadal_2018, zou_investigating_2020, yao_simulation_2013}. 
+While it is easy to compute and visualize the comparison of EOF patterns of different variables, \citeauthorwork{dommenget_cautionary_2002} provide a good example why EOF patterns are hard to interpret and link to actual physical modes. 
+They recommend using multiple evaluations and statistical tools (like regression) to link the mathematical modes yielded by EOF analysis with the actual existing, physical modes in the real world. 
+While this has been done for the EOFs of Sea Level Pressure in the Northern Atlantic (see Section~\ref{sec:nao} and especially Figure~\ref{fig:naoindex_comparison}, the NAO index calculated from weather stations is structurally very similar to the first principal component), no analysis like this (to the authors best knowledge) exists for patterns of IVT and precipitation in Europe.  
+So to interpret the results, it is important to make sense of them by checking their relationships other data. 
+In the end the results need to be visualized (\textbf{M3}), with the challenge of displaying the variability introduced by multiple members of the ensemble. 
 % section Position of this Thesis (end)
