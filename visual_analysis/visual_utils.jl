@@ -1471,6 +1471,10 @@ function draw_contour_mode(
     
 end
 
+function generate_correlation_maps()
+    
+end
+
 function interactive_mode_analysis(
     nmodes,
     filename,
@@ -1508,7 +1512,7 @@ function interactive_mode_analysis(
 
         var_observable = @lift(round(mean([get_modes_variability(resarray[$time_slider])[mode] for (_, resarray) in eof_result.ensemble]) * 100, digits = 2))
 
-        geoaxis = GeoAxis(layout[:, 1]; dest="+proj=merc", limits=(lonlims, latlims), title=@lift("Mode $mode Var: $var_observable %"))
+        geoaxis = GeoAxis(layout[:, 1]; dest="+proj=merc", limits=(lonlims, latlims), title=@lift("Mode $mode Var: $($var_observable) %"))
 
 
 
@@ -1519,6 +1523,8 @@ function interactive_mode_analysis(
             toggle = Toggle(layout[scenario_index, 2], active = false)
 
             t_label = Label(layout[scenario_index, 3], "$contour_mode $(scenario_ensemble.variable_id)")
+        end
+    end
 
 
 
@@ -1526,4 +1532,62 @@ function interactive_mode_analysis(
 
 
     
+end
+
+function compare_ensemble_modes_variability(ensembles::Tuple{EOFEnsemble, String}...; size=(1920, 2160), fontsize=12)
+
+    
+
+    fig = Figure(size=size, fontsize=fontsize)
+    
+
+    for (i, (eof_ensemble, data_name)) in enumerate(ensembles)
+
+        scopes = eof_ensemble.scopes
+
+        time_axis = eof_ensemble.time
+
+        nmodes = length(get_modes_variability(eof_ensemble.ensemble[get_member_id_string(11)][1]))
+
+        xmappings = Int[]
+
+        ymappings = [Float64[] for _ in 1:nmodes]
+        for scope_index in eachindex(scopes)
+
+            for (_, eof_results) in eof_ensemble.ensemble
+
+                variability = get_modes_variability(eof_results[scope_index]) * 100
+
+                push!(xmappings, scope_index)
+
+                for mode in 1:nmodes
+                    push!(ymappings[mode], variability[mode])
+                end
+                
+            end
+        end
+
+        axis = Axis(fig[i, 1], title="In Modes Encoded Variability of $data_name", ytickformat = "{:.1f} %")
+
+        for mode in 1:nmodes
+            boxplot!(axis, xmappings, ymappings[mode], label="Mode $mode")
+        end        
+
+        seasonslice = 1:3:length(scopes)
+
+        axis.xticks = (seasonslice, ["$(year(time_axis[scopes[i].start])) - $(year(time_axis[scopes[i].stop]))" for i in seasonslice])
+        axis.xticklabelrotation = π / 4
+        axis.xticklabelalign = (:right, :center)
+
+
+        axislegend(axis, position = :rt)
+    end
+
+
+    # Label(fig[0, 1], "In Modes Encoded Variability of $data_name")
+
+    
+    
+    
+    return fig
 end

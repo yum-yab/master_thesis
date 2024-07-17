@@ -18,7 +18,7 @@ struct EOFResult
 end
 
 
-function scale_eof_result(eof_result::EOFResult; scale_mode::EOFScaling=spatmodescale)::EOFResult
+function scale_eof_result(eof_result::EOFResult; scale_mode::EOFScaling=spatmodescale, unit_scale_factor::Number = 1)::EOFResult
     # now scale the eofs in different ways
 
     if eof_result.scaling != noscaling
@@ -27,10 +27,10 @@ function scale_eof_result(eof_result::EOFResult; scale_mode::EOFScaling=spatmode
 
     if scale_mode == spatmodescale 
         broadcast_svals = reshape(eof_result.singularvals, 1, 1, :)
-        return EOFResult(eof_result.spatial_modes .* broadcast_svals, eof_result.temporal_modes, eof_result.singularvals, eof_result.sum_all_eigenvals, scale_mode)
+        return EOFResult(eof_result.spatial_modes .* broadcast_svals * unit_scale_factor, eof_result.temporal_modes, eof_result.singularvals, eof_result.sum_all_eigenvals, scale_mode)
     elseif scale_mode == tempmodescale
         broadcast_svals = reshape(eof_result.singularvals, 1, :)
-        return EOFResult(eof_result.spatial_modes, eof_result.temporal_modes .* broadcast_svals, eof_result.singularvals, eof_result.sum_all_eigenvals, scale_mode)
+        return EOFResult(eof_result.spatial_modes, eof_result.temporal_modes .* broadcast_svals * unit_scale_factor, eof_result.singularvals, eof_result.sum_all_eigenvals, scale_mode)
     end
 end
 
