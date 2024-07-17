@@ -80,7 +80,7 @@ function quick_unit_lookup(field_id)
     
 end
 
-function get_data(data_path, scenario_id, member_nr; file_range_selection=:, field_id="ivt")
+function get_data(data_path, scenario_id, member_nr; file_range_selection=:, field_id="ivt", unit_scale_factor = 1)
 
     file_paths = get_files_of_member(data_path, scenario_id, member_nr)
 
@@ -90,7 +90,7 @@ function get_data(data_path, scenario_id, member_nr; file_range_selection=:, fie
 
     for file_path in file_paths[file_range_selection]
         ivt_chunk = ncread(file_path, field_id)
-        push!(ivt_data, ivt_chunk)
+        push!(ivt_data, ivt_chunk * unit_scale_factor)
     end
 
     return cat(ivt_data..., dims=3)
@@ -156,7 +156,7 @@ end
         
 
 
-function build_ensemble_data(base_path, scenarios...; file_range_selection=:, data_field_id="ivt", member_range=1:50, silent=false, filterfun=nothing)
+function build_ensemble_data(base_path, scenarios...; file_range_selection=:, data_field_id="ivt", member_range=1:50, silent=false, filterfun=nothing, unit_scale_factor = 1)
 
     lons = ncread(get_files_of_member(base_path, scenarios[1], 1)[1], "lon")
     lats = get_field(get_files_of_member(base_path, scenarios[1], 1)[1], "lat")
@@ -183,7 +183,7 @@ function build_ensemble_data(base_path, scenarios...; file_range_selection=:, da
 
             member_id = get_member_id_string(member_nr)
 
-            data = get_data(base_path, scenario, member_nr; file_range_selection=file_range_selection, field_id=data_field_id)
+            data = get_data(base_path, scenario, member_nr; file_range_selection=file_range_selection, field_id=data_field_id, unit_scale_factor = unit_scale_factor)
             return EnsembleMember(member_id, data[:, :, time_selector])
         end
 
@@ -430,7 +430,7 @@ function get_mean_of_multiple_arrays(arrays::AbstractArray...)
 end
 
 
-function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=false, modes=5, scale_eofs::Union{Nothing,EOFScaling}=nothing)::EOFEnsembleResult
+function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=true, modes=5, scale_eofs::Union{Nothing,EOFScaling}=nothing, unit_scale_factor = 1)::EOFEnsembleResult
 
     sqrt_string = sqrtscale ? "sqrtscale" : "nosqrtscale"
     ds = load(joinpath(base_path, scope_id, "eofs_$(modes)modes_$(scenario_id)_$(scope_id)_$(sqrt_string).jld2"))
@@ -441,10 +441,10 @@ function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=fa
         ivt_eof = convert(Dict{String,Vector{EOFResult}}, ds["ivt_eof"])
         ps_eof = convert(Dict{String,Vector{EOFResult}}, ds["ps_eof"])
     else
-        ivt_piControl = scale_eof_result.(convert(Vector{EOFResult}, ds["ivt_piControl"]["r1i1p1f1"]); scale_mode=scale_eofs)
-        ps_piControl = scale_eof_result.(convert(Vector{EOFResult}, ds["ps_piControl"]["r1i1p1f1"]); scale_mode=scale_eofs)
-        ivt_eof = Dict(member_id => scale_eof_result.(eof_results; scale_mode=scale_eofs) for (member_id, eof_results) in convert(Dict{String,Vector{EOFResult}}, ds["ivt_eof"]))
-        ps_eof = Dict(member_id => scale_eof_result.(eof_results; scale_mode=scale_eofs) for (member_id, eof_results) in convert(Dict{String,Vector{EOFResult}}, ds["ps_eof"]))
+        ivt_piControl = scale_eof_result.(convert(Vector{EOFResult}, ds["ivt_piControl"]["r1i1p1f1"]); scale_mode=scale_eofs, unit_scale_factor = unit_scale_factor)
+        ps_piControl = scale_eof_result.(convert(Vector{EOFResult}, ds["ps_piControl"]["r1i1p1f1"]); scale_mode=scale_eofs, unit_scale_factor = unit_scale_factor)
+        ivt_eof = Dict(member_id => scale_eof_result.(eof_results; scale_mode=scale_eofs, unit_scale_factor = unit_scale_factor) for (member_id, eof_results) in convert(Dict{String,Vector{EOFResult}}, ds["ivt_eof"]))
+        ps_eof = Dict(member_id => scale_eof_result.(eof_results; scale_mode=scale_eofs, unit_scale_factor = unit_scale_factor) for (member_id, eof_results) in convert(Dict{String,Vector{EOFResult}}, ds["ps_eof"]))
     end
 
     return EOFEnsembleResult(
@@ -457,7 +457,7 @@ function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=fa
     )
 end
 
-function load_eof_ensemble(base_path, scope_id, scenario_id, field_id::String; sqrtscale=true, modes=5, scale_eofs::Union{Nothing,EOFScaling}=nothing, align_with_first::Union{Nothing, UnitRange} = nothing)::EOFEnsemble
+function load_eof_ensemble(base_path, scope_id, scenario_id, field_id::String; sqrtscale=true, modes=5, scale_eofs::Union{Nothing,EOFScaling}=nothing, align_with_first::Union{Nothing, UnitRange} = nothing, unit_scale_factor = 1)::EOFEnsemble
 
     sqrt_string = sqrtscale ? "sqrtscale" : "nosqrtscale"
     ds = load(joinpath(base_path, field_id, scenario_id, scope_id, "$(field_id)_eofs_$(modes)modes_$(scenario_id)_$(scope_id)_$(sqrt_string).jld2"))
@@ -488,7 +488,7 @@ function load_eof_ensemble(base_path, scope_id, scenario_id, field_id::String; s
 
         if !isnothing(scale_eofs)
 
-            eof_res = scale_eof_result(eof_res; scale_mode=scale_eofs)
+            eof_res = scale_eof_result(eof_res; scale_mode=scale_eofs, unit_scale_factor = unit_scale_factor)
         end 
 
         return eof_res
