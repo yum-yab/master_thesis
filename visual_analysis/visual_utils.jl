@@ -803,7 +803,7 @@ end
 function get_var_unit_string(eof_data::EOFEnsemble)
 
     return "$(uppercase(eof_data.variable_id)) in $(quick_unit_lookup(eof_data.variable_id))"
-    
+
 end
 
 function generate_correlation_boxplot(
@@ -903,9 +903,9 @@ function generate_correlation_boxplot(
 
     fig = Figure(size=size)
 
-    boxplot_cols = use_crosscor ? UnitRange(1, 2) : UnitRange(1:4) 
+    boxplot_cols = use_crosscor ? UnitRange(1, 2) : UnitRange(1:4)
 
-    value_type = value_mode ==:absolute ? "Absolute" : ""
+    value_type = value_mode == :absolute ? "Absolute" : ""
 
     cor_type = use_crosscor ? "Maximum $value_type Crosscorrelation" : "$value_type Correlation"
 
@@ -917,7 +917,7 @@ function generate_correlation_boxplot(
         scatter!(ax_lagval, xvals, control_lag; color=:red, label="piControl simulation")
         axislegend(ax_lagval, position=legend_position)
     end
-    
+
     boxplot!(ax_boxplot, xmappings, yvals, label="Ensemble Correlation Boxplot")
     scatter!(ax_boxplot, xvals, control_correlation; color=:red, label="piControl simulation")
 
@@ -977,7 +977,7 @@ function generate_correlation_boxplot(
             )
             lines!(geoax, GeoMakie.coastlines(); color=:black, transformation=(; translation=(0, 0, 1000)))
 
-            cb_x, cb_y = use_crosscor ? (i, 4) : (2, 1+(2i - 1))
+            cb_x, cb_y = use_crosscor ? (i, 4) : (2, 1 + (2i - 1))
 
 
             Colorbar(fig[cb_x, cb_y], limits=limits, colormap=colormap, vertical=true, label=get_var_unit_string(eof_data))
@@ -1418,10 +1418,8 @@ function draw_contour_mode(
     axis,
     eof_result,
     scope_index;
-    single_color = nothing, 
-    hexbin_colormap=:algae,
-
-)
+    single_color=nothing,
+    hexbin_colormap=:algae,)
 
     contour_colors = distinguishable_colors(50)
 
@@ -1468,19 +1466,19 @@ function draw_contour_mode(
     else
         ArgumentError("Use either :spaghetti or :hexbin")
     end
-    
+
 end
 
 function generate_correlation_maps()
-    
+
 end
 
 function interactive_mode_analysis(
     nmodes,
     filename,
     scenario_ensembles::EOFEnsemble...;
-    colormap = :vik100,
-    value_scaling = 1.0,
+    colormap=:vik100,
+    value_scaling=1.0,
     framerate::Int=30,
     coastline_color=:white,
     shading=Makie.automatic,
@@ -1496,7 +1494,7 @@ function interactive_mode_analysis(
 
     simple_ref_ensemble = scenario_ensembles[1]
 
-    time_slider = Slider(fig[3, :], range = eachindex(simple_ref_ensemble.scopes), startvalue = 1)
+    time_slider = Slider(fig[3, :], range=eachindex(simple_ref_ensemble.scopes), startvalue=1)
 
     current_scope = lift(time_slider.value) do i
         return simple_ref_ensemble.scopes[i]
@@ -1510,7 +1508,7 @@ function interactive_mode_analysis(
 
         layout = fig[1, mode] = GridLayout()
 
-        var_observable = @lift(round(mean([get_modes_variability(resarray[$time_slider])[mode] for (_, resarray) in eof_result.ensemble]) * 100, digits = 2))
+        var_observable = @lift(round(mean([get_modes_variability(resarray[$time_slider])[mode] for (_, resarray) in eof_result.ensemble]) * 100, digits=2))
 
         geoaxis = GeoAxis(layout[:, 1]; dest="+proj=merc", limits=(lonlims, latlims), title=@lift("Mode $mode Var: $($var_observable) %"))
 
@@ -1520,7 +1518,7 @@ function interactive_mode_analysis(
 
             scenario_ensemble = scenario_ensembles[scenario_index]
 
-            toggle = Toggle(layout[scenario_index, 2], active = false)
+            toggle = Toggle(layout[scenario_index, 2], active=false)
 
             t_label = Label(layout[scenario_index, 3], "$contour_mode $(scenario_ensemble.variable_id)")
         end
@@ -1528,18 +1526,18 @@ function interactive_mode_analysis(
 
 
 
-        
 
 
-    
+
+
 end
 
-function compare_ensemble_modes_variability(ensembles::Tuple{EOFEnsemble, String}...; size=(1920, 2160), fontsize=12)
+function compare_ensemble_modes_variability(ensembles::Tuple{EOFEnsemble,String}...; size=(1920, 2160), fontsize=12)
 
-    
+
 
     fig = Figure(size=size, fontsize=fontsize)
-    
+
 
     for (i, (eof_ensemble, data_name)) in enumerate(ensembles)
 
@@ -1563,15 +1561,15 @@ function compare_ensemble_modes_variability(ensembles::Tuple{EOFEnsemble, String
                 for mode in 1:nmodes
                     push!(ymappings[mode], variability[mode])
                 end
-                
+
             end
         end
 
-        axis = Axis(fig[i, 1], title="In Modes Encoded Variability of $data_name", ytickformat = "{:.1f} %")
+        axis = Axis(fig[i, 1], title="In Modes Encoded Variability of $data_name", ytickformat="{:.1f} %")
 
         for mode in 1:nmodes
             boxplot!(axis, xmappings, ymappings[mode], label="Mode $mode")
-        end        
+        end
 
         seasonslice = 1:3:length(scopes)
 
@@ -1580,14 +1578,238 @@ function compare_ensemble_modes_variability(ensembles::Tuple{EOFEnsemble, String
         axis.xticklabelalign = (:right, :center)
 
 
-        axislegend(axis, position = :rt)
+        axislegend(axis, position=:rt)
     end
 
 
     # Label(fig[0, 1], "In Modes Encoded Variability of $data_name")
 
-    
-    
-    
+
+
+
     return fig
+end
+
+function get_correlation_map(variable_data, temporal_pattern)
+
+    x, y = size(variable_data)
+
+    result = ones(x, y)
+
+    for i in 1:x
+        for j in 1:y
+            result[i, j] = cor(variable_data[i, j, :], temporal_pattern)
+        end
+    end
+
+    return result
+end
+
+function generate_all_correlation_maps(eof_result::EOFEnsemble, original_data::EnsembleSimulation, mode)
+
+
+    result = Dict{String,Vector{Matrix{Float64}}}()
+
+    for member_index in eachindex(original_data.members)
+        member = original_data.members[member_index]
+
+        eof_results = eof_result.ensemble[member.id]
+
+        result[member.id] = [get_correlation_map(member.data[:, :, scope], eof_results[i].temporal_modes[:, mode]) for (i, scope) in enumerate(eof_result.scopes)]
+    end
+
+    return result
+end
+
+
+function eof_data_correlation_maps!(
+    layout,
+    eof_results::Vector{EOFEnsemble},
+    original_datasets::Vector{EnsembleSimulation},
+    current_scope_index,
+    nmodes,
+    current_data_index;
+    hexbin_colormap=:amp,
+    colormap=:viridis,
+    coastline_color=:white,
+    shading=Makie.automatic,
+)
+
+    eof_result = eof_results[current_data_index]
+
+    original_data = original_datasets[current_data_index]
+
+
+
+
+    lonmin, lonmax = extrema(eof_result.lon)
+    latmin, latmax = extrema(eof_result.lat)
+
+
+    all_scopes = eof_result.scopes
+
+    contour_colors = distinguishable_colors(50)
+
+    eof_extremas = [extrema(res.spatial_modes) for (_, eofresarray) in eof_result.ensemble for res in eofresarray]
+
+    _, maxval = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), eof_extremas)
+
+
+
+    mode_iterator = 1:nmodes
+
+
+    display_type_menu = Menu(layout[2, nmodes+1:nmodes+2], options=["raw eof", "correlation"], default="raw eof")
+
+
+
+    display_type = Observable{String}("raw eof")
+
+    on(display_type_menu.selection) do v
+        display_type = v
+    end
+
+    limits = lift(display_type) do dt
+        if dt == "correlation"
+            return (-1, 1)
+        else
+            return (-maxval, maxval)
+        end
+    end
+
+    data_label = lift(display_type) do dt
+        if dt == "correlation"
+            return "Pearson Correlation"
+        else
+            return get_var_unit_string(eof_result)
+        end
+    end
+
+    for mode in mode_iterator
+
+        correlation_data = Dict(
+            member_id => generate_all_correlation_maps(eof_result, original_data, mode)
+            for (member_id, eof_results) in eof_result.ensemble
+        )
+
+        spatial_patterns = Dict(k => [v[i].spatial_modes[:, :, mode] for i in eachindex(all_scopes)] for (k, v) in eof_result.ensemble)
+
+
+        mode_layout = layout[2, mode] = GridLayout()
+
+        # title = @lift("$(ensemble_simulation.id) $(year(ensemble_simulation.time[all_scopes[$current_scope_index].start]))-$(year(ensemble_simulation.time[all_scopes[$current_scope_index].stop])) Mode $mode Variability $(round(mean([get_modes_variability(resarray[$current_scope_index])[mode] for (_, resarray) in eof_result.ensemble]), digits = 2) * 100) %")
+        title = @lift("Mode $mode Mean Variability: $(round(mean([get_modes_variability(resarray[$current_scope_index])[mode] for (_, resarray) in eof_result.ensemble]) * 100, digits = 2)) %")
+        axis = GeoAxis(mode_layout[1, 1:3]; dest="+proj=merc", limits=((lonmin, lonmax), (latmin, latmax)), title=title)
+
+
+        isocontour_slider = Slider(mode_layout[2, 1:3], range=-1:0.1:1, startvalue=0)
+
+
+
+        contour_levels = lift(isocontour_slider.value) do v
+            return [v]
+        end
+
+
+        data = lift(display_type) do dt
+            if dt == "correlation"
+                return correlation_data
+            else
+                return spatial_patterns
+            end
+        end
+
+        spaghetti_toggle = Toggle(mode_layout[3, 1], active=false)
+        hexbin_toggle = Toggle(mode_layout[3, 2], active=true)
+        surface_toggle = Toggle(mode_layout[3, 2], active=true)
+
+        surf = surface!(
+            axis,
+            lonmin .. lonmax,
+            latmin .. latmax,
+            @lift(get_mean_of_multiple_arrays($data...));
+            shading=shading,
+            colormap=colormap,
+            colorrange=limits,
+            overdraw=false,
+            transformation=(; translation=(0, 0, -1 * limits[2]))
+        )
+
+        connect!(surf.visible, surface_toggle.active)
+
+        lines!(axis, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
+
+
+        spaghetti_contours = [contour!(
+            axis,
+            lonmin .. lonmax,
+            latmin .. latmax,
+            @lift(matrix_arr[$current_scope_index]),
+            levels=contour_levels,
+            color=contour_colors[i],
+            transformation=(; translation=(0, 0, 1100))
+        ) for (i, (_, matrix_arr)) in enumerate(data)]
+
+        picontrol_observable = @lift(eof_result.piControl[$current_scope_index].spatial_modes[:, :, mode])
+
+        contour!(
+            axis,
+            lonmin .. lonmax,
+            latmin .. latmax,
+            picontrol_observable,
+            levels=contour_levels,
+            color=:red,
+            transformation=(; translation=(0, 0, 1100))
+        )
+
+
+        contours_observable = @lift([contours(eof_result.lon, eof_result.lat, matrix_arr[$current_scope_index], contour_levels) for (i, (_, matrix_arr)) in enumerate(data)])
+
+        vertices_observable = @lift(vcat(sample_along_line.(get_isocontour_vertices($contours_observable...); dx=0.01)...))
+
+        hexbin_plot = hexbin!(axis, vertices_observable, cellsize=2.0, colormap=hexbin_colormap, threshold=1)
+
+        for c in spaghetti_contours
+            connect!(c.visible, spaghetti_toggle.active)
+        end
+
+        connect!(hexbin_plot.visible, hexbin_toggle.active)
+
+    end
+
+
+    Colorbar(layout[cb_row, cb_col], limits=limits, colormap=colormap, vertical=true, label=data_label)
+
+
+end
+
+
+function test_interactive(
+    eof_results::Vector{EOFEnsemble},
+    original_datasets::Vector{EnsembleSimulation}
+)
+
+    fig = Figure()
+
+    eof_data_correlation_maps!(
+        fig[1, 1],
+        eof_results,
+        original_datasets,
+        1,
+        3,
+        1;
+        hexbin_colormap=:algae,
+        colormap=:vik100,
+        coastline_color=:black,
+        shading=Makie.automatic,
+    )
+
+    return fig
+
+end
+
+function get_var_unit_string(eof_data::EOFEnsemble)
+
+    return "$(uppercase(eof_data.variable_id)) in $(quick_unit_lookup(eof_data.variable_id))"
+
 end
