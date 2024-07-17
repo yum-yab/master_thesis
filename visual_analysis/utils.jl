@@ -576,3 +576,17 @@ function sample_along_line(line; dx=0.1)::Vector{Tuple{Float64,Float64}}
 
     return sampled_points
 end
+
+function filter_winter_season(time_element)
+    winter_months = [12, 1, 2, 3]
+    for wm in winter_months
+        if month(time_element) == wm
+            return true
+        end
+    end
+    return false
+end
+
+function winter_timelimit(timeelement)
+    return filter_winter_season(timeelement) && timeelement < DateTime(2100, 12, 31)
+end
