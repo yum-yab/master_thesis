@@ -1605,17 +1605,24 @@ function get_correlation_map(variable_data, temporal_pattern)
     return result
 end
 
-function generate_all_correlation_maps(eof_result::EOFEnsemble, original_data::EnsembleSimulation, mode)
+function generate_all_correlation_maps(eof_result::EOFEnsemble, original_data::EnsembleSimulation, mode_id, scope_index)::Vector{Matrix{Float64}}
 
 
-    result = Dict{String,Vector{Matrix{Float64}}}()
 
-    for member_index in eachindex(original_data.members)
+    result = Vector{Matrix{Float64}}(undef, length(original_data.members))
+
+    scope = eof_result.scopes[scope_index]
+
+    println("Generating cmaps for Mode $mode_id and scope $scope_index")
+
+    Threads.@threads for member_index in eachindex(original_data.members)
         member = original_data.members[member_index]
 
         eof_results = eof_result.ensemble[member.id]
 
-        result[member.id] = [get_correlation_map(member.data[:, :, scope], eof_results[i].temporal_modes[:, mode]) for (i, scope) in enumerate(eof_result.scopes)]
+        tmp_pattern = eof_results[scope_index].temporal_modes[:, mode_id]
+
+        result[member_index] = get_correlation_map(member.data[:, :, scope], tmp_pattern)
     end
 
     return result
@@ -1624,23 +1631,17 @@ end
 
 function eof_data_correlation_maps!(
     layout,
-    eof_results::Vector{EOFEnsemble},
-    original_datasets::Vector{EnsembleSimulation},
-    current_scope_index,
-    nmodes,
-    current_data_index;
+    eof_result::EOFEnsemble,
+    original_data::EnsembleSimulation,
+    nmodes;
     hexbin_colormap=:amp,
     colormap=:viridis,
     coastline_color=:white,
     shading=Makie.automatic,
 )
 
-    eof_result = eof_results[current_data_index]
 
-    original_data = original_datasets[current_data_index]
-
-
-
+    nmember = length(keys(eof_result.ensemble))
 
     lonmin, lonmax = extrema(eof_result.lon)
     latmin, latmax = extrema(eof_result.lat)
@@ -1650,84 +1651,68 @@ function eof_data_correlation_maps!(
 
     contour_colors = distinguishable_colors(50)
 
-    eof_extremas = [extrema(res.spatial_modes) for (_, eofresarray) in eof_result.ensemble for res in eofresarray]
-
-    _, maxval = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), eof_extremas)
-
 
 
     mode_iterator = 1:nmodes
 
 
-    display_type_menu = Menu(layout[2, nmodes+1:nmodes+2], options=["raw eof", "correlation"], default="raw eof")
+    limits = (-1, 1)
 
+    data_label = "Pearson Correlation"
 
+    slider_grid = SliderGrid(
+        layout[1, 1],
+        (label="Contour Level", range=-1:0.1:1, format="{:.1f}", startvalue=0),
+        (label="Scope", range=1:1:length(all_scopes), format="{:%03d}", startvalue=1),
+        width=450,
+        tellheight=false
+    )
 
-    display_type = Observable{String}("raw eof")
-
-    on(display_type_menu.selection) do v
-        display_type = v
+    contour_levels = lift(slider_grid.sliders[1].value) do v
+        return [v]
     end
 
-    limits = lift(display_type) do dt
-        if dt == "correlation"
-            return (-1, 1)
-        else
-            return (-maxval, maxval)
-        end
+    current_scope_index = lift(slider_grid.sliders[2].value) do v
+        return v
     end
 
-    data_label = lift(display_type) do dt
-        if dt == "correlation"
-            return "Pearson Correlation"
-        else
-            return get_var_unit_string(eof_result)
-        end
-    end
+    correlation_data_per_mode = @lift([generate_all_correlation_maps(eof_result, original_data, m, $current_scope_index) for m in mode_iterator])
 
     for mode in mode_iterator
 
-        correlation_data = Dict(
-            member_id => generate_all_correlation_maps(eof_result, original_data, mode)
-            for (member_id, eof_results) in eof_result.ensemble
-        )
 
-        spatial_patterns = Dict(k => [v[i].spatial_modes[:, :, mode] for i in eachindex(all_scopes)] for (k, v) in eof_result.ensemble)
+        mode_layout = layout[1, mode+1] = GridLayout()
 
 
-        mode_layout = layout[2, mode] = GridLayout()
+
+
+
+
 
         # title = @lift("$(ensemble_simulation.id) $(year(ensemble_simulation.time[all_scopes[$current_scope_index].start]))-$(year(ensemble_simulation.time[all_scopes[$current_scope_index].stop])) Mode $mode Variability $(round(mean([get_modes_variability(resarray[$current_scope_index])[mode] for (_, resarray) in eof_result.ensemble]), digits = 2) * 100) %")
         title = @lift("Mode $mode Mean Variability: $(round(mean([get_modes_variability(resarray[$current_scope_index])[mode] for (_, resarray) in eof_result.ensemble]) * 100, digits = 2)) %")
         axis = GeoAxis(mode_layout[1, 1:3]; dest="+proj=merc", limits=((lonmin, lonmax), (latmin, latmax)), title=title)
 
 
-        isocontour_slider = Slider(mode_layout[2, 1:3], range=-1:0.1:1, startvalue=0)
 
 
 
-        contour_levels = lift(isocontour_slider.value) do v
-            return [v]
-        end
 
+        spaghetti_toggle = Toggle(mode_layout[2, 1], active=false)
+        hexbin_toggle = Toggle(mode_layout[2, 2], active=true)
+        surface_toggle = Toggle(mode_layout[2, 3], active=true)
 
-        data = lift(display_type) do dt
-            if dt == "correlation"
-                return correlation_data
-            else
-                return spatial_patterns
-            end
-        end
+        contours_observable = @lift([contours(eof_result.lon, eof_result.lat, matrix, $contour_levels) for (i, matrix) in enumerate($correlation_data_per_mode[mode])])
 
-        spaghetti_toggle = Toggle(mode_layout[3, 1], active=false)
-        hexbin_toggle = Toggle(mode_layout[3, 2], active=true)
-        surface_toggle = Toggle(mode_layout[3, 2], active=true)
+        # contour_lines_observable = @lift(get_isocontour_lines($contours_observable...))
+
+        seperate_matrices_observable = [@lift($correlation_data_per_mode[mode][i]) for i in 1:nmember]
 
         surf = surface!(
             axis,
             lonmin .. lonmax,
             latmin .. latmax,
-            @lift(get_mean_of_multiple_arrays($data...));
+            @lift(get_mean_of_multiple_arrays($correlation_data_per_mode[mode]...));
             shading=shading,
             colormap=colormap,
             colorrange=limits,
@@ -1744,11 +1729,12 @@ function eof_data_correlation_maps!(
             axis,
             lonmin .. lonmax,
             latmin .. latmax,
-            @lift(matrix_arr[$current_scope_index]),
+            matrix,
             levels=contour_levels,
             color=contour_colors[i],
             transformation=(; translation=(0, 0, 1100))
-        ) for (i, (_, matrix_arr)) in enumerate(data)]
+        ) for (i, matrix) in enumerate(seperate_matrices_observable)]
+
 
         picontrol_observable = @lift(eof_result.piControl[$current_scope_index].spatial_modes[:, :, mode])
 
@@ -1763,8 +1749,6 @@ function eof_data_correlation_maps!(
         )
 
 
-        contours_observable = @lift([contours(eof_result.lon, eof_result.lat, matrix_arr[$current_scope_index], contour_levels) for (i, (_, matrix_arr)) in enumerate(data)])
-
         vertices_observable = @lift(vcat(sample_along_line.(get_isocontour_vertices($contours_observable...); dx=0.01)...))
 
         hexbin_plot = hexbin!(axis, vertices_observable, cellsize=2.0, colormap=hexbin_colormap, threshold=1)
@@ -1773,19 +1757,21 @@ function eof_data_correlation_maps!(
             connect!(c.visible, spaghetti_toggle.active)
         end
 
-        connect!(hexbin_plot.visible, hexbin_toggle.active)
+        # connect!(spaghetti_contours.visible, spaghetti_toggle.active)
+
+        #connect!(hexbin_plot.visible, hexbin_toggle.active)
 
     end
 
 
-    Colorbar(layout[cb_row, cb_col], limits=limits, colormap=colormap, vertical=true, label=data_label)
+    Colorbar(layout[1, nmodes+2], limits=limits, colormap=colormap, vertical=true, label=data_label)
 
 
 end
 
 
 function test_interactive(
-    eof_results::Vector{EOFEnsemble},
+    eof_results::EOFEnsemble,
     original_datasets::Vector{EnsembleSimulation}
 )
 
@@ -1795,9 +1781,8 @@ function test_interactive(
         fig[1, 1],
         eof_results,
         original_datasets,
-        1,
-        3,
-        1;
+        Observable(1),
+        3;
         hexbin_colormap=:algae,
         colormap=:vik100,
         coastline_color=:black,

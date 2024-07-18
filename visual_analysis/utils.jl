@@ -77,10 +77,10 @@ function quick_unit_lookup(field_id)
     )
 
     return unit_dict[field_id]
-    
+
 end
 
-function get_data(data_path, scenario_id, member_nr; file_range_selection=:, field_id="ivt", unit_scale_factor = 1)
+function get_data(data_path, scenario_id, member_nr; file_range_selection=:, field_id="ivt", unit_scale_factor=1)
 
     file_paths = get_files_of_member(data_path, scenario_id, member_nr)
 
@@ -138,7 +138,7 @@ function build_timeline_data(base_path, member, scenarios...; file_range_selecti
 end
 
 function is_different_month(date1, date2)
-        
+
     return !(year(date1) == year(date2) && month(date1) == month(date2))
 end
 
@@ -153,10 +153,10 @@ end
 
 #     for i in range(1, collect(size_set)[1])
 
-        
 
 
-function build_ensemble_data(base_path, scenarios...; file_range_selection=:, data_field_id="ivt", member_range=1:50, silent=false, filterfun=nothing, unit_scale_factor = 1)
+
+function build_ensemble_data(base_path, scenarios...; file_range_selection=:, data_field_id="ivt", member_range=1:50, silent=false, filterfun=nothing, unit_scale_factor=1)
 
     lons = ncread(get_files_of_member(base_path, scenarios[1], 1)[1], "lon")
     lats = get_field(get_files_of_member(base_path, scenarios[1], 1)[1], "lat")
@@ -183,7 +183,7 @@ function build_ensemble_data(base_path, scenarios...; file_range_selection=:, da
 
             member_id = get_member_id_string(member_nr)
 
-            data = get_data(base_path, scenario, member_nr; file_range_selection=file_range_selection, field_id=data_field_id, unit_scale_factor = unit_scale_factor)
+            data = get_data(base_path, scenario, member_nr; file_range_selection=file_range_selection, field_id=data_field_id, unit_scale_factor=unit_scale_factor)
             return EnsembleMember(member_id, data[:, :, time_selector])
         end
 
@@ -430,7 +430,7 @@ function get_mean_of_multiple_arrays(arrays::AbstractArray...)
 end
 
 
-function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=true, modes=5, scale_eofs::Union{Nothing,EOFScaling}=nothing, unit_scale_factor = 1)::EOFEnsembleResult
+function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=true, modes=5, scale_eofs::Union{Nothing,EOFScaling}=nothing, unit_scale_factor=1)::EOFEnsembleResult
 
     sqrt_string = sqrtscale ? "sqrtscale" : "nosqrtscale"
     ds = load(joinpath(base_path, scope_id, "eofs_$(modes)modes_$(scenario_id)_$(scope_id)_$(sqrt_string).jld2"))
@@ -441,10 +441,10 @@ function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=tr
         ivt_eof = convert(Dict{String,Vector{EOFResult}}, ds["ivt_eof"])
         ps_eof = convert(Dict{String,Vector{EOFResult}}, ds["ps_eof"])
     else
-        ivt_piControl = scale_eof_result.(convert(Vector{EOFResult}, ds["ivt_piControl"]["r1i1p1f1"]); scale_mode=scale_eofs, unit_scale_factor = unit_scale_factor)
-        ps_piControl = scale_eof_result.(convert(Vector{EOFResult}, ds["ps_piControl"]["r1i1p1f1"]); scale_mode=scale_eofs, unit_scale_factor = unit_scale_factor)
-        ivt_eof = Dict(member_id => scale_eof_result.(eof_results; scale_mode=scale_eofs, unit_scale_factor = unit_scale_factor) for (member_id, eof_results) in convert(Dict{String,Vector{EOFResult}}, ds["ivt_eof"]))
-        ps_eof = Dict(member_id => scale_eof_result.(eof_results; scale_mode=scale_eofs, unit_scale_factor = unit_scale_factor) for (member_id, eof_results) in convert(Dict{String,Vector{EOFResult}}, ds["ps_eof"]))
+        ivt_piControl = scale_eof_result.(convert(Vector{EOFResult}, ds["ivt_piControl"]["r1i1p1f1"]); scale_mode=scale_eofs, unit_scale_factor=unit_scale_factor)
+        ps_piControl = scale_eof_result.(convert(Vector{EOFResult}, ds["ps_piControl"]["r1i1p1f1"]); scale_mode=scale_eofs, unit_scale_factor=unit_scale_factor)
+        ivt_eof = Dict(member_id => scale_eof_result.(eof_results; scale_mode=scale_eofs, unit_scale_factor=unit_scale_factor) for (member_id, eof_results) in convert(Dict{String,Vector{EOFResult}}, ds["ivt_eof"]))
+        ps_eof = Dict(member_id => scale_eof_result.(eof_results; scale_mode=scale_eofs, unit_scale_factor=unit_scale_factor) for (member_id, eof_results) in convert(Dict{String,Vector{EOFResult}}, ds["ps_eof"]))
     end
 
     return EOFEnsembleResult(
@@ -457,7 +457,7 @@ function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=tr
     )
 end
 
-function load_eof_ensemble(base_path, scope_id, scenario_id, field_id::String; sqrtscale=true, modes=5, scale_eofs::Union{Nothing,EOFScaling}=nothing, align_with_first::Union{Nothing, UnitRange} = nothing, unit_scale_factor = 1)::EOFEnsemble
+function load_eof_ensemble(base_path, scope_id, scenario_id, field_id::String; sqrtscale=true, modes=5, scale_eofs::Union{Nothing,EOFScaling}=nothing, align_with_first::Union{Nothing,UnitRange}=nothing, unit_scale_factor=1)::EOFEnsemble
 
     sqrt_string = sqrtscale ? "sqrtscale" : "nosqrtscale"
     ds = load(joinpath(base_path, field_id, scenario_id, scope_id, "$(field_id)_eofs_$(modes)modes_$(scenario_id)_$(scope_id)_$(sqrt_string).jld2"))
@@ -482,14 +482,14 @@ function load_eof_ensemble(base_path, scope_id, scenario_id, field_id::String; s
                 alignment_field = reshape(first_field, :)
                 push!(alignment_fields, alignment_field)
             end
-                
+
             eof_res = realign_modes(eof_res, alignment_fields)
         end
 
         if !isnothing(scale_eofs)
 
-            eof_res = scale_eof_result(eof_res; scale_mode=scale_eofs, unit_scale_factor = unit_scale_factor)
-        end 
+            eof_res = scale_eof_result(eof_res; scale_mode=scale_eofs, unit_scale_factor=unit_scale_factor)
+        end
 
         return eof_res
     end
@@ -527,6 +527,24 @@ function get_all_vertices_from_iscontours(contour_collections::Contour.ContourCo
     return result
 end
 
+function convert_curve_to_nonmissing(c::Curve2{Tuple{Union{Missing, AbstractFloat},Union{Missing, AbstractFloat}}})::Vector{Tuple{Float64,Float64}}
+    
+    return [(x, y) for (x, y) in c.vertices  if !ismissing(x) && !ismissing(y)]
+end
+
+
+function get_isocontour_lines(contour_collections::Contour.ContourCollection...)::Vector{Vector{Vector{Tuple{Float64,Float64}}}}
+    res = Vector{Vector{Tuple{Float64,Float64}}}[]
+    for contour_collection in contour_collections
+        for contour_level in levels(contour_collection)
+            push!(res, [convert_curve_to_nonmissing(c) for c in Contour.lines(contour_level)])
+
+        end
+    end
+
+    return res
+end
+
 function get_isocontour_vertices(contour_collections::Contour.ContourCollection...)::Vector{Vector{Tuple{Float64,Float64}}}
     result = Vector{Tuple{Float64,Float64}}[]
     for contour_collection in contour_collections
@@ -536,6 +554,20 @@ function get_isocontour_vertices(contour_collections::Contour.ContourCollection.
             end
         end
     end
+    return result
+end
+
+function get_isocontour_vertices(clines_vectors::Vector{Vector{Vector{Tuple{Float64,Float64}}}}...)::Vector{Vector{Tuple{Float64,Float64}}}
+    result = Vector{Tuple{Float64,Float64}}[]
+
+    for clines_vector in clines_vectors
+        for line_vec in clines_vector
+            for contour_line in line_vec
+                push!(result, [(x, y) for (x, y) in contour_line])
+            end
+        end
+    end
+
     return result
 end
 
