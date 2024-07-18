@@ -272,30 +272,30 @@ Additionally, there is a library\footnote{GeoMakie.jl: \url{https://geo.makie.or
 
 
 While the previous two Sections had the goal of generating the spatio-temporal EOF patterns (\textbf{M1} from Section~\ref{sec:research_questions}), this Section has the goal of fulfilling the other two milestones:  
-Studying the relationships with other variables (\textbf{M2}) to get a sense of the meaning of the IVT EOF patterns as well as displaying the variability introduced by the multiple members of the chosen dataset. 
+Studying the relationships with other variables (\textbf{M2}) to get a sense of the meaning of the IVT EOF patterns as well as displaying the variability introduced by the multiple members of the chosen dataset (\textbf{M3}). 
 
-\subsection{Mode Reconstruction} % (fold)
-\label{sec:Mode Reconstruction}
-
-\todo{Evaluate whether this section is actually useful}
-
-This analysis uses EOF's ability of reconstructing the original data with a subset of modes.  
-The goal of this visualization is not to analyze the whole timeline, let alone the whole ensemble, but rather explaining what the EOF actually does and how certain modes contribute to the actual data. 
-
-The reconstruction is pretty straight forward, basically the steps taken in Section~\ref{sec:eof_calc} need to be reversed to reconstruct the data: 
-First the spatial patterns need to be reshaped to a two-dimensional matrix, then the approximated reconstruction of the original anomaly maps $\hat{D}$ is given as 
-
-\begin{equation}
-  \hat{D} = \hat{L} \cdot \hat{S} \cdot \hat{R}'
-  \label{eq:eof reconstruction}
-\end{equation}
-
-with $\hat{L}$ being the remaining temporal patterns, $\hat{S}$ the singular values, and $\hat{R}'$ the transposed, reshaped spatial modes. 
-Additionally, the original mean of the EOF scope can be added to the anomaly maps, resulting in an approximation of the actual data. 
-
-To help to understand before unknown patterns, it is useful to depict better understood patterns (i.e. patterns of Sea Level Pressure) next to other, rather unknown patterns (like IVT patterns) to maybe get insight about possible correlations and the original data. 
-To get insight about specific events, the generation function allows passing a filter function searching for certain values of the temporal patterns, e.g. looking for months when a certain pattern was particularly positively (or negatively) active, or not active at all. 
-The result can then either be presented as a visual analysis tool with a slider or as a video which can easily be shared.
+% \subsection{Mode Reconstruction} % (fold)
+% \label{sec:Mode Reconstruction}
+%
+% \todo{Evaluate whether this section is actually useful}
+%
+% This analysis uses EOF's ability of reconstructing the original data with a subset of modes.  
+% The goal of this visualization is not to analyze the whole timeline, let alone the whole ensemble, but rather explaining what the EOF actually does and how certain modes contribute to the actual data. 
+%
+% The reconstruction is pretty straight forward, basically the steps taken in Section~\ref{sec:eof_calc} need to be reversed to reconstruct the data: 
+% First the spatial patterns need to be reshaped to a two-dimensional matrix, then the approximated reconstruction of the original anomaly maps $\hat{D}$ is given as 
+%
+% \begin{equation}
+%   \hat{D} = \hat{L} \cdot \hat{S} \cdot \hat{R}'
+%   \label{eq:eof reconstruction}
+% \end{equation}
+%
+% with $\hat{L}$ being the remaining temporal patterns, $\hat{S}$ the singular values, and $\hat{R}'$ the transposed, reshaped spatial modes. 
+% Additionally, the original mean of the EOF scope can be added to the anomaly maps, resulting in an approximation of the actual data. 
+%
+% To help to understand before unknown patterns, it is useful to depict better understood patterns (i.e. patterns of Sea Level Pressure) next to other, rather unknown patterns (like IVT patterns) to maybe get insight about possible correlations and the original data. 
+% To get insight about specific events, the generation function allows passing a filter function searching for certain values of the temporal patterns, e.g. looking for months when a certain pattern was particularly positively (or negatively) active, or not active at all. 
+% The result can then either be presented as a visual analysis tool with a slider or as a video which can easily be shared.
 
 % subsubsection Mode Reconstruction (end)
 
@@ -318,42 +318,82 @@ Of course just one member could be used, or the data can be reduced to averages,
 Although there are some examples of visualizing uncertainty in scalar fields (or features thereof like iso contours), none of them provide an existing implementation, which greatly hinders the usability. 
 Since a new implementation of those concepts was outside the scope of this thesis, a new way of visualizing the ambiguity of multiple members needed to be found. 
 While ways of representing uncertain scalar fields exist (like \cite{coninx_visualization_2011}), it may not always be helpful to visualize the full ambiguity of the dataset since it could generate too much visual clutter. 
-Instead a certain feature could be extracted to show the ensembles' variability.
+Instead, a certain feature could be extracted to show the ensembles' variability.
 
-\textbf{Feature Selection}
+
+
+\subsubsection{Feature Selection}
 
 As shown in Section~\ref{sec:uncertainity_vis}, there exist multiple ways of visualizing scalar fields, either by transforming the actual scalar field somehow (like the approach of \citeauthorwork{coninx_visualization_2011}) or by selecting an interesting feature in it and visualizing it. 
-The latter approach was usid by  \citeauthorwork{vietinghoffdiss} (using the extreme points of the fields) and by \cite{sanyal_noodles_2010, whitaker_contour_2013} using iso contours.  
+The latter approach was used by  \citeauthorwork{vietinghoffdiss} (using the extreme points of the fields) and by \cite{sanyal_noodles_2010, whitaker_contour_2013} using contour lines.  
 
-After analyzing the different spatial patterns of the different variables (and espiacally IVT), it was obvious that the seperation line between the positve and negative spatial patterns seems to be very pronounced, especially in the primary modes. 
-And since one question of the introduction was how those spatial patterns shift geographically, the iso contour of zero, representing the borders of positive and negative patterns seems fitting. 
-It implements the idea of level crossing probabilities, similar to the work of \citeauthorwork{poethkow_approximate_2013}, but for iso contours and not for iso surfaces.
+After analyzing the different spatial patterns of the different variables (and especially IVT), it was obvious that the separation line between the positive and negative spatial patterns seems to be very pronounced, especially in the primary modes. 
+And since one question of the introduction was how those spatial patterns shift geographically, the contour line of zero, representing the borders of positive and negative patterns seems fitting. 
+This procedure relates to the idea of level crossing probabilities, similar to the work of \citeauthorwork{poethkow_approximate_2013}, but for isolines and not for isosurfaces.
 
-\textbf{Visualizing the Feature}
+\subsubsection{Visualizing the Feature}
 
-The most straight forward way of visualizing uncertain iso contours are spaghetti plots as used in the work of \citeauthorwork{sanyal_noodles_2010}, by simply drawing all the iso contours of the different members, usually in different colors. 
+The most straight forward way of visualizing uncertain isolines are spaghetti plots as used in the work of \citeauthorwork{sanyal_noodles_2010}, by simply drawing all the isolines of the different members, usually in different colors. 
 This was also implemented in this Thesis, but spaghetti plots have a lot of usual drawbacks. 
-For example 
+While they work very well for areas where the contour lines are very close to each other (see Figure~\ref{fig:TODO}), they tend to overcrawded areas making the visualization overwhelming and chaotic. 
+Additionally, contour lines give a false sense of precision in data that is actually not that precise. 
 
-\begin{itemize}
-  \item greates challenge comes from the variability introduced by the multiple members of the dataset. 
-  \item vizualizing the scalar data turns the 2D map into a 3D cube. 
-  \item there are multiple ways of handling this: either plot a 3D object encoding the variability in the third dimension, or by using the noise technique from \citeauthorwork{coninx_visualization_2011} or by using isocontours. 
-  \item Since the most dominant patterns of IVT show very clear seperation between positive and negative patterns (see Figure TODO), the method of level-crossing probabilities \cite{poethkow_approximate_2013} was implemented.  
-  \item The level set of switching was chosen to be 0, which means that the contours indicate the borders of negative/positive patterns.  \item Those show the borders in scalar fields
-\end{itemize}
+\subsubsection{Level Crossing Probabilities using Hexbins}
+
+To fix those issues of spaghetti plots, another method was implemented using hexbins. 
+Hexbin plots\footnote{\url{https://docs.makie.org/dev/reference/plots/hexbin}} as used by \citeauthorwork{carr_hexagon_1992} for geographic data are an alternative to heatmaps, depicting the density of observations (usually given as points in space). 
+Heatmaps divide the observed grid into rectangular areas of variable size, and colors the rectangular area depending on the number of observations in it. 
+Hexbin plots are very similar, except they divide the grid into hexagonal \enquote{bins} and handle the oberservations in the same way as heatmaps. 
+The advantage of hexbin plots is that it represents distribution better than square bins ($\equiv$ heatmaps) as it was depicted in \cite{carr_hexagon_1992}, as well that it can be more visually appealing to humans \cite{carr_hexagon_1992}. 
+The main idea for this thesis was not only the better representation, but also that the number of hexagons (or their size) can be chosen freely, so by choosing a resolution similar to the underlying grid gives a sense of data precision.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=0.95\textwidth]{figures/hexbin_approach_overview.png}
+  \end{center}
+  \caption{Example of the hexbin approach using the dominant IVT pattern. Sample distance is $0.1$. A to C show the contour lines vertices in one member, all members and all members with sampling along the line. D to F show the hexbin visualization of the corresponding vertices.}\label{fig:hexbin overview}
+\end{figure}
+
+
+The approach using hexbins was conducted as follows: First, the required contour lines were computed, which are represented as a list of 2D points. 
+The threshold for displayed hexbins was set to one, so that areas without any contour line stay free of hexagons. 
+Since the resolution is too high at some places (multiple observations per bin) and too low at others (no observation hitting the bin) like it is depicted in Figure~\ref{fig:hexbin overview} A and D, a sampling algorithm  was used to sample along the line. 
+Of course this results in a distorted color bar since one observation, but by choosing a small enough integration distance (i.e. $0.01$), this distortion is reduced to an invisible minimum. 
+So now by using multiple members (Figure~\ref{fig:hexbin overview}, E and F), it approximates the number of lines hitting a certain bin. 
+
+
+% \begin{itemize}
+%   \item greates challenge comes from the variability introduced by the multiple members of the dataset. 
+%   \item vizualizing the scalar data turns the 2D map into a 3D cube. 
+%   \item there are multiple ways of handling this: either plot a 3D object encoding the variability in the third dimension, or by using the noise technique from \citeauthorwork{coninx_visualization_2011} or by using isocontours. 
+%   \item Since the most dominant patterns of IVT show very clear seperation between positive and negative patterns (see Figure TODO), the method of level-crossing probabilities \cite{poethkow_approximate_2013} was implemented.  
+%   \item The level set of switching was chosen to be 0, which means that the contours indicate the borders of negative/positive patterns.  \item Those show the borders in scalar fields
+% \end{itemize}
 
 
 \subsection{Temporal Pattern Correlation} % (fold)
 \label{sec:Temporal Pattern Correlation}
 
-\begin{itemize}
-  \item Temporal patterns of ensemble can not be visualized directly since the members do not align in time (it is no weather forecast)
-  \item To still learn something about the temporal patterns the linking to other variables can be explored 
-  \item This can be visualized by either boxplots of correlation or regression
-  \item or by creating correlation (or regression) maps, which show which areas of a variable over time correlate with the temporal activity of a certain mode/pattern 
-  \item those can then be used to make sense of a certain mode 
-\end{itemize}
+The spatial pattern is of course only the half of the EOFs. 
+An equally important part are the EOF coefficients, representing the activity of the spatial patterns in each (monthly) time step. 
+Unfortunately, it is very hard to visualize them on ensemble scale, since each member is quite diffenet in each month, resulting in a hard to interpret mess when using mean functions or boxplots. 
+
+So instead the temporal activity can be used to evaluate the relationship of certain patterns with other variables or even other patterns. 
+Of course, it is very important that the same members are compared to each other. 
+
+
+\subsubsection{Comparing two EOF patterns}
+
+
+\subsubsection{Comparing an EOF pattern with another variable}
+
+% \begin{itemize}
+%   \item Temporal patterns of ensemble can not be visualized directly since the members do not align in time (it is no weather forecast)
+%   \item To still learn something about the temporal patterns the linking to other variables can be explored 
+%   \item This can be visualized by either boxplots of correlation or regression
+%   \item or by creating correlation (or regression) maps, which show which areas of a variable over time correlate with the temporal activity of a certain mode/pattern 
+%   \item those can then be used to make sense of a certain mode 
+% \end{itemize}
 % section Temporal Pattern Correlation (end)
 
 \subsection{Scenario Comparison} % (fold)
