@@ -360,7 +360,7 @@ The threshold for displayed hexbins was set to one, so that areas without any co
 Since the resolution is too high at some places (multiple observations per bin) and too low at others (no observation hitting the bin) like it is depicted in Figure~\ref{fig:hexbin overview} A and D, a sampling algorithm  was used to sample along the line. 
 Of course this results in a distorted color bar since one observation, but by choosing a small enough integration distance (i.e. $0.01$), this distortion is reduced to an invisible minimum. 
 So now by using multiple members (Figure~\ref{fig:hexbin overview}, E and F), it approximates the number of lines hitting a certain bin. 
-
+An analysis comparing this approach to the traditional spaghetti plots is given in Section~\ref{sec:pattern evolution}. 
 
 % \begin{itemize}
 %   \item greates challenge comes from the variability introduced by the multiple members of the dataset. 
@@ -376,34 +376,63 @@ So now by using multiple members (Figure~\ref{fig:hexbin overview}, E and F), it
 
 The spatial pattern is of course only the half of the EOFs. 
 An equally important part are the EOF coefficients, representing the activity of the spatial patterns in each (monthly) time step. 
-Unfortunately, it is very hard to visualize them on ensemble scale, since each member is quite diffenet in each month, resulting in a hard to interpret mess when using mean functions or boxplots. 
+Unfortunately, it is very hard to visualize them on ensemble scale, since each member is quite different in each month, resulting in a hard to interpret mess when using mean functions or boxplots. 
 
 So instead the temporal activity can be used to evaluate the relationship of certain patterns with other variables or even other patterns. 
-Of course, it is very important that the same members are compared to each other. 
-
+Obviously, it is very important that the same members are compared across variables since they share their initial conditions and forcings.  
+The tool of choice for comparing the temporal patterns/signals is (cross)correlation, which measures the linear relation between two signals. 
+This does not imply any causality in any direction on itself, but shows how similar signals (e.g. the EOF coefficients) are. 
+Causality must therefor be justified separately from correlation.  
+Cross-correlation measures the correlation between two signals with a pre-defined range of lags (e.g. $-n,\dots,0,\dots,n$) to find correlations which are shifted in time. 
+A lag of zero is then equal to the usual, non-shifted correlation. 
 
 \subsubsection{Comparing two EOF patterns}
+
+To explore the relationships between certain patterns, the EOF coefficients can be compared to the EOF coefficients of another variable. 
+This can answer the question of which patterns share activity in a certain month and how this relationship evolves over time. 
+
+This is evaluated using cross-correlation. 
+The reason for this was that introducing a lag to the signal, it could reveal certain temporal relationships, e.g. a positive IVT EOF coefficient of EOF2 (see Figure~\ref{fig:5modes each variable}) leads to positive activity of the precipitation pattern positive in Great Britain (e.g. PR EOF2). 
+
+This evaluation was conducted in the following way: 
+Per scope (30 or 50 winters), the cross-correlation of two different variables $X$ and $Y$ was calculated for two modes $a$ and $b$ by calculating the cross-correlation of their temporal patterns $c_a^X(t)$ and $c_b^Y(t)$. 
+The range of lags used was $[-n,n] \in \mathbb{Z}$, $n$ being the half of the scopes' length. 
+Of course a greater extend of lag could be chosen, but it seemed very unlikely that moisture transport in a certain month would affect precipitation a many decades later (same reasoning for the other variables).
+Then the maximal extend of correlation per member was used for a boxplot of that scope.
+The lag associated with that value per member was then displazed in a separate boxplot of lags. 
+Then this procedure was repeated for every scope from the begin of the historical simulation to the end of each scenario, depicting the evolution over time. 
+
+Since only the temporal coefficients (without the spatial patterns) are evaluated here, it is crucial that the alignment of the patterns (as described in Section~\ref{sec:mode_alignment}) works well since it can distort the correlation results significantly. 
+In fact, using this kind of analysis revealed the lack of stability of the procedure used by \citeauthorwork{vietinghoff_visual_2021} in EOF2 and lesser modes. 
+For this the plots of the maximal absolute value of correlation were compared to the normal maximal extend of correlation. 
+If the plot of absolute correlation revealed a consistently high value, but the normal correlation fluctuated around zero (or had many outliers mirrored on the x-axis), the alignment of patterns did not work correctly. \todo{Example Picture?}
 
 
 \subsubsection{Comparing an EOF pattern with another variable}
 
-% \begin{itemize}
-%   \item Temporal patterns of ensemble can not be visualized directly since the members do not align in time (it is no weather forecast)
-%   \item To still learn something about the temporal patterns the linking to other variables can be explored 
-%   \item This can be visualized by either boxplots of correlation or regression
-%   \item or by creating correlation (or regression) maps, which show which areas of a variable over time correlate with the temporal activity of a certain mode/pattern 
-%   \item those can then be used to make sense of a certain mode 
-% \end{itemize}
+Since it is notoriously hard to connect (mathematical) EOF modes to real physical modes \cite{hannachi_empirical_2007, dommenget_cautionary_2002}, it is not enough to analyze the relationships between patterns since they may not represent any actual physical modes (see the simple example explained in \citeauthorwork{dommenget_cautionary_2002}). 
+Instead, the recommendations of \citeauthorwork{dommenget_cautionary_2002} were followed, using different statistical tools to evaluate the modes. 
+Some of the related work \cite{zou_interdecadal_2018, zhou_atmospheric_2005, li_quasi-4-yr_2012} used regression maps, depicting the regression slopes between the EOF coefficient $c_a^X(t)$ of variable $X$ and mode $a$ (e.g. the dominant EOF mode of IVT $c_1^{IVT}(t)$)and the temporal evolution of each gridpoints $Y(lon, lat)(t)$ of another variable $Y$. 
+\citeauthorwork{fernandez_analysis_2003} used a similar procedure but with the correlation of $c_a^X(t)$ and $X(lon, lat)(t)$, so depicting the correlation coefficient for each gridpoint with the temporal pattern for the same variable $X$. 
+This tackles the problem described by \citeauthor{dommenget_cautionary_2002}: \enquote{The PCs of the dominant patterns are often a superposition of many different modes that are uncorrelated in time and that are often modes of remote regions that have no influence on the region in which the pattern of this PC has its center of action.} \cite{dommenget_cautionary_2002} 
+
+
+For this Thesis an interactive comparison of the patterns of any variable $X$ and the actual data of another (or the same) variable $Y$ was implemented.
+To display the ambiguity introduced by the different members, spaghetti plots and the hexbin approach described above were implemented, highlighting contour lines of certain correlation levels. 
+Therefor, they display areas with correlation higher (or lower) then an interactively chosen correlation level (e.g. $0.7$). 
+Also, the mode and the scope can be interactively chosen, to explore different modes and their evolution in time. 
+
+
 % section Temporal Pattern Correlation (end)
-
-\subsection{Scenario Comparison} % (fold)
-\label{sec:Scenario Comparison}
-
-\begin{itemize}
-  \item To compare certain scenarios, a interactive visialization was implented. 
-  \item this allows switching data of scenarios on and off (either the boxplots of the temporal analysis as well as correlation maps and level crossing probabilities visualization)
-\end{itemize}
-
+%
+% \subsection{Scenario Comparison} % (fold)
+% \label{sec:Scenario Comparison}
+%
+% \begin{itemize}
+%   \item To compare certain scenarios, a interactive visualization was implented. 
+%   \item this allows switching data of scenarios on and off (either the boxplots of the temporal analysis as well as correlation maps and level crossing probabilities visualization)
+% \end{itemize}
+%
 % section Scenario Comparison (end)
 
 
