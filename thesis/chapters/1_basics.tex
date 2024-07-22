@@ -2,16 +2,82 @@
 \chapter{Basics}
 \label{ch:basics}
 
-This section should explain the basic math to understand the aforementioned topics, not that much needed but still needs to be there.
+% This section should explain the basic math to understand the aforementioned topics, not that much needed but still needs to be there.
 
-\section{(Uncertain) Fields}
+\section{Sampled Data, Grids and (Uncertain) Fields}
 \label{sec:uncertainfields}
 
-\subsection{Grids, Scalar Fields and Interpolation}
+The goal of this section is to give insights into the structure of scientific (sampled) data, grids, interpolation, and (uncertain) fields. 
+Especially the first parts of this section are largely based on the work of \citeauthorwork{telea2014data}, for a more extensive introduction please refer to it. 
+
+\subsection{Sampled Data, Grids and Interpolation}
 
 \todo{Also add description of contour lines}
 
+In general, data can be classified into two categories: intrinsically continuous or intrinsically discrete data. 
+The latter refers to data such as websites, texts, source code, images or any other type of record. 
+The first on the other hand usually stems from nature and is measured in physical units like $kg$, $\frac{m}{s}$ or similar.
+Continuous data conforms to the Cauchy-Criterion (also called the $\epsilon - \delta$-Criterion), which essentially states that a function $f(x)$ is uniformly continuous if, for any small amount $\epsilon$ you choose, you can find a small distance $\delta$ such that whenever two points are within $\delta$ of each other, their function values are within $\epsilon$ of each other (see \cite{telea2014data} for the mathematical definition). 
+Continuous data can be mathematically represented as a function in the form of \cite{telea2014data}:
+
+\begin{equation}
+  f: D \rightarrow C
+  \label{eq:continous data}
+\end{equation}
+
+With $D \subset \mathbb{R}^d$ and $C \subset \mathbb{R}^c$. 
+In this case the function is called a d-dimensional, c-valued function, which means it maps from its original function domain $D$ to values in the $C$ domain. 
+Functions with $c=1$ are called Scalar Fields, assigning every position in the function domain a single scalar attribute $x \in \mathbb{R}$. 
+Vector Fields ($c=2$ or $c=3$) on the other hand assign every position a vector in the form of $(x_1, x_2) \in \mathbb{R}^2$ or $(x_1, x_2, x_3) \in \mathbb{R}^3$, which can (but does not have to) depend on the original function domain. 
+
+Although this kind of data is continuous in the real world, in its computational representation it is nearly always represented in a discrete way. 
+The reason for this is that it is a) hard to achieve continuous data and b) many mathematical operations (e.g. filtering, denoising, rendering) are hard to perform on continuous data. 
+According to \citeauthorwork{telea2014data}, this is called \textit{sampled data} and could come from e.g. measurements or computer simulations. 
+The sampled data can then be used to reconstruct the original, continuous dataset by using interpolation. 
+
+Interpolation usually uses the structure of data, which is mostly called a \textit{grid} (or sometimes mesh). 
+A grid is a subdivision of the original function domain $D$ into a non\--overlapping collection of cells, which in turn are spanned by vertices, which are the sample points of the discretization of the continuous field.  
+There are multiple ways of defining grids (e.g. rectilinear, structured, unstructured, see Figure~\ref{fig:grid types}) and cells (examples for 2D: line, triangle, quad, hexahedron), but for the sake of brevity this section only introduces the grid applied by the dataset used for this Thesis: The uniform grid. 
+
+\begin{figure}
+  \includegraphics[width=0.95\textwidth]{figures/grid-types.png}
+  \caption{Different types of Grids: A) Uniform Grid, B) unstructured grid, and C) no-conforming grid from \cite{kaltenbacher_nonconforming_2022}}\label{fig:grid types}
+\end{figure}
+
+
+A uniform grid is essentially an axis-aligned box spanning over the original function domain $D$. 
+The extent of the box can be described as a list of $d$ pairs:
+
+\begin{equation}
+  ((m_1, M_1),\dots,(m_d, M_d)), (m_i, M_i) \in \mathbb{R}^2, m_i < M_i
+  \label{eq:uniform grid coordinates}
+\end{equation}
+
+$(m_i, M_i)$  make up the lower and upper limit of the extent in each axis' direction. 
+The sample points are then uniformly distributed along the axis with a given distance $\delta_i$ depending on the axis and all sample points $p_i$ can be described with: 
+
+\begin{equation}
+  p_i = (m_1 + n_i\delta_i,\dots, m_d + n_d\delta_d), n_1, \dots, n_d \in \mathbb{N}
+  \label{eq:smaple point uniform grid}
+\end{equation}
+
+Therefor, every sample point can be described by its integer coordinates $n_1, \dots, n_d$. 
+The number of sample points on axis $i$ is then $N_i = 1 + (M_i - m_i)/\delta_i$, and the set $(N_1, \dots, N_d)$ is often called the \textit{shape} of the uniform grid.   
+The benefits of using uniform grids are the very low storage requirements ($3d$ floating point numbers, regardless of its size) and its simple implementation. 
+Drawbacks are mainly that uniform grids do not represent all use-cases well or require an unnecessary high density to do so. 
+
+
+Interpolation is the process of reconstructing the continuous data $f$ (Equation~\ref{eq:continous data}) from sampled points $p_i$ and associated values $f_i$. 
+In general, there are multiple ways of interpolating, for example using by using \textit{nearest-neighbor interpolation}, assigning each point the value of the closest cell center. 
+While this is computationally efficient, it is a staircase-like, discontinuous approximation of the original data. 
+A better, continuous approach is linear interpolation, which interpolates the value of a point $x \in D$ based on the surrounding cell. 
+The full mathematical description (and other interpolation ideas) are detailed in \citeauthorwork{telea2014data}. 
+
 \subsection{Map Projections}
+
+difference topological dimension vs. geometric dimension 
+
+
 
 \subsection{Uncertain Fields}
 
