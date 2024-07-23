@@ -328,6 +328,8 @@ As shown in Section~\ref{sec:uncertainity_vis}, there exist multiple ways of vis
 The latter approach was used by  \citeauthorwork{vietinghoffdiss} (using the extreme points of the fields) and by \cite{sanyal_noodles_2010, whitaker_contour_2013} using contour lines.  
 
 After analyzing the different spatial patterns of the different variables (and especially IVT), it was obvious that the separation line between the positive and negative spatial patterns seems to be very pronounced, especially in the primary modes. 
+Therefor, the use of contour lines seemed like a good choice for a feature. 
+Contour lines (also referred to as isolines) are lines, that share the same value of the function defining the field. The best known contour lines are lines of same height in maps of mountains.  
 And since one question of the introduction was how those spatial patterns shift geographically, the contour line of zero, representing the borders of positive and negative patterns seems fitting. 
 This procedure relates to the idea of level crossing probabilities, similar to the work of \citeauthorwork{poethkow_approximate_2013}, but for isolines and not for isosurfaces.
 
@@ -343,7 +345,7 @@ Additionally, contour lines give a false sense of precision in data that is actu
 To fix those issues of spaghetti plots, another method was implemented using hexbins. 
 Hexbin plots\footnote{\url{https://docs.makie.org/dev/reference/plots/hexbin}} as used by \citeauthorwork{carr_hexagon_1992} for geographic data are an alternative to heatmaps, depicting the density of observations (usually given as points in space). 
 Heatmaps divide the observed grid into rectangular areas of variable size, and colors the rectangular area depending on the number of observations in it. 
-Hexbin plots are very similar, except they divide the grid into hexagonal \enquote{bins} and handle the oberservations in the same way as heatmaps. 
+Hexbin plots are very similar, except they divide the grid into hexagonal \enquote{bins} and handle the observations in the same way as heatmaps. 
 The advantage of hexbin plots is that it represents distribution better than square bins ($\equiv$ heatmaps) as it was depicted in \cite{carr_hexagon_1992}, as well that it can be more visually appealing to humans \cite{carr_hexagon_1992}. 
 The main idea for this thesis was not only the better representation, but also that the number of hexagons (or their size) can be chosen freely, so by choosing a resolution similar to the underlying grid gives a sense of data precision.
 
@@ -418,7 +420,7 @@ This tackles the problem described by \citeauthor{dommenget_cautionary_2002}: \e
 
 
 For this Thesis an interactive comparison of the patterns of any variable $X$ and the actual data of another (or the same) variable $Y$ was implemented.
-To display the ambiguity introduced by the different members, spaghetti plots and the hexbin approach described above were implemented, highlighting contour lines of certain correlation levels. 
+To display the ambiguity introduced by the different members, spaghetti plots and the hexbin approach described above were reused, highlighting contour lines of certain correlation levels. 
 Therefor, they display areas with correlation higher (or lower) then an interactively chosen correlation level (e.g. $0.7$). 
 Also, the mode and the scope can be interactively chosen, to explore different modes and their evolution in time. 
 

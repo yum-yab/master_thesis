@@ -12,8 +12,6 @@ Especially the first parts of this section are largely based on the work of \cit
 
 \subsection{Sampled Data, Grids and Interpolation}
 
-\todo{Also add description of contour lines}
-
 In general, data can be classified into two categories: intrinsically continuous or intrinsically discrete data. 
 The latter refers to data such as websites, texts, source code, images or any other type of record. 
 The first on the other hand usually stems from nature and is measured in physical units like $kg$, $\frac{m}{s}$ or similar.
@@ -29,11 +27,14 @@ With $D \subset \mathbb{R}^d$ and $C \subset \mathbb{R}^c$.
 In this case the function is called a d-dimensional, c-valued function, which means it maps from its original function domain $D$ to values in the $C$ domain. 
 Functions with $c=1$ are called Scalar Fields, assigning every position in the function domain a single scalar attribute $x \in \mathbb{R}$. 
 Vector Fields ($c=2$ or $c=3$) on the other hand assign every position a vector in the form of $(x_1, x_2) \in \mathbb{R}^2$ or $(x_1, x_2, x_3) \in \mathbb{R}^3$, which can (but does not have to) depend on the original function domain. 
+There are also fields related to higher dimensions (Tensor fields), but they are beyond the scope of this Thesis. 
 
 Although this kind of data is continuous in the real world, in its computational representation it is nearly always represented in a discrete way. 
 The reason for this is that it is a) hard to achieve continuous data and b) many mathematical operations (e.g. filtering, denoising, rendering) are hard to perform on continuous data. 
 According to \citeauthorwork{telea2014data}, this is called \textit{sampled data} and could come from e.g. measurements or computer simulations. 
 The sampled data can then be used to reconstruct the original, continuous dataset by using interpolation. 
+Therefor, when a field is mentioned in this Thesis, it usually refers to such an approximation of a continuous field like in Equation~\ref{eq:continous data}. 
+
 
 Interpolation usually uses the structure of data, which is mostly called a \textit{grid} (or sometimes mesh). 
 A grid is a subdivision of the original function domain $D$ into a non\--overlapping collection of cells, which in turn are spanned by vertices, which are the sample points of the discretization of the continuous field.  
@@ -41,7 +42,8 @@ There are multiple ways of defining grids (e.g. rectilinear, structured, unstruc
 
 \begin{figure}
   \includegraphics[width=0.95\textwidth]{figures/grid-types.png}
-  \caption{Different types of Grids: A) Uniform Grid, B) unstructured grid, and C) no-conforming grid from \cite{kaltenbacher_nonconforming_2022}}\label{fig:grid types}
+  \caption{Different types of Grids: A) Uniform Grid, B) unstructured grid, and C) no-conforming grid from \cite{kaltenbacher_nonconforming_2022}}
+  \label{fig:grid types}
 \end{figure}
 
 
@@ -71,15 +73,35 @@ Interpolation is the process of reconstructing the continuous data $f$ (Equation
 In general, there are multiple ways of interpolating, for example using by using \textit{nearest-neighbor interpolation}, assigning each point the value of the closest cell center. 
 While this is computationally efficient, it is a staircase-like, discontinuous approximation of the original data. 
 A better, continuous approach is linear interpolation, which interpolates the value of a point $x \in D$ based on the surrounding cell. 
-The full mathematical description (and other interpolation ideas) are detailed in \citeauthorwork{telea2014data}. 
+But since interpolation is handled at the very last, visualization step (and handled by libraries), the full mathematical description (and other interpolation ideas) are out of the scope of this Thesis, but are detailed in \citeauthorwork{telea2014data}. 
 
 \subsection{Map Projections}
 
-difference topological dimension vs. geometric dimension 
+Regarding the original function dimension $d$ of the field $f$ described in Equation~\ref{eq:continous data}, there is a subtle but important distinction: the \textit{geometrical dimension} versus the \textit{topological dimension}. 
+The geometrical dimension refers to the dimension of space $D$ is embedded in ($d$), while the topological dimension refers to the actual function domain $D$ itself, which is $s\leq d$ \cite{telea2014data}.
+The difference is best illustrated with the example of the application in this Thesis: simulating earth's surface. 
+Since the earth is a three-dimensional object, and also the earths surface is (approximately) a sphere's surface, the geometrical dimension of such datasets is $d=3$. 
+But since the earths surface can be is a (curved) plane, the topological dimension of such datasets is $s=2$, which is also the reason why it is enough to access any gridpoint on earths with two coordinates: \textit{latitude} (lat), referring to the degrees on the north-south axis, and \textit{longitude} (lon), referring to degrees on the east-west axis.
 
+\begin{figure}[htp]
+  \begin{center}
+    \includegraphics[width=0.95\textwidth]{figures/tissot-map-projections.png}
+  \end{center}
+  \caption{Two different map projections with different kinds of warping, depending on the map projection. The amount of warping is indicated by Tissot’s indicatrices (orange circles). Left: Mercator Projection, Right: Lambert Equal-Area Projection \cite{ghaderpour_map_2014}}\label{fig:tissot map projections}
+\end{figure}
+
+
+Unfortunately, this requires the mapping of a 2D paper plane to a 2D sphere surface, which is topologically impossible (without distortions) \cite{vietinghoffdiss}.
+Therefor, numerous different map projections were invented, which all have a different kind of distortion in different geographical places. 
+Figure~\ref{fig:tissot map projections} shows two distinct projections, both with their own advantages and disadvantages. 
+As pointed out by \citeauthorwork{vietinghoffdiss}, a different map projections may fit the area of interest better, the Mercator projection in Figure~\ref{fig:tissot map projections} (left) is still chosen for this thesis, due to limitations in the employed map projections library (see Section~\ref{sec:vis_analysis}). 
+This distortion also plays a role in calculations with uniform lon/lat-grids, since coordinates in the far north (and south) are vastly overrepresented, since they actually refer to a far smaller portion of the earth's surface than data near the equator (see Section~\ref{sec:eof} for geographical weighting). 
 
 
 \subsection{Uncertain Fields}
+
+Explain uncertain fields and ensembles from \cite{vietinghoffdiss, pothkow2015modeling}
+
 
 \section{Empirical Orthogonal Functions}
 \label{sec:eof}
@@ -100,7 +122,7 @@ So as a formula, a spatio-temporal field $X(t, s)$ (e.g. a sea level pressure fi
 
 with $M$ being the number of modes/patterns and  $c_k$ the $k$th temporal coefficients and $u_k$ the spatial pattern \cite{hannachi_empirical_2007}. 
 
-This could be achieved with multiple kinds of patterns, but in practice EOF decomposition tries finding new sets of variables ($c_k(t)$ and $u_k(s)$ from Equation~\ref{eq:eof decomposition}) that each capture a maximum possible amount of variance/variability of the original dataset. 
+This could be achieved with multiple kinds of decomposition, but EOF tries finding new sets of variables ($c_k(t)$ and $u_k(s)$ from Equation~\ref{eq:eof decomposition}) that each capture a maximum possible amount of variance/variability of the original dataset. 
 So the first of $M$ modes captures the most variance, the second one the second most and so on. 
 
 \subsection{Mathematical Derivation and Computation of EOFs}
