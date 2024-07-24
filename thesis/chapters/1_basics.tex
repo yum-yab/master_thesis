@@ -29,7 +29,7 @@ Functions with $c=1$ are called Scalar Fields, assigning every position in the f
 Vector Fields ($c=2$ or $c=3$) on the other hand assign every position a vector in the form of $(x_1, x_2) \in \mathbb{R}^2$ or $(x_1, x_2, x_3) \in \mathbb{R}^3$, which can (but does not have to) depend on the original function domain. 
 There are also fields related to higher dimensions (Tensor fields), but they are beyond the scope of this Thesis. 
 
-Although this kind of data is continuous in the real world, in its computational representation it is nearly always represented in a discrete way. 
+Although this kind of data is continuous in the real world, its computational representation is nearly always discrete. 
 The reason for this is that it is a) hard to achieve continuous data and b) many mathematical operations (e.g. filtering, denoising, rendering) are hard to perform on continuous data. 
 According to \citeauthorwork{telea2014data}, this is called \textit{sampled data} and could come from e.g. measurements or computer simulations. 
 The sampled data can then be used to reconstruct the original, continuous dataset by using interpolation. 
@@ -82,6 +82,7 @@ The geometrical dimension refers to the dimension of space $D$ is embedded in ($
 The difference is best illustrated with the example of the application in this Thesis: simulating earth's surface. 
 Since the earth is a three-dimensional object, and also the earths surface is (approximately) a sphere's surface, the geometrical dimension of such datasets is $d=3$. 
 But since the earths surface can be is a (curved) plane, the topological dimension of such datasets is $s=2$, which is also the reason why it is enough to access any gridpoint on earths with two coordinates: \textit{latitude} (lat), referring to the degrees on the north-south axis, and \textit{longitude} (lon), referring to degrees on the east-west axis.
+Typically, since the topological dimension is the more relevant one, it is referred to as the \textit{dataset dimension}, while the geometrical dimension is mostly assumed to be three. 
 
 \begin{figure}[htp]
   \begin{center}
@@ -100,7 +101,30 @@ This distortion also plays a role in calculations with uniform lon/lat-grids, si
 
 \subsection{Uncertain Fields}
 
-Explain uncertain fields and ensembles from \cite{vietinghoffdiss, pothkow2015modeling}
+% Explain uncertain fields and ensembles from \cite{vietinghoffdiss, pothkow2015modeling}
+
+As already mentioned, the results of GCMs are often multiple simulations. 
+Mathematically, this is defined as an \textit{uncertain} or \textit{random field}. 
+Since all fields used in this Thesis are scalar fields, we will define uncertain fields only for those. 
+Let's assume $s : D \rightarrow \mathbb{R}$ is a scalar field, associating a value  with every point in $D$. 
+As mentioned in the previous section, such fields are usually approximated using $n$ sample points in a grid $(x_1,\dots, x_n) \in D^n$ and their associated scalar values, represented in a vector $(s_1,\dots,s_n) \in \mathbb{R}^n$ ($s_i$ is the scalar value at grid point $x_i$).
+This being a \enquote{normal} (or rather deterministic) scalar field, an uncertain scalar has no concrete given values $s_i$ but follows an unknown probability density \cite{vietinghoffdiss}, which is illustrated in Figure~\ref{fig:uncertain field example}. 
+
+
+\begin{figure}[htb]
+  \begin{center}
+    \includegraphics[width=0.95\textwidth]{figures/uncertain_gaussian_field.png}
+  \end{center}
+  \caption{Illustration of an uncertain field with a Gaussian probability density function at every sample point (from \cite{pothkow2015modeling})}
+  \label{fig:uncertain field example}
+\end{figure}
+
+For similar reasons why continuous data is available mostly in discrete form, the probability density function (PDF) associated with every sample point is in practice rarely given as the actual function, but rather as sampled values. 
+In the case of this Thesis, these samples stem from multiple \textit{realizations} $\omega \in \Omega$ ($\Omega$ being the sample space, which represents the different samples of the PDF), wich associates every realization with one version of the field: $F: \Omega \rightarrow \mathbb{R}^n$.
+With regard to simulations, one realization $\omega$ is associated with a certain set of parameters for a mathematical model. 
+Again, the full set of $\Omega$ cannot be realized, so a certain number $m$ of realizations $Z = (\omega_1,\dots,\omega_m) \in \Omega^m$ is used to approximate the PDFs associated with each grid point. 
+Connecting this with the terms mentioned in Section~\ref{sec:climate research}: The set of fields $F(Z)$ is called \textit{ensemble}, while each field $F(\omega_i), i \in {1,\dots,m}$ is the $i$th \textit{member} (or \textit{realization}) of said ensemble. \cite{vietinghoffdiss}  
+% With $x_i \in \D, i \in {1, 2, \dots, M}$ (the approximation of $D$ in Equation~\ref{eq:continous data}), 
 
 
 \section{Empirical Orthogonal Functions}
