@@ -82,7 +82,7 @@ The geometrical dimension refers to the dimension of space $D$ is embedded in ($
 The difference is best illustrated with the example of the application in this Thesis: simulating earth's surface. 
 Since the earth is a three-dimensional object, and also the earths surface is (approximately) a sphere's surface, the geometrical dimension of such datasets is $d=3$. 
 But since the earths surface can be is a (curved) plane, the topological dimension of such datasets is $s=2$, which is also the reason why it is enough to access any gridpoint on earths with two coordinates: \textit{latitude} (lat), referring to the degrees on the north-south axis, and \textit{longitude} (lon), referring to degrees on the east-west axis.
-Typically, since the topological dimension is the more relevant one, it is referred to as the \textit{dataset dimension}, while the geometrical dimension is mostly assumed to be three. 
+Typically, since the topological dimension is the more relevant one, it is referred to as the \textit{dataset dimension}, while the geometrical dimension is mostly assumed to be three. \cite{telea2014data}
 
 \begin{figure}[htp]
   \begin{center}
@@ -133,7 +133,7 @@ Connecting this with the terms mentioned in Section~\ref{sec:climate research}: 
 
 \subsection{Overview}
 
-Empirical Orthogonal Functions (short: EOFs) analysis, also known as geographically weighted PCA or Proper Orthogonal Decomposition \cite{vietinghoffdiss}, \enquote{is among the most widely and extensively used methods in atmospheric science} \cite{hannachi_empirical_2007}. 
+Empirical Orthogonal Functions (short: EOFs) analysis, also known as geographically weighted PCA or Proper Orthogonal Decomposition \cite{vietinghoffdiss}, was first introduced to the field of turbulence and fluid dynamics in the late 60s. The goal was to reduce turbulent flow to a limit number of deterministic functions to explain the structure of the flow \cite{weiss_tutorial_2019}. Currently, it \enquote{is among the most widely and extensively used methods in atmospheric science} \cite{hannachi_empirical_2007}. 
 One of its goals is to reduce the usually very high dimensionality of atmospheric data and can be used to link certain modes/patterns to the physics/dynamics of the analyzed system.  
 EOFs are a statistical procedure to decompose spatio-temporal data into two components: On the one hand orthogonal spatial patterns, on the other hand corresponding uncorrelated temporal coefficients, representing the activity of their corresponding pattern in certain time steps \cite{hannachi_empirical_2007, vietinghoffdiss}. 
 The naming of the components is for from being consistent: The spatial patterns are also called spatial modes, PC loadings, EOFs or even sometimes PCs, while the temporal coefficients are also named principal components (PCs), EOF amplitudes or EOF (expansion) coefficients \cite{hannachi_empirical_2007}. 

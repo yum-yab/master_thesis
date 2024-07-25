@@ -90,7 +90,10 @@ Comparing the state of the patterns at the end of the different future scenario 
 While the dark green hexagons in the beginning of the historical simulation are on/below the red line of the preindustrial simulation, the majority of zero contour lines in SSP126 seem to be above the preindustrial control contour line. 
 In SSP585, the dark green hexagons stretch even further north, indicating that the slight northward shift of IVT EOF1 at the end of the 21st century is even more pronounced. 
 
-The IVT EOF2 
+The IVT EOF2 is characterized by a strong IVT anomaly right were the seperation contour line of EOF1 is, and lesser, opposite anomalies in the north and south. 
+Comparing the beginning of the historical simulation with SSP126, the changes seem only minimal, whereas the difference of SSP585 and the others are far more pronounced: 
+While the southern, prominent separation contour line seems to experience a slight shift to the north, the norther isoline appears to move to the east, opening the pattern up to the north. 
+Also the big area of fading out contour lines in the north of Scandinavia, seems to now be (more or less) uniformly part of the positive anomaly.  
 % While the border in Greenland looks very similar at the end of SSP126 and the begin of the historical simulation, 
 % On this example a way of interpreting the hexbin visualization is given, which can be applied to the patterns in Figures \ref{fig:pr eof evolution} and \ref{fig:psl eof evolution}. 
 
@@ -114,6 +117,62 @@ The IVT EOF2
   \end{center}
   \caption{Same as Figure~\ref{fig:ivt eof evolution}, but with sea level pressure data.}\label{fig:psl eof evolution}
 \end{figure}
+
+
+\subsection{Evolution of Temporal Patterns}
+
+
+As already explained in Section~\ref{sec:vis_analysis}, there is no proper way to visualize the EOF coefficients of an ensemble in the same way related work did it. 
+Therefor, the only way left is to analyze statistics of those signals and compare them in a boxplot to get a sense of variability across members. 
+In the Figures~\ref{fig:std ivt evolution}, \ref{fig:std psl evolution}, and \ref{fig:std pr evolution} the evolution of the standard deviation (SD) of IVT, sea level pressure, and precipitation is displayed, respectively. 
+Keep in mind that being scaled to the original unit means multiplying each EOF coefficient series with the associated singular value, which is very closely related to the encoded variance (see Equation~\ref{eq:eof variance calculation}). 
+
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=0.75\textwidth]{figures/std_ivt_50seasons_tempmodescale_3modes.png}
+  \end{center}
+  \caption{Evolution of the standard deviation of IVT EOF coefficients for each scope and simulation member.}
+  \label{fig:std ivt evolution}
+\end{figure}
+
+Analyzing the evolution of the standard deviation of the IVT EOF coefficients, that compared to the quasi-stationary preindustrial control simulation the SD increases significantly, regardless of scenario. 
+While Mode one experiences a drop in SD in the scopes from $\approx$ 1933 to 1999 (start of the scope), the SD of the members keep steadily increasing. 
+This increase is far more pronounced in the SSP585 scenario than in SSP126, culminating in a median SD of $\approx 970~kg~s^{-1} m^{-1}$ (compared to $\approx 820~kg~s^{-1}m^{-1}$ in SSP126). 
+This change is far more extreme than the sole change of proportionate encoded variability shown in Figure~\ref{fig:ivt mode variability}. 
+The variance across the members seems pretty similar in both scenarios. 
+All of this applies to modes two and three as well: Slow but steady increase in SD, which stays consistent in SSP126 but experiences a sharp increase in the later scopes of SSP585.  
+
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=0.75\textwidth]{figures/std_psl_50seasons_tempmodescale_3modes.png}
+  \end{center}
+  \caption{Same as Figure~\ref{fig:std ivt evolution}, but with sea level pressure data.}
+  \label{fig:std psl evolution}
+\end{figure}
+
+Regarding the evolution of SD of sea level pressure EOF, it is obvious that the levels are more consistent over all the scopes, regardless of the scenario. 
+Also, the piControl simulation is completely in line with the corresponding boxplots and could not be distinguished from the historical/scenario simulation. 
+Comparing the scenarios, SD of Mode 1 coefficients (NAO indices) seem to be very similar to each other, with SSP585 having maybe a bit more variability across members. 
+While it's also hard to distinguish the results of the different scenarios for Mode 3, SD evolution of Mode 2 (EAP indices) seem to experience a more pronounced increase in the later scopes in SSP585 than SSP126.  
+This could be explained with the increase in proportional variability of that mode shown in Figure~\ref{fig:psl mode variability}.
+
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=0.75\textwidth]{figures/std_pr_50seasons_tempmodescale_3modes.png}
+  \end{center}
+  \caption{Same as Figure~\ref{fig:std ivt evolution}, but with precipitation data.}
+  \label{fig:std pr evolution}
+\end{figure}
+
+The standard deviation of precipitation EOF coefficients seems to expose the largest differences in comparison to piControl simulation and the scenarios. 
+Similarly to the IVT piControl EOF coefficients SD, the precipitation piControl has a dump in EOF coefficient SD in roughly the same timespan of scopes, which may be connected. 
+The SSP126 scenario only shows a moderate increase in mode one, and no significant change in other modes. 
+On the other hand, SSP585 shows a significant increase in all modes, which is different to the encoded variability shown in Figure~\ref{fig:pr mode variability}, where only the first mode exposes a steep increase. 
+
+
 
 \section{Relationships with other Variables}
 
