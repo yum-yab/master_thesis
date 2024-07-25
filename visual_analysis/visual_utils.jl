@@ -819,7 +819,8 @@ function generate_correlation_boxplot(
     show_first_pattern=false,
     scalings=(1.0, 1.0),
     colormaps=(:vik100, :vik100),
-    use_crosscor=true)
+    use_crosscor=true,
+    fontsize=18)
 
     available_members = intersect(keys(first_eof_data.ensemble), keys(second_eof_data.ensemble))
 
@@ -839,7 +840,7 @@ function generate_correlation_boxplot(
 
     time_axis = first_eof_data.time
 
-
+    member_colors = repeat(distinguishable_colors(50), length(scopes))
 
     function transform_data(data)
         if isnothing(transformation)
@@ -851,7 +852,8 @@ function generate_correlation_boxplot(
 
     for scope_index in eachindex(scopes)
 
-        lag_extent = Int(floor(length(scopes[scope_index]) / 2))
+        # lag_extent = Int(floor(length(scopes[scope_index]) / 2))
+        lag_extent = 4
 
         lag = use_crosscor ? collect(-1*lag_extent:lag_extent) : [0]
 
@@ -902,7 +904,7 @@ function generate_correlation_boxplot(
         control_lag[scope_index] = lag[index]
     end
 
-    fig = Figure(size=size)
+    fig = Figure(size=size, fontsize=fontsize)
 
     boxplot_cols = use_crosscor ? UnitRange(1, 2) : UnitRange(1:4)
 
@@ -914,12 +916,12 @@ function generate_correlation_boxplot(
 
     if use_crosscor
         ax_lagval = Axis(fig[2, boxplot_cols], title="Lags of $cor_type of $data_name", yminorticksvisible=true)
-        boxplot!(ax_lagval, xmappings, lagvals, label="Lag Boxplot")
+        boxplot!(ax_lagval, xmappings, lagvals, outliercolor = member_colors, label="Lag Boxplot")
         scatter!(ax_lagval, xvals, control_lag; color=:red, label="piControl simulation")
         axislegend(ax_lagval, position=legend_position)
     end
 
-    boxplot!(ax_boxplot, xmappings, yvals, label="Ensemble Correlation Boxplot")
+    boxplot!(ax_boxplot, xmappings, yvals, outliercolor = member_colors, label="Ensemble Correlation Boxplot")
     scatter!(ax_boxplot, xvals, control_correlation; color=:red, label="piControl simulation")
 
     # axislegend(ax_boxplot, position=legend_position)
@@ -1533,7 +1535,7 @@ function interactive_mode_analysis(
 
 end
 
-function compare_ensemble_modes_variability(ensembles::Tuple{EOFEnsemble,String}...; resolution=(1080, 1920), fontsize=12)
+function compare_ensemble_modes_variability(ensembles::Tuple{EOFEnsemble,String}...; resolution=(1080, 1920), fontsize=12, al_position=:rb)
 
 
 
@@ -1597,7 +1599,7 @@ function compare_ensemble_modes_variability(ensembles::Tuple{EOFEnsemble,String}
         axis.xticklabelalign = (:right, :center)
 
 
-        axislegend(axis, position=:rt, unique = true)
+        axislegend(axis, position=al_position, unique = true)
     end
 
 
