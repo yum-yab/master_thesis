@@ -206,14 +206,7 @@ L,S,R = SVD(D)
 
 $L$ are the left singular vectors, $R$ the right singular vectors and $S$ a vector containing the singular values. 
 With time being the first dimension as a result of the previous step, $R$ contains the spatial modes, $L$ the temporal modes (also called principal components or EOF coefficients). 
-The singular values $\Sigma$ can be used to compute the eigenvalues ($\sigma_i^2$), which are  the share of variability encoded in that corresponding mode $i$ with 
-
-\begin{equation}
-\label{eq:singularval variability}
-V_i = \frac{\sigma_i^2}{\sum_{i=1}^{m}\sigma_i^2}
-\end{equation}
-
-
+The singular values $\Sigma$ can be used to compute the eigenvalues ($\sigma_i^2$), which are  the share of variability encoded in that corresponding mode $i$ with Equation~\ref{eq:eof variance calculation}. 
 Then the modes are cut of at a limit $n$ (usually five) to reduce disk space usage and loading times in the visualization processes later. 
 
 
@@ -381,8 +374,11 @@ The spatial pattern is of course only the half of the EOFs.
 An equally important part are the EOF coefficients, representing the activity of the spatial patterns in each (monthly) time step. 
 Unfortunately, it is very hard to visualize them on ensemble scale, since each member is quite different in each month, resulting in a hard to interpret mess when using mean functions or boxplots. 
 
-So instead the temporal activity can be used to evaluate the relationship of certain patterns with other variables or even other patterns. 
-Obviously, it is very important that the same members are compared across variables since they share their initial conditions and forcings.  
+So instead the temporal activity can either a) be analyzed on its own using standard deviation or b) it can be used to evaluate the relationship of certain patterns with other variables or even other patterns. 
+For the former it is important to scale the EOF coefficients with the singular values, since on their own they have a standard deviation of one. 
+The standard deviation of the scaled EOFs is then calculated for each sliding window and member and visualized using boxplots. 
+
+For the latter, it is very important that the same members are compared across variables since they share their initial conditions and forcings.  
 The tool of choice for comparing the temporal patterns/signals is (cross)correlation, which measures the linear relation between two signals. 
 This does not imply any causality in any direction on itself, but shows how similar signals (e.g. the EOF coefficients) are. 
 Causality must therefor be justified separately from correlation.  
