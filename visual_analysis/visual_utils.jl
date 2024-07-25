@@ -1541,6 +1541,8 @@ function compare_ensemble_modes_variability(ensembles::Tuple{EOFEnsemble,String}
 
     fig = Figure(size=resolution, fontsize=fontsize)
 
+    all_axis = []
+
 
     for (i, (eof_ensemble, data_name)) in enumerate(ensembles)
 
@@ -1579,6 +1581,8 @@ function compare_ensemble_modes_variability(ensembles::Tuple{EOFEnsemble,String}
 
         axis = Axis(fig[i, 1], title="In Modes Encoded Variability of $data_name", ytickformat="{:.1f} %")
 
+        push!(all_axis, axis)
+
         # for mode in 1:nmodes
         #     println(size(piControly[mode]))
         # end
@@ -1605,6 +1609,7 @@ function compare_ensemble_modes_variability(ensembles::Tuple{EOFEnsemble,String}
 
     # Label(fig[0, 1], "In Modes Encoded Variability of $data_name")
 
+    linkyaxes!(all_axis...)
 
 
 
@@ -1832,31 +1837,116 @@ function eof_data_correlation_maps!(
 end
 
 
-function test_interactive(
-    eof_results::EOFEnsemble,
-    original_datasets::Vector{EnsembleSimulation}
-)
+# function test_interactive(
+#     eof_results::EOFEnsemble,
+#     original_datasets::Vector{EnsembleSimulation}
+# )
 
-    fig = Figure()
+#     fig = Figure()
 
-    eof_data_correlation_maps!(
-        fig[1, 1],
-        eof_results,
-        original_datasets,
-        Observable(1),
-        3;
-        hexbin_colormap=:algae,
-        colormap=:vik100,
-        coastline_color=:black,
-        shading=Makie.automatic,
-    )
+#     eof_data_correlation_maps!(
+#         fig[1, 1],
+#         eof_results,
+#         original_datasets,
+#         Observable(1),
+#         3;
+#         hexbin_colormap=:algae,
+#         colormap=:vik100,
+#         coastline_color=:black,
+#         shading=Makie.automatic,
+#     )
 
-    return fig
+#     return fig
 
-end
+# end
 
 function get_var_unit_string(eof_data::EOFEnsemble)
 
     return "$(uppercase(eof_data.variable_id)) in $(quick_unit_lookup(eof_data.variable_id))"
 
+end
+
+
+function modes_stat_analysis(ensembles::Tuple{EOFEnsemble,String}...; resolution=(1080, 1920), fontsize=12, al_position=:rb, nmodes = nothing, stat_fun_type="variance", unit = "")
+
+
+
+    fig = Figure(size=resolution, fontsize=fontsize)
+
+    
+    stat_fun = lowercase(stat_fun_type) == "variance" ? var : std
+
+    stat_label = lowercase(stat_fun_type) == "variance" ? "Variance" : "Standard Deviation"
+
+    println("Calculates $stat_label")
+
+    all_axis = []
+
+    for (i, (eof_ensemble, data_name)) in enumerate(ensembles)
+
+        scopes = eof_ensemble.scopes
+
+        time_axis = eof_ensemble.time
+
+        if isnothing(nmodes)
+            nmodes = length(get_modes_variability(eof_ensemble.ensemble[get_member_id_string(11)][1]))
+        end
+
+        xmappings = Int[]
+
+        ymappings = [Float64[] for _ in 1:nmodes]
+
+        piControly = [Float64[] for _ in 1:nmodes]
+
+        for scope_index in eachindex(scopes)
+
+            for (_, eof_results) in eof_ensemble.ensemble
+
+                results = stat_fun(eof_results[scope_index].temporal_modes, dims=1)
+
+                push!(xmappings, scope_index)
+
+                for mode in 1:nmodes
+                    push!(ymappings[mode], results[mode])
+                end
+
+            end
+
+            piControl_var = stat_fun(eof_ensemble.piControl[scope_index].temporal_modes, dims=1)
+
+            for mode in 1:nmodes
+                push!(piControly[mode], piControl_var[mode])
+            end
+        end
+
+        axis = Axis(fig[i, 1], title="$(stat_label) of EOF coefficients of $data_name", ylabel = unit)
+
+        push!(all_axis, axis)
+
+
+
+        for mode in 1:nmodes
+            boxplot!(axis, xmappings, ymappings[mode], label="Mode $mode")
+        end
+        for mode in 1:nmodes
+            lines!(axis, eachindex(scopes), piControly[mode], color=:red, label="piControl")
+        end
+        
+
+
+        seasonslice = 1:3:length(scopes)
+
+        axis.xticks = (seasonslice, ["$(year(time_axis[scopes[i].start])) - $(year(time_axis[scopes[i].stop]))" for i in seasonslice])
+        axis.xticklabelrotation = π / 4
+        axis.xticklabelalign = (:right, :center)
+
+
+        axislegend(axis, position=al_position, unique = true)
+    end
+
+    linkyaxes!(all_axis...)
+
+
+
+    return fig
 end
