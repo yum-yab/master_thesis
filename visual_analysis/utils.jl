@@ -155,7 +155,7 @@ end
 
 function build_ensemble_data_common_scaling(base_path, scenarios...; file_range_selection=:, data_field_id="ivt", member_range=1:50, silent=false, filterfun=nothing)
 
-    (_, scaling, _) = get_correct_var_display(data_field_id)
+    (_, scaling, _, _) = get_correct_var_display(data_field_id)
     return build_ensemble_data(base_path, scenarios...; file_range_selection=file_range_selection, data_field_id=data_field_id, member_range=member_range, silent=silent, filterfun=filterfun, unit_scale_factor=scaling)
 end
 
@@ -462,7 +462,7 @@ function load_eof_ensemble_result(base_path, scope_id, scenario_id; sqrtscale=tr
 end
 
 function load_eof_ensemble_common_scaling(base_path, scope_id, scenario_id, field_id::String; sqrtscale=true, modes=5, scale_eofs::Union{Nothing,EOFScaling}=nothing, align_with_first::Union{Nothing,UnitRange}=nothing)::EOFEnsemble
-    (_, scaling, _) = get_correct_var_display(field_id)
+    (_, scaling, _, _) = get_correct_var_display(field_id)
     return load_eof_ensemble(base_path, scope_id, scenario_id, field_id; sqrtscale=sqrtscale, modes=modes, scale_eofs=scale_eofs, align_with_first=align_with_first, unit_scale_factor=scaling)
 end
 
@@ -632,9 +632,9 @@ function winter_timelimit(timeelement)
     return filter_winter_season(timeelement) && timeelement < DateTime(2100, 12, 31)
 end
 
-function get_correct_var_display(varid)
+function get_correct_var_display(varid::String)::Tuple{String, Float64, String, Any}
 
-    info_dict = Dict(t[1] => t for t in [("ivt", 1.0, Reverse(:vik100)), ("psl", 1/100, :vik100), ("pr", 86400.0, Reverse(:vik100))])
+    info_dict = Dict(t[1] => t for t in [("ivt", 1.0, "kg s-1 m-1", Reverse(:vik100)), ("psl", 1/100, "hPa", :vik100), ("pr", 86400.0, "mm/month", Reverse(:vik100))])
     
     return info_dict[varid]
 end
