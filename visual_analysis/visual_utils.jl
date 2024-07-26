@@ -815,9 +815,7 @@ function generate_correlation_boxplot(
     size=Makie.autmatic,
     value_mode=:normal,
     transformation=nothing,
-    legend_position=:rt,
     show_first_pattern=false,
-    scalings=(1.0, 1.0),
     colormaps=(:vik100, :vik100),
     use_crosscor=true,
     fontsize=18)
@@ -850,12 +848,14 @@ function generate_correlation_boxplot(
         end
     end
 
+    lag_extent = 4
+
+    lag = use_crosscor ? collect(-1*lag_extent:lag_extent) : [0]
+
     for scope_index in eachindex(scopes)
 
         # lag_extent = Int(floor(length(scopes[scope_index]) / 2))
-        lag_extent = 4
 
-        lag = use_crosscor ? collect(-1*lag_extent:lag_extent) : [0]
 
         for member_id in available_members
 
@@ -904,6 +904,12 @@ function generate_correlation_boxplot(
         control_lag[scope_index] = lag[index]
     end
 
+    if mean(yvals) > 0
+        legend_position = :rb
+    else
+        legend_position = :rt
+    end
+
     fig = Figure(size=size, fontsize=fontsize)
 
     boxplot_cols = use_crosscor ? UnitRange(1, 2) : UnitRange(1:4)
@@ -912,10 +918,10 @@ function generate_correlation_boxplot(
 
     cor_type = use_crosscor ? "Maximum $value_type Crosscorrelation" : "$value_type Correlation"
 
-    ax_boxplot = Axis(fig[1, boxplot_cols], title="$cor_type of $data_name", yminorticksvisible=true)
+    ax_boxplot = Axis(fig[1, boxplot_cols], title="$cor_type of $data_name", yminorticksvisible=true, limits=(nothing, (-1, 1)), ylabel="Pearson correlation coefficient")
 
     if use_crosscor
-        ax_lagval = Axis(fig[2, boxplot_cols], title="Lags of $cor_type of $data_name", yminorticksvisible=true)
+        ax_lagval = Axis(fig[2, boxplot_cols], title="Lags of $cor_type of $data_name", yminorticksvisible=true, limits=(nothing, extrema(lag)))
         boxplot!(ax_lagval, xmappings, lagvals, outliercolor = member_colors, label="Lag Boxplot")
         scatter!(ax_lagval, xvals, control_lag; color=:red, label="piControl simulation")
         axislegend(ax_lagval, position=legend_position)
@@ -924,8 +930,8 @@ function generate_correlation_boxplot(
     boxplot!(ax_boxplot, xmappings, yvals, outliercolor = member_colors, label="Ensemble Correlation Boxplot")
     scatter!(ax_boxplot, xvals, control_correlation; color=:red, label="piControl simulation")
 
-    # axislegend(ax_boxplot, position=legend_position)
-    seasonslice = 1:3:length(first_eof_data.scopes)
+    axislegend(ax_boxplot, position=legend_position)
+    seasonslice = 1:5:length(first_eof_data.scopes)
 
     boxplot_axes = use_crosscor ? [ax_boxplot, ax_lagval] : [ax_boxplot]
 
@@ -951,7 +957,6 @@ function generate_correlation_boxplot(
 
             x, y = use_crosscor ? (i, 3) : (2, (2i - 1))
 
-            scale_value = scalings[i]
 
             colormap = colormaps[i]
 
@@ -962,9 +967,9 @@ function generate_correlation_boxplot(
             geoax = local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=title, figure_row=x, figure_col=y)
 
 
-            mean_pattern = get_mean_of_multiple_arrays([res_array[index].spatial_modes[:, :, mode] * scale_value for (_, res_array) in eof_data.ensemble]...)
+            mean_pattern = get_mean_of_multiple_arrays([res_array[index].spatial_modes[:, :, mode] for (_, res_array) in eof_data.ensemble]...)
 
-            max_mode_1 = maximum(get_mean_of_multiple_arrays([res_array[index].spatial_modes[:, :, 1] * scale_value for (_, res_array) in eof_data.ensemble]...))
+            max_mode_1 = maximum(get_mean_of_multiple_arrays([res_array[index].spatial_modes[:, :, 1] for (_, res_array) in eof_data.ensemble]...))
 
             limits = (-max_mode_1, max_mode_1)
             surface!(
@@ -1618,17 +1623,9 @@ end
 
 function get_correlation_map(variable_data, temporal_pattern)
 
-    x, y = size(variable_data)
+    lon, lat = size(variable_data)[1:2]
 
-    result = ones(x, y)
-
-    for i in 1:x
-        for j in 1:y
-            result[i, j] = cor(variable_data[i, j, :], temporal_pattern)
-        end
-    end
-
-    return result
+    return reshape(cor(reshape(variable_data, lon * lat, :), temporal_pattern, dims=2), lon, lat)
 end
 
 function colleration_maps_per_member(eof_result::EOFEnsemble, original_data::EnsembleSimulation, mode_id, scope_index)::Vector{Matrix{Float64}}
