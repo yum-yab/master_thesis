@@ -50,6 +50,7 @@ Similar to Figure~\ref{fig:psl mode variability}, the secondary mode (representi
   \caption{Same as Figure~\ref{fig:psl mode variability} but with precipitation}\label{fig:pr mode variability}
 \end{figure}
 
+The dominant modes of precipitation EOF seem to account for far less of the total variance ($28.5 \%$ of the top three modes' mean total variance at the beginning of the historical simulation), compared to the other patterns ($50 \%$ and $68 \%$ for IVT and PSL, respectively).  
 The comparison of mode variability evolution of precipitation EOFs (Figure~\ref{fig:pr mode variability}) shows no significant changes of modes 3,4, and 5 between both evaluated scenarios. 
 Those encode on median $5\%$, $6\%$ and $6.5\%$ with small fluctuations introduced by the members. 
 Mode 2 also looks very similar in both scenarios, with a median encoded variability of around $8.5\%$. 
@@ -57,15 +58,9 @@ The primary EOF on the other shows significant differences across scenarios: Whi
 It evolves from around $12.5\%$ in the 1850-1900 window to around $14\%$ in SSP126 and $15.5\%$ in SSP585.  
 
 
+In general, the modes beyond the second seem to be not well separated from the others, which is why they won't be analyzed in detail in the following sections. 
+
 \subsection{Evolution of Spatial Patterns}
-
-This Section shows the evolution of the spatial EOF patterns, shown in Figure~\ref{fig:5modes each variable}. 
-Since the EOF modes four and five are generally quite low and similar in their eigenvalues (which directly correspond to the variance (see Equation~\ref{eq:eof variance calculation}) encoded shown in Figures~\ref{fig:ivt mode variability}, \ref{fig:psl mode variability}, and \ref{fig:pr mode variability}), they are left out of the analysis of this and the following sections, as modes' eigenvalues need to be well separated from each other \cite{hannachi_empirical_2007}. 
-Usually, the rule of thumb introduced by \citeauthorwork{north_sampling_1982} is used, but since the eigenvalues of the first three modes (or two for precipitation, see Figure~\ref{fig:pr mode variability}), this is left out of this Thesis. 
-
-The variability introduced through the 50 members of the MPI GE CMIP6 is displayed here with the hexbin approach explained in Section~\ref{sec:vis_analysis}, while a discussion of the hexbin visualization compared to the classical spaghetti is given in Section~\ref{sec:discussion}.
-The images in this section are the first and last frame from the video displaying the evolution of the different scenarios.\todo{Reference the videos somehow}  
-
 
 \begin{figure}[htb]
   \begin{center}
@@ -75,6 +70,27 @@ The images in this section are the first and last frame from the video displayin
   \end{center}
   \caption{The top three EOFs of IVT data, with a 50 winter scope and hexbins visualizing the variability introduced by simulation members. The top row displays the state in the historical simulation (second half of 19th century), while middle (SSP126) and bottom (SSP585) display the state in the second half of the 21st century. The red line shows the contour line of zero of the preindustrial control simulation. }\label{fig:ivt eof evolution}
 \end{figure}
+
+
+This Section shows the evolution of the spatial EOF patterns, shown in Figure~\ref{fig:5modes each variable}. 
+Since the EOF modes four and five are generally quite low and similar in their eigenvalues (which directly correspond to the variance (see Equation~\ref{eq:eof variance calculation}) encoded shown in Figures~\ref{fig:ivt mode variability}, \ref{fig:psl mode variability}, and \ref{fig:pr mode variability}), they are left out of the analysis of this and the following sections, as modes' eigenvalues need to be well separated from each other \cite{hannachi_empirical_2007}. 
+As already mentioned, mode three also seems to be not well separated, but is still shown in the following figures for an example how an inconsistent mode looks (at least for IVT and precipitation), which makes it hard (or even pointless) to evaluate it for an ensemble simulation.  
+Usually, the rule of thumb introduced by \citeauthorwork{north_sampling_1982} is used, but since the eigenvalues of the first three modes (or two for precipitation, see Figure~\ref{fig:pr mode variability}), this is left out of this Thesis. 
+
+The variability introduced through the 50 members of the MPI GE CMIP6 is displayed here with the hexbin approach explained in Section~\ref{sec:vis_analysis}, while a discussion of the hexbin visualization compared to the classical spaghetti is given in Section~\ref{sec:discussion}.
+The images in this section are the first and last frame from the video displaying the evolution of the different scenarios.\todo{Reference the videos somehow}  
+
+\begin{figure}[htb]
+  \begin{center}
+    \includegraphics[width=0.85\textwidth]{figures/psl_spat_patterns_hexbin_18501899_ssp585_50seasons.png}
+    \includegraphics[width=0.85\textwidth]{figures/psl_spat_patterns_hexbin_20502100_ssp126_50seasons.png}
+    \includegraphics[width=0.85\textwidth]{figures/psl_spat_patterns_hexbin_20502100_ssp585_50seasons.png}
+  \end{center}
+  \caption{Same as Figure~\ref{fig:ivt eof evolution}, but with sea level pressure data.}\label{fig:psl eof evolution}
+\end{figure}
+
+
+
 
 Figure~\ref{fig:ivt eof evolution} shows the evolution of IVT EOF spatial patterns. 
 In general, regardless of the future scenario, EOF1 and EOF2 stays structurally very stable across all the ensembles' members, which can be seen on the clear, dark green borders of the colored surfaces. 
@@ -92,35 +108,63 @@ In SSP585, the dark green hexagons stretch even further north, indicating that t
 
 The IVT EOF2 is characterized by a strong IVT anomaly right were the seperation contour line of EOF1 is, and lesser, opposite anomalies in the north and south. 
 Comparing the beginning of the historical simulation with SSP126, the changes seem only minimal, whereas the difference of SSP585 and the others are far more pronounced: 
-While the southern, prominent separation contour line seems to experience a slight shift to the north, the norther isoline appears to move to the east, opening the pattern up to the north. 
-Also the big area of fading out contour lines in the north of Scandinavia, seems to now be (more or less) uniformly part of the positive anomaly.  
+While the southern, prominent separation contour line seems to be more variable across members (broader hexbin band), the northern isoline appears to move to the east, opening the pattern up to the north. 
+Also, the big area of fading out contour lines in the north of Scandinavia, seems to now be (more or less) uniformly part of the positive anomaly.  
 % While the border in Greenland looks very similar at the end of SSP126 and the begin of the historical simulation, 
 % On this example a way of interpreting the hexbin visualization is given, which can be applied to the patterns in Figures \ref{fig:pr eof evolution} and \ref{fig:psl eof evolution}. 
+While mode three of IVT EOF does expose changes between the different scenarios (again historical simulation and SSP126 look very similar, while SSP585 differs), the patterns seem to be pretty unstable compared to the other, indicated by the whole map being covered in light green hexbins. 
+This implies that the contour lines of zero are all over the map, which means that the structures are quite different across the simulations' members. 
 
-
-
-
-\begin{figure}
+\begin{figure}[htb]
   \begin{center}
-    \includegraphics[width=0.95\textwidth]{figures/pr_spat_patterns_hexbin_18501899_ssp585_50seasons.png}
-    \includegraphics[width=0.95\textwidth]{figures/pr_spat_patterns_hexbin_20502100_ssp126_50seasons.png}
-    \includegraphics[width=0.95\textwidth]{figures/pr_spat_patterns_hexbin_20502100_ssp585_50seasons.png}
+    \includegraphics[width=0.85\textwidth]{figures/pr_spat_patterns_hexbin_18501899_ssp585_50seasons.png}
+    \includegraphics[width=0.85\textwidth]{figures/pr_spat_patterns_hexbin_20502100_ssp126_50seasons.png}
+    \includegraphics[width=0.85\textwidth]{figures/pr_spat_patterns_hexbin_20502100_ssp585_50seasons.png}
   \end{center}
   \caption{Same as Figure~\ref{fig:ivt eof evolution}, but with precipitation data.}\label{fig:pr eof evolution}
 \end{figure}
 
-\begin{figure}
-  \begin{center}
-    \includegraphics[width=0.95\textwidth]{figures/psl_spat_patterns_hexbin_18501899_ssp585_50seasons.png}
-    \includegraphics[width=0.95\textwidth]{figures/psl_spat_patterns_hexbin_20502100_ssp126_50seasons.png}
-    \includegraphics[width=0.95\textwidth]{figures/psl_spat_patterns_hexbin_20502100_ssp585_50seasons.png}
-  \end{center}
-  \caption{Same as Figure~\ref{fig:ivt eof evolution}, but with sea level pressure data.}\label{fig:psl eof evolution}
-\end{figure}
+
+
+The evolution of sea level pressure patterns is displayed in Figure~\ref{fig:psl eof evolution}, showing the North Atlantic Oscillation  and the East Atlantic Pattern (see Section~\ref{sec:nao}). 
+While the first two EOFs are well known, real world phenomena, the third mode was never mentioned in the related literature. 
+Although it seems to be stable across members and time scopes, it will therefor be left out of the analysis. 
+The NAO in mode one, characterized by its north-south dipole of pressure, is very consistent across the 50 members of the simulation, indicated by the narrow band of hexbins showing the switching line between the positive/negative anomalies. 
+Comparing the historical simulation with SSP585, there seems to be a slight northward shift of the hexbin band, best visible at the northern part of the British Islands. 
+This shift seems to be less pronounced in SSP126. 
+The NAO exhibits no outliers across all the sliding windows. In contrast, the EAP appears deformed in some members, as evidenced by a few very lightly colored hexbins in the blue center of the historical part. These deformations are also observable in other scopes throughout the simulations, unrelated to the historical part of the timeline.
+The southern border of the prominent negative pattern remains indistinguishable between the scenarios and the historical simulation. However, the stable northern border, marked by dark green hexbins, seems to shift further north, particularly in SSP585.
+
+
+Similar to the other Figures in this Section, Figure~\ref{fig:pr eof evolution} shows the evolution of dominant precipitation EOF patterns. 
+While mode one looks very similar to the primary pattern of IVT EOF, the secondary mode looks quite comparable to the EAP. 
+Quite noticeable in the primary pattern is the strong positive precipitation anomaly at the west coast of the Iberian Peninsula. 
+Also, EOF1 is associated with negative anomalies along the southern east coast of Norway and a small positive pattern at the south-western coast of Greenland. 
+The SSP126 EOF1 pattern extends considerably into mainland Europe and also extends further north. 
+This effect is noticeable only in Europe and not in the Atlantic, with the anomaly along the coast of the Iberian Peninsula becoming more pronounced (indicated by a more intense blue). 
+In the SSP585 EOF1 pattern, the effects observed in SSP126 are even more pronounced, with the piControl line comparable to the farthest outliers of SSP585.
+% - negative anomalies at the southern east coast of norway
+% - SSP126 EOF1 pattern: extends into mainland europe quite a bit, also entends to the north. Effect only noticeable in Europe, not the Atlantic. Also the Anomaly on the coast of Iberian Peninsula got larger (more intense blue)
+% - SSP585 EOF1 pattern: effects of SSP126 are more pronounced, piControl line is compareable to outliers of SSP585 
+EOF2 of precipitation appears to be quite unstable across the members of the simulations, as indicated by hexbins filling most of the map. The only somewhat stable area is a positive anomaly over Great Britain and slightly further north. A small but consistent negative anomaly is observed along the east coast of Iceland in many members. However, this stability collapses in some members and time steps, as shown by very light green hexbins moving through the center. In future scenarios, the central positive pattern opens up to the north, resembling the evolution of the EAP. This effect is more pronounced in SSP585 than in SSP126.
+
+% - EOF2 of precipitation seems also not very stable across the simulations' members (indicated by hexbins filling most of the map)
+% - only area somewhat stable: positive anomaly over great britain and a bit more north. 
+% - small but consistent in many members: small negative anomaly at the east coast of iceland 
+% - but this also collapses in some members and timesteps, indicated by very light green hexbins moving through the center 
+% - Effect in future scenarios: Central positive pattern opens up to the north, similar to the evolution of the EAP 
+% - this is more pronounced in SSP585 then in SSP126
 
 
 \subsection{Evolution of Temporal Patterns}
 
+\begin{figure}[htb]
+  \begin{center}
+    \includegraphics[width=0.65\textwidth]{figures/std_ivt_50seasons_tempmodescale_3modes.png}
+  \end{center}
+  \caption{Evolution of the standard deviation of IVT EOF coefficients for each scope and simulation member.}
+  \label{fig:std ivt evolution}
+\end{figure}
 
 As already explained in Section~\ref{sec:vis_analysis}, there is no proper way to visualize the EOF coefficients of an ensemble in the same way related work did it. 
 Therefor, the only way left is to analyze statistics of those signals and compare them in a boxplot to get a sense of variability across members. 
@@ -128,12 +172,12 @@ In the Figures~\ref{fig:std ivt evolution}, \ref{fig:std psl evolution}, and \re
 Keep in mind that being scaled to the original unit means multiplying each EOF coefficient series with the associated singular value, which is very closely related to the encoded variance (see Equation~\ref{eq:eof variance calculation}). 
 
 
-\begin{figure}
+\begin{figure}[htb]
   \begin{center}
-    \includegraphics[width=0.75\textwidth]{figures/std_ivt_50seasons_tempmodescale_3modes.png}
+    \includegraphics[width=0.65\textwidth]{figures/std_psl_50seasons_tempmodescale_3modes.png}
   \end{center}
-  \caption{Evolution of the standard deviation of IVT EOF coefficients for each scope and simulation member.}
-  \label{fig:std ivt evolution}
+  \caption{Same as Figure~\ref{fig:std ivt evolution}, but with sea level pressure data.}
+  \label{fig:std psl evolution}
 \end{figure}
 
 Analyzing the evolution of the standard deviation of the IVT EOF coefficients, that compared to the quasi-stationary preindustrial control simulation the SD increases significantly, regardless of scenario. 
@@ -144,12 +188,13 @@ The variance across the members seems pretty similar in both scenarios.
 All of this applies to modes two and three as well: Slow but steady increase in SD, which stays consistent in SSP126 but experiences a sharp increase in the later scopes of SSP585.  
 
 
-\begin{figure}
+
+\begin{figure}[htb]
   \begin{center}
-    \includegraphics[width=0.75\textwidth]{figures/std_psl_50seasons_tempmodescale_3modes.png}
+    \includegraphics[width=0.65\textwidth]{figures/std_pr_50seasons_tempmodescale_3modes.png}
   \end{center}
-  \caption{Same as Figure~\ref{fig:std ivt evolution}, but with sea level pressure data.}
-  \label{fig:std psl evolution}
+  \caption{Same as Figure~\ref{fig:std ivt evolution}, but with precipitation data.}
+  \label{fig:std pr evolution}
 \end{figure}
 
 Regarding the evolution of SD of sea level pressure EOF, it is obvious that the levels are more consistent over all the scopes, regardless of the scenario. 
@@ -158,14 +203,6 @@ Comparing the scenarios, SD of Mode 1 coefficients (NAO indices) seem to be very
 While it's also hard to distinguish the results of the different scenarios for Mode 3, SD evolution of Mode 2 (EAP indices) seem to experience a more pronounced increase in the later scopes in SSP585 than SSP126.  
 This could be explained with the increase in proportional variability of that mode shown in Figure~\ref{fig:psl mode variability}.
 
-
-\begin{figure}
-  \begin{center}
-    \includegraphics[width=0.75\textwidth]{figures/std_pr_50seasons_tempmodescale_3modes.png}
-  \end{center}
-  \caption{Same as Figure~\ref{fig:std ivt evolution}, but with precipitation data.}
-  \label{fig:std pr evolution}
-\end{figure}
 
 The standard deviation of precipitation EOF coefficients seems to expose the largest differences in comparison to piControl simulation and the scenarios. 
 Similarly to the IVT piControl EOF coefficients SD, the precipitation piControl has a dump in EOF coefficient SD in roughly the same timespan of scopes, which may be connected. 
@@ -176,94 +213,147 @@ On the other hand, SSP585 shows a significant increase in all modes, which is di
 
 \section{Relationships with other Variables}
 
-
+This section explores the correlation relationships between the dominant EOFs and other variables an their EOFs. 
 
 \subsection{Relationships of EOFs}
 
+The different EOFs of the variables can easily be compared by measuring the relationship between their temporal EOF coefficients. 
+Although cross-correlation was used to find correlation patterns shifted in time (as explained in Section~\ref{sec:vis_analysis}), the analysis revealed that all somewhat correlated patterns had the highest correlation with lag zero ($\equiv$ same month). 
+Therefore, finding the maximal cross-correlation distorts the actual correlation, which is expected to occur in the same month. 
+That's why this section displays the not shifted correlation, while the analysis using cross correlation can be found in the appendix. \todo{Create Appendix!}
+Following the argumentation in the previous section, only relationships between the first two modes of the variables were explored. 
+Also, only the figures with significant correlations (Pearson Correlation $> 0.4$) are evaluated. 
+Since the sample size is 200 ($50 \cdot 4$ months) for each scope, every result $> 0.5$ is significant at $p < 0.01$.
 
-\subsubsection{Relationships of IVT and Sea Surface Pressure EOFS (NAO and EAP)}
 
-\begin{figure}
-  \begin{center}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_ivt_psl_modes11_ssp126_50seasons.png}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_ivt_psl_modes11_ssp585_50seasons.png}
-  \end{center}
-  \caption{Maximum cross correlation of Mode 1 of Sea Level Pressure and Mode 1 of IVT. On the right are images of the corresponding spatial patterns. Lag is a boxplot and indicates the shift in time used for finding the maximum (absolute) cross correlation.}
-  \label{fig:crosscor ivt psl modes11}
+%
+% \begin{figure}[htb]
+%   \begin{center}
+%     \subfloat[Caption for image 1]{
+%         \includegraphics[width=0.49\textwidth]{figures/correlation_boxplot_ivt_psl_modes11_ssp126_50seasons.png}
+%         \includegraphics[width=0.49\textwidth]{figures/correlation_boxplot_ivt_psl_modes11_ssp585_50seasons.png}
+%         \label{fig:image1}
+%     }
+%     \hfill
+%     \subfloat[Caption for image 2]{
+%         \includegraphics[width=0.49\textwidth]{figures/correlation_boxplot_ivt_psl_modes22_ssp126_50seasons.png}
+%         \includegraphics[width=0.49\textwidth]{figures/correlation_boxplot_ivt_psl_modes22_ssp585_50seasons.png}
+%         \label{fig:image2}
+%     }
+%     
+%   \end{center}
+%   \caption{Correlation of Sea Level Pressure and IVT. Top row shows SSP126, bottom row SSP585. In the middle are images of the corresponding spatial patterns. The colors of the outliers refer to one specific member associated with that color.}
+%   \label{fig:cor ivt psl modes11}
+% \end{figure}
+%
+
+\begin{figure}[!tbp]
+  \begin{subfigure}[b]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{figures/correlation_boxplot_ivt_psl_modes11_ssp126_50seasons.png}
+        \includegraphics[width=\textwidth]{figures/correlation_boxplot_ivt_psl_modes11_ssp585_50seasons.png}
+    \caption{Mode 1 of IVT and Mode 1 of PSL (NAO index)}
+    \label{fig:cor ivt psl modes11}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{figures/correlation_boxplot_ivt_psl_modes22_ssp126_50seasons.png}
+        \includegraphics[width=\textwidth]{figures/correlation_boxplot_ivt_psl_modes22_ssp585_50seasons.png}
+    \caption{Mode 2 of IVT and Mode 2 of PSL (EAP index)}
+    \label{fig:cor ivt psl modes22}
+  \end{subfigure}
+  \caption{Correlation of Sea Level Pressure and IVT. Top row shows SSP126, bottom row SSP585. In the middle are images of the corresponding spatial patterns. The colors of the outliers refer to one specific member associated with that color.}
 \end{figure}
 
-\begin{figure}
-  \begin{center}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_ivt_psl_modes12_ssp126_50seasons.png}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_ivt_psl_modes12_ssp585_50seasons.png}
-  \end{center}
-  \caption{Same as Figure~\ref{fig:crosscor ivt psl modes11}, but with mode 2 of Sea Level Pressure (EAP).}
-  \label{fig:crosscor ivt psl modes12}
+The first relationships to explore are the ones between the indices of the dominant oscillations of the Atlantic and the IVT modes. 
+In general, it is expected that high values of IVT are associated with low pressure areas.
+Figure~\ref{fig:cor ivt psl modes11} shows the correlation of the NAO index with the activity of the primary IVT mode. 
+As expected it shows a strong negative Pearson correlation coefficient (PCC) at about $-0.75$, with quite little variability across the different members. 
+Comparing the different scenarios, it seems that SSP126 stays very similar to the historical simulation. 
+SSP585 on the other hand seems to be more variable across the members and slightly less correlated in the later years. The first could be the reason for the latter. 
+
+% \begin{figure}[htb]
+%   \begin{center}
+%     \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_ivt_psl_modes12_ssp126_50seasons.png}
+%     \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_ivt_psl_modes12_ssp585_50seasons.png}
+%   \end{center}
+%   \caption{Same as Figure~\ref{fig:cor ivt psl modes11}, but with mode 2 of Sea Level Pressure (EAP).}
+%   \label{fig:crosscor ivt psl modes12}
+% \end{figure}
+%
+
+The relationships between mode 1 and mode 2 of IVT and PSL and vice versa are pretty similar (Figure in the Appendix\todo{Figure in the Appendix}): 
+Both have the media PCC around $0.5$, with the boxplots whiskers reaching around $0.25$. 
+Also, both seem to experience a slight increase in median correlation in the late years of SSP585, while SSP126 stays pretty consistent. 
+
+
+
+
+%
+% \begin{figure}[htb]
+%   \begin{center}
+%   \end{center}
+%   \caption{Same as Figure~\ref{fig:cor ivt psl modes11}, but with mode 2 of Sea Level Pressure (EAP) and IVT.}
+%   \label{fig:cor ivt psl modes22}
+% \end{figure}
+%
+
+Figure~\ref{fig:cor ivt psl modes22} shows the evolution of correlation of the index of the EAP with the secondary IVT mode. 
+It shows a slightly weaker relationship than Figure~\ref{fig:cor ivt psl modes11} with a median PCC around $0.6$. 
+Again, SSP126 stays similar to the historical simulation and the piControl simulation. 
+But in SSP585, the correlation with the EAP index drops to a median of $0.5$, while the variability across members increases. 
+
+
+
+
+\begin{figure}[!tbp]
+  \begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth]{figures/correlation_boxplot_pr_ivt_modes11_ssp126_50seasons.png}
+    \includegraphics[width=\textwidth]{figures/correlation_boxplot_pr_ivt_modes11_ssp585_50seasons.png}
+    \caption{Mode 1 of IVT and Mode 1 of precipitation}
+    \label{fig:cor pr ivt modes11}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth]{figures/correlation_boxplot_pr_ivt_modes22_ssp126_50seasons.png}
+    \includegraphics[width=\textwidth]{figures/correlation_boxplot_pr_ivt_modes22_ssp585_50seasons.png}
+    \caption{Mode 2 of IVT and Mode 2 of precipitation}
+    \label{fig:cor pr ivt modes22}
+  \end{subfigure}
+  \caption{Same as Figures~\ref{fig:cor pr ivt modes11} and \ref{fig:cor ivt psl modes22}, but with precipitation instead of sea level pressure.}
 \end{figure}
 
-\begin{figure}
-  \begin{center}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_ivt_psl_modes22_ssp126_50seasons.png}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_ivt_psl_modes22_ssp585_50seasons.png}
-  \end{center}
-  \caption{Same as Figure~\ref{fig:crosscor ivt psl modes11}, but with mode 2 of Sea Level Pressure (EAP) and IVT.}
-  \label{fig:crosscor ivt psl modes22}
+
+From Figure~\ref{fig:cor pr ivt modes11} it is obvious that the primary modes of IVT and precipitation are very closely related. 
+It shows a PCC of about $0.9$, with very little variance ocross the members. 
+Also, there is barely a difference between SSP126 and SSP585. 
+The secondary modes of IVT and precipitation look quite different: 
+Although Figure~\ref{fig:cor pr ivt modes22} shows a quite high median PCC of about $0.75$, there are a lot of outliers, reaching down to the same extent in the negative spectrum. 
+Also the preindustrial control simulation shows this kind of beviour in the scopes beginning at 1949 to 1974 (with interruptions). 
+The explaination for this is pretty simple: Since this mode is pretty unstable across different members (see previous section), the alignment to the pattern shown in Figure~\ref{fig:cor pr ivt modes22} did not work very well, which causes the pattern (and following this also the EOF coefficients) to flip, resulting in result on the other side of the correlation spectrum. 
+
+
+
+\begin{figure}[!tbp]
+  \begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth]{figures/correlation_boxplot_psl_pr_modes11_ssp126_50seasons.png}
+    \includegraphics[width=\textwidth]{figures/correlation_boxplot_psl_pr_modes11_ssp585_50seasons.png}
+    \caption{Mode 1 of IVT and Mode 1 of precipitation}
+    \label{fig:cor psl pr modes11}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth]{figures/correlation_boxplot_psl_pr_modes22_ssp126_50seasons.png}
+    \includegraphics[width=\textwidth]{figures/correlation_boxplot_psl_pr_modes22_ssp585_50seasons.png}
+    \caption{Mode 2 of IVT and Mode 2 of precipitation}
+    \label{fig:cor psl pr modes22}
+  \end{subfigure}
+  \caption{Same as Figures~\ref{fig:cor pr ivt modes11} and \ref{fig:cor ivt psl modes22}, but with precipitation instead of sea level pressure.}
 \end{figure}
 
-
-\begin{figure}
-  \begin{center}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_ivt_psl_modes21_ssp126_50seasons.png}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_ivt_psl_modes21_ssp585_50seasons.png}
-  \end{center}
-  \caption{Same as Figure~\ref{fig:crosscor ivt psl modes11}, but with mode 2 of IVT EOF.}
-  \label{fig:crosscor ivt psl modes21}
-\end{figure}
-
-
-
-
-
-
-\subsubsection{Relationships of Precipitation and IVT EOFs}
-
-\begin{figure}
-  \begin{center}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_pr_ivt_modes11_ssp126_50seasons.png}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_pr_ivt_modes11_ssp585_50seasons.png}
-  \end{center}
-  \caption{Same as Figure~\ref{fig:crosscor ivt psl modes11}, but with modes 1 of precipitation and IVT EOFs.}\label{fig:crosscor pr ivt modes11}
-\end{figure}
-
-\begin{figure}
-  \begin{center}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_pr_ivt_modes22_ssp126_50seasons.png}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_pr_ivt_modes22_ssp585_50seasons.png}
-  \end{center}
-  \caption{Same as Figure~\ref{fig:crosscor pr ivt modes11}, but with modes 2 of each variables' EOFs.}\label{fig:crosscor pr ivt modes22}
-\end{figure}
-
-
-\subsubsection{Relationships of Precipitation and Sea Level Pressure EOFs}
-
-
-
-\begin{figure}
-  \begin{center}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_psl_pr_modes11_ssp126_50seasons.png}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_psl_pr_modes11_ssp585_50seasons.png}
-  \end{center}
-  \caption{Same as Figure~\ref{fig:crosscor ivt psl modes11}, but with Sea Level Pressure and precipitation EOFs.}\label{fig:crosscor psl pr modes11}
-\end{figure}
-
-\begin{figure}
-  \begin{center}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_psl_pr_modes22_ssp126_50seasons.png}
-    \includegraphics[width=0.95\textwidth]{figures/crosscorrelation_boxplot_psl_pr_modes22_ssp585_50seasons.png}
-  \end{center}
-  \caption{Same as Figure~\ref{fig:crosscor ivt psl modes11}, but with modes 2 of both Sea Level Pressure and precipitation EOFs.}\label{fig:crosscor psl pr modes22}
-
-\end{figure}
+Since the correlation between IVT and NAO/EAP and precipitation and IVT are already known, the analysis of their temporal correlation yields no surprises. 
+Nevertheless, Figures~\ref{fig:cor psl pr modes11} and \ref{fig:cor psl pr modes22} show their evolution of correlation, showing the expected high negative ($\approx -0.75$) with the NAO index and the expected high positive correlation with the EAP index. 
+Interestingly, the drop of correlation which was visible in Figure~\ref{fig:cor ivt psl modes22} does not appear in the relationship of precipitation and the EAP. 
+But this could also be due to the amount of outliers (caused by incoherent, misaligned patterns of precipitation EOF2) warping the results. 
 
 
 
@@ -271,5 +361,5 @@ On the other hand, SSP585 shows a significant increase in all modes, which is di
 \subsection{Relationships of EOFs with Variables}
 
 
-\section{Discussion of Interpretation}
+\section{Discussion}
 \label{sec:discussion}
