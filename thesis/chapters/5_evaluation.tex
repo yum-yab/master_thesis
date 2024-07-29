@@ -11,6 +11,7 @@ Therefore, only the more smooth results of 50 winters per timescope are shown in
 This Section gives an overview how the EOF patterns change over the time, also comparing the differences of the two chosen climate scenarios, which represent the extremes of climate change handling.   
 
 \subsection{Evolution of Encoded Variability}
+\label{sec:results encoded variance}
 
 
 
@@ -64,6 +65,7 @@ It evolves from around $12.5\%$ in the 1850-1900 window to around $14\%$ in SSP1
 In general, the modes beyond the second seem to be not well separated from the others, which is why they won't be analyzed in detail in the following sections. 
 
 \subsection{Evolution of Spatial Patterns}
+\label{sec:spatial pattern evolution}
 
 \begin{figure}[htb]
   \begin{center}
@@ -363,11 +365,13 @@ But this could also be due to the amount of outliers (caused by incoherent, misa
 
 \subsection{Relationships of EOFs with Variables}
 
-While the relationships of different patterns are interesting, EOFs have the problem of being hard to interpret. 
+While the relationships of different patterns are interesting, EOFs are notoriously hard to interpret \cite{hannachi_empirical_2007, dommenget_cautionary_2002}. 
 For the sea level pressure EOFs this has been solved, since the NAO and EAP (and there indices) are established physical modes and were first discovered using traditional measurements and evaluation of weather stations. 
-It was then discovered that the EOFs of said fields also expose said patterns, and therefore useful to compute and evaluate said patterns. 
+It was then discovered that the EOFs of said fields also expose these patterns, and therefore useful to compute and represent these physical modes.  
 Such an analysis does not yet exist for IVT and precipitation in Europe. 
+Since the causality is quite clear (pressure oscillations influence the wind and therefore IVT and IVT influences precipitation), these directions of EOF mode $\rightarrow$ data correlation are explored. 
 The most interesting of such analyses are the relationship between IVT EOF modes and precipitation data, since this could help to explain what influence certain modes have on the precipitation in Europe. 
+Also depicted are the correlations between sea level pressure EOF modes and IVT data, to see the relationship between them. 
 
 
 \begin{figure}[!htb]
@@ -387,7 +391,7 @@ The most interesting of such analyses are the relationship between IVT EOF modes
     \caption{End of SSP585}
     \label{fig:ivt eof pr cor ssp585 mode1}
   \end{subfigure}
-  \caption{Correlation maps of IVT EOF mode 1 and precipitation data of the same scope. Hexbins show the probability of contour lines of $0.6$ passing through.}
+  \caption{Correlation maps of IVT EOF mode 1 and precipitation data of the same scope. Hexbins show the probability of contour lines of $0.6$ passing through. The red line indicates the same contour line, but for the preindustrial control simulation.}
   \label{fig:ivt eof pr cor mode1}
 \end{figure}
 
@@ -396,10 +400,10 @@ Figure~\ref{fig:ivt eof pr cor mode1} shows said correlation maps of mode 1 of t
 The isocontours indicate the areas with PCC values higher than $0.6$, so areas where the actual precipitation behaves quite similarly to the dominant IVT pattern. 
 This area is mainly the west coast of the Iberian Peninsula (area of highest correlation), the ocean westwards of it, and for some members, the Côte d'Azur. 
 Looking at the evolution in time one can see that the area of high correlation do not change that much in SSP126. 
-It seems to stretch a bit further north and more confident in the peak at the Côte d'Azur (meaning more contour lines of members are now visible there). 
+It seems to stretch a bit further north and more confident in the peak at the Côte d'Azur (darker green of hexbins in that area). 
 Additionally, the Atlantic coast of France seems to be associated with PCC values $>0.6$ in some outliers of the ensemble. 
 SSP585 shows the same changes, but far more pronounced: The outliers even reach the British Islands in the north, and the west coast of France seems to be part of the higher correlation area for most members, similar to the Côte d'Azur.
-
+% But after all the contour of the piControl run (red), which changed only marginally, is still in the most likely (dark green) area. 
 
 \begin{figure}[!htb]
   \begin{subfigure}[b]{0.32\textwidth}
@@ -423,38 +427,164 @@ SSP585 shows the same changes, but far more pronounced: The outliers even reach 
 \end{figure}
 
 Figure~\ref{fig:ivt eof pr cor mode2} shows the same analysis, but for mode 2 of IVT EOF. 
-The area of higher (positive) correlation are here the British Island, the ocean westwards of them, the whole west coast of Europe, the North Sea, and the South Coast of Norway and Sweden. 
-The change at the end of the SSP126 scenario i that the correlation at the west coast of Europe gets lesser, which is also more pronounced in the SSP585 scenario
+The area of higher (positive) correlation are here especially the west coasts of the British Islands and Scandinavia, but also the ocean westwards of them, the whole west coast of Europe, the North Sea. 
+Also, there are only a few members indicating that correlation level in the Gulf of Bothnia (between Finland and Sweden), but these seem to be outliers. 
+The end of the SSP126 scenario looks quite similar to the beginning of the historical simulation, except that the contour lines seem to reach less into European Mainland, and are less confident on the west coast of France.  
+This could be due to the increased influence of IVT EOF mode one in the same area, which reduces the effect of the secondary mode on that coast. 
+
+
+\begin{figure}[!htb]
+  \begin{subfigure}[b]{0.32\textwidth}
+    \includegraphics[width=\textwidth]{figures/psl_ivt_cor_mode1_historical.png}
+    \caption{Begin of historical simulation}
+    \label{fig:psl eof ivt cor historical mode1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.32\textwidth}
+    \includegraphics[width=\textwidth]{figures/psl_ivt_cor_mode1_ssp126.png}
+    \caption{End of SSP126} 
+    \label{fig:psl eof ivt cor ssp126 mode1}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.32\textwidth}
+    \includegraphics[width=\textwidth]{figures/psl_ivt_cor_mode1_ssp585.png}
+    \caption{End of SSP585}
+    \label{fig:psl eof ivt cor ssp585 mode1}
+  \end{subfigure}
+  \caption{Same as Figure~\ref{fig:ivt eof pr cor mode1}, but with sea level pressure mode (NAO index) and IVT data correlation. Also, hexbins indicate the contour lines of $-0.6$ PCC.}
+  \label{fig:psl eof ivt cor mode1}
+\end{figure}
+
+
+Figure~\ref{fig:psl eof ivt cor mode1} shows the same correlation maps, but with the primary PSL EOF (the NAO index) and IVT data. 
+This has the goal of seeing how the oscillation indices are connected to the actual IVT data, and maybe even track a northward shift there. 
+In the first mode the negative correlations below $-0.6$ are shown, which should display the areas assiciated with the inverse of the normal NAO (pressure low in the south and pressure high in the north). 
+In general, the hexbins are not as dark green as in the previous figures, indicating that the members do not agree as unanimous. 
+The highest are of correlation on that level is on the west coast of the Iberian Peninsula and Morocco, and the ocean westwards of that are. 
+In the historical simulation, also the Labrador Sea features a few light green hexbins, indicating that only a few members seem to have that kind of correlation between IVT and the NAO index. 
+The change between the beginning of the historical simulation and the ends of SSP126 and SSP585 are only marginal, no (northward or whatsoever) shift of the really important dark green hexbins. 
+This means that only a few outliers of the members changed, the contour lines of the largest quantity of members stays pretty much the same. 
+
+
+\begin{figure}[!htb]
+  \begin{subfigure}[b]{0.32\textwidth}
+    \includegraphics[width=\textwidth]{figures/psl_ivt_cor_mode2_historical.png}
+    \caption{Begin of historical simulation}
+    \label{fig:psl eof ivt cor historical mode2}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.32\textwidth}
+    \includegraphics[width=\textwidth]{figures/psl_ivt_cor_mode2_ssp126.png}
+    \caption{End of SSP126} 
+    \label{fig:psl eof ivt cor ssp126 mode2}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.32\textwidth}
+    \includegraphics[width=\textwidth]{figures/psl_ivt_cor_mode2_ssp585.png}
+    \caption{End of SSP585}
+    \label{fig:psl eof ivt cor ssp585 mode2}
+  \end{subfigure}
+  \caption{Same as Figure~\ref{fig:psl eof ivt cor mode1}, but with the second PSL mode (EAP index).}
+  \label{fig:psl eof ivt cor mode2}
+\end{figure}
+
+\todo{Replace with positive correlations since the correlations are also positive!}
 
 
 \section{Discussion}
 \label{sec:discussion}
 
-
+This section discusses the results from the previous sections as well as the effectiveness of the introduced hexbin visualization. 
 
 \subsection{Insights about the patterns}
 
-\begin{itemize}
-  \item in general, real interpretation of the results require the knowledge of a domain expert
-  \item But: the analysis shows some changes during climate change, and some could be attributed to intensity thereof 
-  \item but still: some of the results can still be explained using the foundations of EOFs 
-  \item the evolution of variability is interesting. Some modes seem to significantly increase their portion of variability, which could have to do with their expansion: More space covered with one mode -> more variability encoded 
-  \item the general expansion of the nodes could be due to the northward shift of the NAO (domain expert required)
-  \item but also: There seems to be a change in the East Atlantic pattern  
-  \item Common pattern: The primary modes of all three variables seem quite connected (no surprise since the NAO and EAP are known to be drivers of wind and precipitation in winterly Europe)
-  \item Also: the EAP seems connected with the secondary IVT mode and the secondary pr mode. But careful here: They are also somewhat correlated to mode 1 (and vice versa) -> problem of orthogonality. Also mode 2 of precipitation seems pretty unstable and may be degenerated 
-\end{itemize}
+First, the real interpretation of the results is not the topic of this Thesis, since it requires the knowledge of real domain experts (meteorologists or climate scientists). 
+The focus of this work was a) the generation of EOF patterns of moisture related variables and b) the visualization of the variability across ensemble members. 
+Nevertheless, the results still yield some interesting differences between the historical simulation and both evaluated future scenarios. 
+While the benefits of analyzing EOFs instead of the original data are great, they are notoriously hard to interpret with regard to the actual atmospheric physics behind them \cite{dommenget_cautionary_2002, hannachi_empirical_2007}.
+The reasons mostly named for this are the forced orthogonality of modes, which does not really exist in the real world \cite{hannachi_empirical_2007}, and the \enquote{hallucination} of modes, which means creating certain modes which have no equivalent in the real data/world (which was shown in detail in the work of \citeauthorwork{dommenget_cautionary_2002}). 
+The reason for said hallucinations is also the forced orthogonality of EOF modes. 
+Yet, the importance of the dominant modes of IVT were mentioned and analyzed in previous work \cite{salstein_modes_1983, zou_interdecadal_2018}. 
+Therefor, this section tries to summarize the most important discoveries of the European, moisture related EOFs, their relationships, and their development in future scenarios. 
+
+Starting with the analysis of the variance encoded by different modes (Section~\ref{sec:results encoded variance}), the most interesting discoveries are the changing importance of modes in different future scenarios. 
+Most importantly are here the clearly visible increase in SSP585 of EOF2 of PSL (EAP) by $2-3 \%$ and EOF1 of precipitation data by a similar amount. 
+This could be explained by the increased area covered by this mode in SSP585, shown in Section~\ref{sec:spatial pattern evolution}. 
+By covering a larger area, this mode can cover a larger portion of the whole datasets anomaly. 
+Also, this suggests that a larger area behaves more similar in time ($\equiv$ can be represented with the same temporal patterns/EOF coefficients). 
+
+
+One of the most interesting results of this analysis is the very strong relationship of the primary modes of IVT and precipitation EOFs with a correlation coefficient of about $0.9$.
+This may indicate that EOF1 of IVT is a driver of that particular precipitation mode, since water vapor transport causes precipitation (and not vice versa). 
+The primary mode of PR seems to be especially important for the precipitation in the east (coast) of the Iberian Peninsula, which would then be also true for the primary EOF of IVT. 
+This impression is also reinforced by looking at the correlation maps of IVT EOF1 and precipitation data (Figure~\ref{fig:ivt eof pr cor mode1}), which shows very high correlation values with the temporal pattern of said mode on the east coast of the Iberian Peninsula. 
+The pronounced northward expansion of both PR EOF1 and the correlation between IVT EOF1 and precipitation could also be explained with the northward shift/expansion of the dominant IVT mode, which means this mode influences a larger region of Europe in heavier climate change. 
+
+Also interesting is the change of the spatial component of the secondary IVT EOF. 
+Mainly, because the consequences of that are not entirely clear. 
+The correlation between IVT EOF2 and precipitation do show some changes in SSP585 (less influence on the west coast of Europe), but this could also be due to the increased influence of IVT EOF1. 
+Additionally, the relationship with the EAP index (Figure~\ref{fig:cor ivt psl modes22}), seems to drop in the later years of the scenario, in difference to SSP126. 
+
+The analysis of the standard deviation of the different modes had the goal of showing the fluctuations and the evolution thereof. 
+Since the EOF coefficients have a SD of one in their normal (unscaled) state, it is entirely dependent on the scaling, encoded in the singular values of the respective mode. \todo{THink about this. is this true?} 
+Most notably is here the striking difference between SSP126 and SSP585 in variance of the dominant IVT EOF modes. 
+Since this is not reflected in the percentage share of variance in those modes, the most likely answer is that the variance of IVT increases in general more in SSP585.
+A similar pattern can be seen in Figure~\ref{fig:std pr evolution}, but this can be explained with a combination of increased total variance and the increase of the percentage share of PR EOF1. 
+
+\todo{Maybe add paragraph of unanswered questions}
+In the end it needs to be stressed that these are just speculations, and the actual interpretation needs to be performed by domain experts. 
+
+% \begin{itemize}
+%   \item in general, real interpretation of the results require the knowledge of a domain expert
+%   \item But: the analysis shows some changes during climate change, and some could be attributed to intensity thereof 
+%   \item but still: some of the results can still be explained using the foundations of EOFs 
+%   \item the evolution of variability is interesting. Some modes seem to significantly increase their portion of variability, which could have to do with their expansion: More space covered with one mode -> more variability encoded 
+%   \item the general expansion of the nodes could be due to the northward shift of the NAO (domain expert required)
+%   \item but also: There seems to be a change in the East Atlantic pattern  
+%   \item Common pattern: The primary modes of all three variables seem quite connected (no surprise since the NAO and EAP are known to be drivers of wind and precipitation in winterly Europe)
+%   \item Also: the EAP seems connected with the secondary IVT mode and the secondary pr mode. But careful here: They are also somewhat correlated to mode 1 (and vice versa) -> problem of orthogonality. Also mode 2 of precipitation seems pretty unstable and may be degenerated 
+% \end{itemize}
 
 \subsection{Discussion of Hexbin visualization}
 
 
-\begin{itemize}
-  \item Goal was to improve on spaghetti plots and to reduce the chaos of them 
-  \item also it should give a hint on how coarse the actual, underlying data is 
-  \item did it work? Not really. It may look less chaotic for the cases where spaghetti plots also look not really that chaotic -> but for other cases its not that good 
-  \item also since its just a quick idea itis not really as precise as it could be (is based on a existing hexbin implementation rather than a newly written one)
-  \item also the resolution argument did not work for the slider since they somehow change size then
-  \item in the end: Best solution woiuld have been already existing ideas from recent papers -> but they provide no library (implementing a paper would have been out of scope for a master thesis beyond what I already did)
+This Section focuses on the discussion of the presented hexbin visualization of contour lines in ensemble simulations. 
+The goal was to convey the likelihood of a contour line going through a bin in a more direct way, instead of relying on counting (which isn't even possible sometimes). 
+Especially for large numbers of members/contour lines, the real quantity of contour lines passing through an area is quite hard to recognize. 
+Looking at Figure~\ref{fig:comparsion member vis spaghetti}, it is quite hard (even with zooming and counting), to determine (approxiately) how many contour lines are there actually at the coast of Norway/Sweden.
+While this is also not possible using the current hexbin approach, it gives at least an idea about the percentage and can be compared to other regions (e.g. the density at the coast of Norway/Sweden is similar to the density near Ireland). 
+In the authors' opinion, that not really possible to compare in spaghetti plots. 
+Given the fact that the trend of ensemble members tends to be more than less, spaghetti plots seem to be less capable of displaying an ensembles' variability. 
 
-\end{itemize}
+
+\begin{figure}[!htb]
+  \begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth]{figures/ivt_pr_cor_mode2_ssp126.png}
+    \caption{Spaghetti plots.}
+    \label{fig:comparsion member vis spaghetti}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth]{figures/ivt_pr_cor_mode2_ssp126_hexbin.png}
+    \caption{Presented hexbin visualization}
+    \label{fig:comparsion member vis hexbin}
+  \end{subfigure}
+  \caption{Comparison of spaghetti plots and the presented contour line visualization using hexbins. The picture is the SSP126 variant shown in Figure~\ref{fig:ivt eof pr cor mode2}.}
+    \label{fig:comparsion member vis}
+\end{figure}
+
+
+The biggest waekness of the presented approach is the imprecision of the color of hexbins. 
+Through the regression it is not entirely clear how many contour lines go through a bin. 
+Additionally, the presented approach is susceptible for misrepresenting certain structers, e.g. a very small local high (of one member) of the size of one or two bins may make the impression of containing multiple members. 
+A better way would be to implement it in a more stable way, each bin counting the exact amount of contour lines of diffenrent members passing through. 
+But this would have required the implementation of a new Makie recipe\footnote{This is the name for cerain types of plots in Makie, like surface, heatmap or boxplot.}, which was out of scope for this Thesis. 
+
+% \begin{itemize}
+%   \item Goal was to improve on spaghetti plots and to reduce the chaos of them 
+%   \item also it should give a hint on how coarse the actual, underlying data is 
+%   \item did it work? Not really. It may look less chaotic for the cases where spaghetti plots also look not really that chaotic -> but for other cases its not that good 
+%   \item also since its just a quick idea itis not really as precise as it could be (is based on a existing hexbin implementation rather than a newly written one)
+%   \item also the resolution argument did not work for the slider since they somehow change size then
+%   \item in the end: Best solution woiuld have been already existing ideas from recent papers -> but they provide no library (implementing a paper would have been out of scope for a master thesis beyond what I already did)
+%
+% \end{itemize}
 
