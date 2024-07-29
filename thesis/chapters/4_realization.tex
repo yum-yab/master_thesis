@@ -341,7 +341,13 @@ Hexbin plots\footnote{\url{https://docs.makie.org/dev/reference/plots/hexbin}} a
 Heatmaps divide the observed grid into rectangular areas of variable size, and colors the rectangular area depending on the number of observations in it. 
 Hexbin plots are very similar, except they divide the grid into hexagonal \enquote{bins} and handle the observations in the same way as heatmaps. 
 The advantage of hexbin plots is that it represents distribution better than square bins ($\equiv$ heatmaps) as it was depicted in \cite{carr_hexagon_1992}, as well that it can be more visually appealing to humans \cite{carr_hexagon_1992}. 
-The main idea for this thesis was not only the better representation, but also that the number of hexagons (or their size) can be chosen freely, so by choosing a resolution similar to the underlying grid gives a sense of data precision.
+The main idea for this was to avoid the problems of the most straightforward way of displaying uncertain contour lines: spaghetti plots. 
+While they work quite good when the results of all members align well and do not differ that much, they quickly get chaotic once that is not the case. 
+This also scales with the number of members in the ensemble. 
+A spaghetti plot with 10 members may look fine, but looks quite chaotic with 30. 
+Once members are not easily countable anymore, it's hard to instinctively differentiate between a quite uncertain area (10 out of 50 members) and a quite likeable area (25 out of 50 members). 
+To reduce this and make likely and make it possible to instantaneously evaluate how likely an area is to contain isolines, the hexbin approach was explored.
+
 
 \begin{figure}
   \begin{center}
