@@ -658,10 +658,9 @@ end
 
 
 function display_eof_modes!(
-    fig::Figure,
+    layout,
     eof_result::EOFEnsemble,
     current_scope_index,
-    ensemble_position,
     nmodes;
     contour_levels=[0],
     contours_for_slice=:,
@@ -699,31 +698,23 @@ function display_eof_modes!(
 
     hexbin_cb_position = contours_for_slice == Colon() ? length(mode_iterator) + 1 : contours_for_slice.stop + 1
 
-    function get_position(mode_id)
-
-        if use_hexbin_cb
-            inline_position = mode_id >= hexbin_cb_position ? mode_id + 1 : mode_id
-        else
-            inline_position = mode_id
-        end
-
-        if use_rows
-
-            return (ensemble_position, inline_position)
-        else
-            return (inline_position, ensemble_position)
-        end
-
+    function get_position()
+        
     end
-
 
     for mode in mode_iterator
 
-        row, column = get_position(mode)
+        row, column = get_position(mode_id)
+
+        mode_layout = layout[row]
 
         # title = @lift("$(ensemble_simulation.id) $(year(ensemble_simulation.time[all_scopes[$current_scope_index].start]))-$(year(ensemble_simulation.time[all_scopes[$current_scope_index].stop])) Mode $mode Variability $(round(mean([get_modes_variability(resarray[$current_scope_index])[mode] for (_, resarray) in eof_result.ensemble]), digits = 2) * 100) %")
         title = @lift("Mode $mode Variability $(round(mean([get_modes_variability(resarray[$current_scope_index])[mode] for (_, resarray) in eof_result.ensemble]) * 100, digits = 2)) %")
-        axis = local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=title, figure_row=row, figure_col=column)
+        axis = GeoAxis(mode_layout[1, 1:2]; dest="+proj=merc", limits=((lonmin, lonmax), (latmin, latmax)), title=title,
+        # width=1000, height=1000,
+        # tellwidth=false, tellheight=false
+    )
+        # axis = local_geoaxis_creation!(fig, (lonmin, lonmax), (latmin, latmax); title=title, figure_row=row, figure_col=column)
 
         surface!(
             axis,
@@ -1802,6 +1793,11 @@ function eof_data_correlation_maps!(
         vertices_observable = @lift(vcat(sample_along_line.(get_isocontour_vertices($contours_observable...); dx=0.01)...))
 
         hexbin_plot = hexbin!(axis, vertices_observable, cellsize=2.0, colormap=hexbin_colormap, threshold=1)
+
+        cb_hb = Colorbar(layout[1, 3], colormap=hexbin_colormap, label="Percentage of Isolines hitting bin", colorrange=(0, 100), vertical=true)
+
+        cb_hb.ticks = 0:20:100
+
     end
 
 
