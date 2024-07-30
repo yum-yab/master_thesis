@@ -14,7 +14,6 @@ This Section gives an overview how the EOF patterns change over the time, also c
 \label{sec:results encoded variance}
 
 
-
 \begin{figure}[htb]
   \begin{center}
     \includegraphics[width=0.85\textwidth]{figures/mode_variability_psl_50seasons.png}
@@ -66,6 +65,9 @@ In general, the modes beyond the second seem to be not well separated from the o
 
 \subsection{Evolution of Spatial Patterns}
 \label{sec:spatial pattern evolution}
+
+\todo{Maybe I should just cut out the third pattern since I do not use it anywhere else and it seems degenerate, but alos this is why I assume it is degenerate and not worth of analyzing further}
+
 
 \begin{figure}[htb]
   \begin{center}
@@ -214,7 +216,7 @@ Similarly to the IVT piControl EOF coefficients SD, the precipitation piControl 
 The SSP126 scenario only shows a moderate increase in mode one, and no significant change in other modes. 
 On the other hand, SSP585 shows a significant increase in all modes, which is different to the encoded variability shown in Figure~\ref{fig:pr mode variability}, where only the first mode exposes a steep increase. 
 
-
+\todo{Maybe add boxplot of total variance (sum of all singular values squared) to investigate sources for IVT SD rise}
 
 \section{Relationships with other Variables}
 
@@ -329,12 +331,12 @@ But in SSP585, the correlation with the EAP index drops to a median of $0.5$, wh
 
 
 From Figure~\ref{fig:cor pr ivt modes11} it is obvious that the primary modes of IVT and precipitation are very closely related. 
-It shows a PCC of about $0.9$, with very little variance ocross the members. 
+It shows a PCC of about $0.9$, with very little variance across the members. 
 Also, there is barely a difference between SSP126 and SSP585. 
 The secondary modes of IVT and precipitation look quite different: 
 Although Figure~\ref{fig:cor pr ivt modes22} shows a quite high median PCC of about $0.75$, there are a lot of outliers, reaching down to the same extent in the negative spectrum. 
-Also the preindustrial control simulation shows this kind of beviour in the scopes beginning at 1949 to 1974 (with interruptions). 
-The explaination for this is pretty simple: Since this mode is pretty unstable across different members (see previous section), the alignment to the pattern shown in Figure~\ref{fig:cor pr ivt modes22} did not work very well, which causes the pattern (and following this also the EOF coefficients) to flip, resulting in result on the other side of the correlation spectrum. 
+Also, the preindustrial control simulation shows this kind of behavior in the scopes beginning at 1949 to 1974 (with interruptions). 
+The explanation for this is pretty simple: Since this mode is pretty unstable across different members (see previous section), the alignment to the pattern shown in Figure~\ref{fig:cor pr ivt modes22} did not work very well, which causes the pattern (and following this also the EOF coefficients) to flip, resulting in result on the other side of the correlation spectrum. 
 
 
 
@@ -506,7 +508,7 @@ Yet, the importance of the dominant modes of IVT were mentioned and analyzed in 
 Therefor, this section tries to summarize the most important discoveries of the European, moisture related EOFs, their relationships, and their development in future scenarios. 
 
 Starting with the analysis of the variance encoded by different modes (Section~\ref{sec:results encoded variance}), the most interesting discoveries are the changing importance of modes in different future scenarios. 
-Most importantly are here the clearly visible increase in SSP585 of EOF2 of PSL (EAP) by $2-3 \%$ and EOF1 of precipitation data by a similar amount. 
+Most importantly are here the clearly visible increase of PSL EOF2 (EAP) in SSP585 by $2-3 \%$ and EOF1 of precipitation data by a similar amount. 
 This could be explained by the increased area covered by this mode in SSP585, shown in Section~\ref{sec:spatial pattern evolution}. 
 By covering a larger area, this mode can cover a larger portion of the whole datasets anomaly. 
 Also, this suggests that a larger area behaves more similar in time ($\equiv$ can be represented with the same temporal patterns/EOF coefficients). 

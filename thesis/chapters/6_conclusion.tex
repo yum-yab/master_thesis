@@ -65,10 +65,10 @@ It is important to note that a comprehensive evaluation and interpretation of th
 % \end{itemize}
 %
 
-The choice to utilize the Julia language and its related framework proved to be somewhat questionable. Although Julia has gained significant traction within the geo-scientific community, it has not yet achieved the same level of maturity as Python. While Julia excels in implementing mathematical concepts, Python offers a more extensive array of libraries that facilitate various tasks.
+Reflecting on this thesis, the choice to utilize the Julia language and its related framework proved to be somewhat questionable. Although Julia has gained significant traction within the geo-scientific community, it has not yet achieved the same level of maturity as Python. While Julia excels in implementing mathematical concepts, Python offers a more extensive array of libraries that facilitate various tasks.
 The Makie framework, though excellent for visualization, suffers from inadequate documentation, making adjustments challenging. 
 Additionally, the GeoMakie library, responsible for the map projections of the data, is not sufficiently mature for the applications required in this thesis, presenting several limitations, such as issues with projections and boundaries.
-The proposed hexbin-based visualization of level crossing probabilities, despite its aesthetic appeal and ability to mitigate some issues of spaghetti plots, lacks sufficient mathematical robustness.
+The proposed hexbin-based visualization of level crossing probabilities, despite ability to mitigate some issues of spaghetti plots, lacks sufficient mathematical robustness, which could also be improved in the future.
 While the results suggest changes potentially linked to climate change, the interpretation of EOF analysis remains complex. 
 Consequently, this type of analysis necessitates validation and acceptance from meteorologists and climate scientists to ensure its credibility and applicability.
 
@@ -97,7 +97,9 @@ These methods can also be easily utilized in the presented visual analysis techn
 Implementing the established visualization techniques for contour lines or scalar fields, such as contour boxplots, could improve the representation of member variability.
 So for example the contour boxplot approach presented in related work can be combined with clustering algorithms to display the uncertainties in level crossing probabilities. 
 This would aid in the clearer visualization of differences and patterns within the data.
-Furthermore, exploring alternative pattern analysis methods, such as Self-Organizing Maps (SOMs), might also be beneficial. 
+As pointed out in Chapter~\ref{ch:methodology}, for this at first the far higher timely resolution of 6-hourly data was computed, which can also be analyzed to get insights into the transient components of moisture transport, which could reuse much of the work done for this Thesis. 
+This could also be used to be linked to atmospheric rivers, which seems to be an area of great interest in the atmospheric science community.
+Furthermore, exploring alternative pattern analysis methods, such as Self-Organizing Maps (SOMs, see \citeauthorwork{teale_patterns_2020}), might also be beneficial. 
 However, these methods often face challenges related to interpretability, which need to be addressed.
 Additionally, investigating the topological structure of the modes and employing approaches similar to those suggested \citeauthorwork{vietinghoff_visual_2021} could provide new perspectives and enhance the overall analysis.
 By pursuing these directions, future research can build on the findings of this thesis, contributing to a more comprehensive understanding of atmospheric patterns of moisture transport and their implications.
