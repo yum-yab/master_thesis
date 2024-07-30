@@ -7,8 +7,11 @@
 
 
 Since the discovery (and further confirmation) of the greenhouse effect in the years from 1824 to 1900 \cite{fourier1824remarques, foote1856circumstances} humans came a long way of fighting the consequences of the increased greenhouse gas concentration in earth's atmosphere. 
-In 1972 \citeauthor{sawyer1972man} summarized the knowledge and predicted quite accurately the warming at the end of the century \cite{sawyer1972man}.
-Especially the last decades the climate crisis gained more and more attention, leading to the creation of multiple international organizations and institutions (e.g. the International Panel on Climate Change (IPCC) in 1988).
+% In 1972 \citeauthor{sawyer1972man} summarized the knowledge and predicted quite accurately the warming at the end of the century \cite{sawyer1972man}.
+Especially the last decades the climate crisis gained more and more attention, leading to the creation of multiple international organizations and institutions (e.g. the International Panel on Climate Change (IPCC) in 1988). \todo{Weiß nciht ob so sinnvoll hier bei adam und eva anzufangen...}
+In 2019 more than 11,000  scientists from around the world released a declaration \cite{ripple_world_2019}, calling governments from around the world to action.
+
+
 
 
 \begin{figure}[hbt]
@@ -21,16 +24,27 @@ Especially the last decades the climate crisis gained more and more attention, l
 
 
 
-In 2019 more than 11,000  scientists from around the world released a declaration \cite{ripple_world_2019}, calling governments from around the world to action.
 The consequences for the environment and humans are prevalent and are, in part, already visible today. 
 Figure \ref{fig:impacts_climate_change} shows likely consequences for humans from the latest IPCC report for policymakers \cite{lee2024climate}: Flooding, malnutrition, displacement, and damages to all kinds of ecosystems can be attributed with high confidence to climate change. 
-The sources of such consequences are manyfold, but recent research shows that big circulation systems like the North Atlantic Oscillation\cite{vietinghoff_visual_2021} or the Atlantic Meridional Overturning Circulation \cite{lobelle_detectability_2020} change as well. 
+The sources of such consequences are manyfold, but recent research shows that big circulation systems like the North Atlantic Oscillation\cite{vietinghoff_visual_2021} change as well. 
+These oscillation systems, which play a crucial role in regulating weather patterns.
+%, are experiencing shifts that have yet to be fully understood or explored. 
+This thesis aims to investigate the implications of these changes specifically in the context of moisture transport.
+Moisture transport, a critical component of the atmospheric system, presents significant challenges for analysis due to its inherently oscillative nature. 
+To address this complexity, this study employs pattern analysis  and a sliding window approach (motivated by the research of \citeauthor{vietinghoff_visual_2021}) to identify and understand structural changes in moisture transport mechanisms in Europe and the Northern Atlantic. 
+By examining these patterns, this Thesis seeks to uncover potential consequences of altered oscillation systems under different climate change scenarios.
+Furthermore, this pattern analysis approach addresses one of the major challenges in modern climate science: the uncertainty associated with multiple simulation results. 
+By analyzing and interpreting the variability across different simulation members, this study contributes to a more robust understanding of moisture transport and its future evolution in Europe. 
 % The mid and long-term consequences are manyfold and go far beyond the general rising of the worlds' average temperature (see Figure \ref{fig:impacts_climate_change}), e.g. shifts in circulation systems like the North Atlantic Oscillation (NAO) \cite{vietinghoff_visual_2021}, which in turn also have varying consequences. 
 
-Although the water vapor in the air accounts for only 0.001 \% of the water on the earth, it is the most active part of that cycle \cite{zou_investigating_2020}. 
-Also, research shows that the precipitation on land does not match the evaporation, meaning the water was transported (from the oceans) to land, providing water for the ecosystems there.  \todo{CITE!!! Where the fuck did I read this?}
-Analyzing the structural change of this moisture transport could help predict consequences. 
-Motivated by the research of \citeauthor{vietinghoff_visual_2021}, this thesis aims to evaluate similarly the systemic changes of moisture transport and precipitation patterns in Europe and the northern Atlantic. 
+% Although the water vapor in the air accounts for only 0.001 \% of the water on the earth, it is the most active part of that cycle \cite{zou_investigating_2020}. 
+% Also, research shows that the precipitation on land does not match the evaporation, meaning the water was transported (from the oceans) to land, providing water for the ecosystems there.  \todo{CITE!!! Where the fuck did I read this?}
+% Analyzing the structural change of this moisture transport, its causes and its consequences could help understanding more about the future of climate change. 
+%
+% Motivated by the research of \citeauthor{vietinghoff_visual_2021}, this thesis aims to evaluate similarly the systemic changes of moisture transport and precipitation patterns in Europe and the northern Atlantic.
+%
+% Climate change is fundamentally altering the oscillation systems responsible for variability in atmospheric conditions. 
+%
 
 
 \section{Climate and Climate Research}
@@ -70,7 +84,7 @@ Such forcings could be vulcanic activity, differences in solar radiation, and of
 Figure \ref{fig:erf-with-forcings} gives an example what effect such external forcing can have: It shows the change in effective radiative forcing (ERF) and its contributing components. 
 ERF (in $Wm^{-2}$) is a way of measuring how much energy from the sun is \enquote{trapped} instead of reflected back to space (greenhouse effect). 
 A positive value means warming, while a negative value is associated with cooling. 
-In can be seen in Figure \ref{fig:erf-with-forcings} that neither volcanic activity nor solar radiation changed that much, the main drivers of change in ERF are the man-made GHGs and cooling aerosols. \cite{intergovernmental_panel_on_climate_change_ipcc_climate_2023}
+It can be seen in Figure \ref{fig:erf-with-forcings} that neither volcanic activity nor solar radiation changed that much, the main drivers of change in ERF are the man-made GHGs and cooling aerosols. \cite{intergovernmental_panel_on_climate_change_ipcc_climate_2023}
 
 Regarding the internal variations: Most of it is part of some oscillation, with the oscillations of the atmosphere with the hydrosphere (i.e. all liquid forms of water on earth) being responsible for large parts of climate's internal variations on decadal and interannual time frames \cite{vietinghoffdiss}. 
 Prominent examples for such oscillations are the El Niño Southern Oscillation (ENSO) or the North Atlantic Oscillation (NAO), which is especially relevant for this thesis. 
