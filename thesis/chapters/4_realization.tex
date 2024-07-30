@@ -241,11 +241,11 @@ The method chosen by \citeauthor{vietinghoffdiss} \cite{vietinghoffdiss} is to u
 This mean field is then adjusted by the spatial mean, to reduce it to the actual values of variance. 
 If the result of the scalar product is less than zero, meaning the spatial pattern is closer to the mean of the data. 
 This process is illustrated in the Figure TODO \todo{Make fig with the mean fields, cleaned by spatial mean and the first EOF pattern} 
-This has the effect that positive values of patterns align with above-average values of the actual data mean and vice versa, making the sign of the EOFs interpretable \cite{vietinghoffdiss} (see Figure TODO). 
+This has the effect that positive values of patterns align with above-average values of the actual data mean and vice versa, making the sign of the EOFs interpretable \cite{vietinghoffdiss}. \todo{Maybe add fig to show this} 
 
 Unfortunately, this works only well for the primary EOF mode, while the rest compared to yields not so successful results. 
-A way of testing the alignment of patterns is by computing the cross-correlation boxplots from Section~\ref{sec:Temporal Pattern Correlation} with and without absolute correlation values.
-Figure~\ref{fig:TODO} gives an example of such an analysis. 
+A way of testing the alignment of patterns is by computing the cross-correlation boxplots from Section~\ref{sec:Temporal Pattern Correlation} with and without absolute correlation values. \todo{Maybe add a figure displaying this}
+% Figure~\ref{fig:TODO} gives an example of such an analysis. 
 If the absolute correlation boxplot shows a clear trend (e.g. consistent values) but the plot with normal correlation values has either no visible correlation (meaning the alignment is very arbitrary and varies a lot) or there are many outliers on the opposite side of the zero line (alignment did not work for just some members). 
 To fix these problems and also measure correlation of the secondary or lesser modes, the spatial pattern of the first scope in the historical simulation is used as the field to align to as the best effort approach. Depending on the mode and variable this was more or less successful. 
 The top five spatial patterns of each relevant variable (IVT, surface pressure and precipitation) are shown in Figure~\ref{fig:5modes each variable}.
@@ -263,6 +263,7 @@ For this task Julia's Makie Framework \cite{danisch_makiejl_2021} was chosen.
 It allows to easily create a complex layout for figures and allows creating animations as well as interactive visualizations. 
 It was made to \enquote{create high-performance, GPU-powered, interactive visualizations, as well as publication-quality vector graphics with one unified interface} \cite{danisch_makiejl_2021}. 
 Additionally, there is a library\footnote{GeoMakie.jl: \url{https://geo.makie.org/}} available for projecting data onto different map projections. 
+Unfortunately, this library revealed to be not fully mature, leaving the Mercator projection (see Figure~\ref{fig:tissot map projections}) as the only working projection, since others do not support cutting out specific geographic regions.  
 
 
 While the previous two Sections had the goal of generating the spatio-temporal EOF patterns (\textbf{M1} from Section~\ref{sec:research_questions}), this Section has the goal of fulfilling the other two milestones:  
@@ -329,9 +330,13 @@ This procedure relates to the idea of level crossing probabilities, similar to t
 
 \subsubsection{Visualizing the Feature}
 
-The most straight forward way of visualizing uncertain isolines are spaghetti plots as used in the work of \citeauthorwork{sanyal_noodles_2010}, by simply drawing all the isolines of the different members, usually in different colors. 
+The most straight forward way of visualizing uncertain  contour lines are spaghetti plots as used in the work of \citeauthorwork{sanyal_noodles_2010}, by simply drawing all the isolines of the different members, usually in different colors. 
 This was also implemented in this Thesis, but spaghetti plots have a lot of usual drawbacks. 
-While they work very well for areas where the contour lines are very close to each other (see Figure~\ref{fig:TODO}), they tend to overcrawded areas making the visualization overwhelming and chaotic. 
+While they work quite good when the results of all members align well and do not differ that much, they quickly get chaotic once that is not the case. 
+This also scales with the number of members in the ensemble. 
+A spaghetti plot with 10 members may look fine, but looks quite chaotic with 30. 
+Once members are not easily countable anymore, it's hard to instinctively differentiate between a quite uncertain area (10 out of 50 members) and a quite likeable area (25 out of 50 members). 
+To reduce this and make likely and make it possible to instantaneously evaluate how likely an area is to contain isolines, the hexbin approach was explored.
 Additionally, contour lines give a false sense of precision in data that is actually not that precise. 
 
 \subsubsection{Level Crossing Probabilities using Hexbins}
@@ -341,12 +346,7 @@ Hexbin plots\footnote{\url{https://docs.makie.org/dev/reference/plots/hexbin}} a
 Heatmaps divide the observed grid into rectangular areas of variable size, and colors the rectangular area depending on the number of observations in it. 
 Hexbin plots are very similar, except they divide the grid into hexagonal \enquote{bins} and handle the observations in the same way as heatmaps. 
 The advantage of hexbin plots is that it represents distribution better than square bins ($\equiv$ heatmaps) as it was depicted in \cite{carr_hexagon_1992}, as well that it can be more visually appealing to humans \cite{carr_hexagon_1992}. 
-The main idea for this was to avoid the problems of the most straightforward way of displaying uncertain contour lines: spaghetti plots. 
-While they work quite good when the results of all members align well and do not differ that much, they quickly get chaotic once that is not the case. 
-This also scales with the number of members in the ensemble. 
-A spaghetti plot with 10 members may look fine, but looks quite chaotic with 30. 
-Once members are not easily countable anymore, it's hard to instinctively differentiate between a quite uncertain area (10 out of 50 members) and a quite likeable area (25 out of 50 members). 
-To reduce this and make likely and make it possible to instantaneously evaluate how likely an area is to contain isolines, the hexbin approach was explored.
+% The main idea for this was to avoid the problems of the most straightforward way of displaying uncertain contour lines: spaghetti plots. 
 
 
 \begin{figure}
@@ -359,11 +359,11 @@ To reduce this and make likely and make it possible to instantaneously evaluate 
 
 The approach using hexbins was conducted as follows: First, the required contour lines were computed, which are represented as a list of 2D points. 
 The threshold for displayed hexbins was set to one, so that areas without any contour line stay free of hexagons. 
-Since the resolution is too high at some places (multiple observations per bin) and too low at others (no observation hitting the bin) like it is depicted in Figure~\ref{fig:hexbin overview} A and D, a sampling algorithm  was used to sample along the line. 
+Since the resolution is too high at some places (multiple observations per bin) and too low at others (no observation hitting the bin) like it is depicted in Figure~\ref{fig:hexbin overview} A and D, a sampling algorithm  was used to sample along the line.\todo{The problem here is: What gets depicted is in reference to the maximum amount of \enquote{line} in the hexbin containing most lines. How much is that? Nobody knows...} 
 Of course this results in a distorted color bar since one observation, but by choosing a small enough integration distance (i.e. $0.01$), this distortion is reduced to an invisible minimum. 
 So now by using multiple members (Figure~\ref{fig:hexbin overview}, E and F), it approximates the number of lines hitting a certain bin. 
 An analysis comparing this approach to the traditional spaghetti plots is given in Section~\ref{sec:pattern evolution}. 
-
+\todo{This is not very mathematical, and I think Ill run into problems once I analyze this approach mathematically...}
 % \begin{itemize}
 %   \item greates challenge comes from the variability introduced by the multiple members of the dataset. 
 %   \item vizualizing the scalar data turns the 2D map into a 3D cube. 
