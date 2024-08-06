@@ -12,6 +12,7 @@ using NumericalIntegration
 using ProgressMeter
 
 include("utils.jl")
+include("ensemble_hexbin.jl")
 
 # create geographical axes
 function local_geoaxis_creation!(
@@ -761,7 +762,7 @@ function display_eof_modes!(
 
                 contours_observable = @lift([contours(eof_result.lon, eof_result.lat, eofres_array[$current_scope_index].spatial_modes[:, :, mode], contour_levels) for (i, (_, eofres_array)) in enumerate(eof_result.ensemble)])
 
-                vertices_observable = @lift(vcat(sample_along_line.(get_isocontour_vertices($contours_observable...); dx=0.01)...))
+                vertices_observable = @lift(vcat(sample_along_line.(get_isocontour_lines($contours_observable...); dx=0.01)...))
 
                 hexbin!(axis, vertices_observable, cellsize=2.0, colormap=hexbin_colormap, threshold=1)
 
@@ -1680,7 +1681,8 @@ function eof_data_correlation_maps!(
     colormap=:viridis,
     coastline_color=:white,
     shading=Makie.automatic,
-    chosen_vis = :spaghetti
+    chosen_vis = :spaghetti,
+    sample_distance = 0.1
 )
 
     nmodes = length(eof_result.ensemble[get_member_id_string(1)][1].singularvals)
@@ -1739,7 +1741,7 @@ function eof_data_correlation_maps!(
     # title = @lift("Mode $mode Mean Variability: $(round(mean([get_modes_variability(resarray[$current_scope_index])[$mode] for (_, resarray) in eof_result.ensemble]) * 100, digits = 2)) %")
     title = @lift("Mode $($mode)")
 
-    axis = GeoAxis(mode_layout[1, 1:2]; dest="+proj=merc", limits=((lonmin, lonmax), (latmin, latmax)), title=title,
+    axis = GeoAxis(mode_layout[1, 1:3]; dest="+proj=merc", limits=((lonmin, lonmax), (latmin, latmax)), title=title,
         width=1000, height=1000,
         # tellwidth=false, tellheight=false
     )
@@ -1750,8 +1752,8 @@ function eof_data_correlation_maps!(
 
 
     spaghetti_toggle = Toggle(mode_layout[2, 1], active=false)
-    # hexbin_toggle = Toggle(mode_layout[2, 2], active=true)
-    surface_toggle = Toggle(mode_layout[2, 2], active=true)
+    hexbin_toggle = Toggle(mode_layout[2, 2], active=true)
+    surface_toggle = Toggle(mode_layout[2, 3], active=true)
 
     contours_observable = @lift([contours(eof_result.lon, eof_result.lat, all_correlation_data[$mode][member_id, :, :, $current_scope_index], $contour_levels) for member_id in 1:nmember])
 
@@ -1775,30 +1777,25 @@ function eof_data_correlation_maps!(
 
     lines!(axis, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
 
-    if chosen_vis ==:spaghetti
-        spaghetti_contours = [contour!(
-            axis,
-            lonmin .. lonmax,
-            latmin .. latmax,
-            matrix,
-            levels=contour_levels,
-            color=contour_colors[i],
-            transformation=(; translation=(0, 0, 1100))
-        ) for (i, matrix) in enumerate(seperate_matrices_observables)]
+    spaghetti_contours = [contour!(
+        axis,
+        lonmin .. lonmax,
+        latmin .. latmax,
+        matrix,
+        levels=contour_levels,
+        color=contour_colors[i],
+        transformation=(; translation=(0, 0, 1100))
+    ) for (i, matrix) in enumerate(seperate_matrices_observables)]
 
-        for c in spaghetti_contours
-            connect!(c.visible, spaghetti_toggle.active)
-        end
-    elseif chosen_vis ==:hexbin
-        vertices_observable = @lift(vcat(sample_along_line.(get_isocontour_vertices($contours_observable...); dx=0.01)...))
-
-        hexbin_plot = hexbin!(axis, vertices_observable, cellsize=2.0, colormap=hexbin_colormap, threshold=1)
-
-        cb_hb = Colorbar(layout[1, 3], colormap=hexbin_colormap, label="Percentage of Isolines hitting bin", colorrange=(0, 100), vertical=true)
-
-        cb_hb.ticks = 0:20:100
-
+    for c in spaghetti_contours
+        connect!(c.visible, spaghetti_toggle.active)
     end
+
+    ensemble_vertices_obs = @lift([vcat(sample_along_line.(lines; dx = sample_distance)...) for lines in get_isocontour_lines($contours_observable...)])
+
+    hexbin_plot = ensemblehexbin!(axis, ensemble_vertices_obs, cellsize=2.0, colormap=hexbin_colormap, threshold=1)
+
+    Colorbar(layout[1, 3], hexbin_plot, label="Member Having Contour Line in Bin", vertical=true)
 
 
     picontrol_observable_correltaion = @lift(get_correlation_map(piControl.members[1].data[:, :, all_scopes[$current_scope_index]], eof_result.piControl[$current_scope_index].temporal_modes[:, $mode]))
@@ -1816,11 +1813,7 @@ function eof_data_correlation_maps!(
 
 
 
-    
-
-    # connect!(spaghetti_contours.visible, spaghetti_toggle.active)
-
-    #connect!(hexbin_plot.visible, hexbin_toggle.active)
+    connect!(hexbin_plot.visible, hexbin_toggle.active)
 
 
 
