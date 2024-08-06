@@ -80,6 +80,12 @@ function quick_unit_lookup(field_id)
 
 end
 
+function get_var_unit_string(eof_data::EOFEnsemble)
+
+    return "$(uppercase(eof_data.variable_id)) in $(quick_unit_lookup(eof_data.variable_id))"
+
+end
+
 function get_data(data_path, scenario_id, member_nr; file_range_selection=:, field_id="ivt", unit_scale_factor=1)
 
     file_paths = get_files_of_member(data_path, scenario_id, member_nr)
@@ -638,3 +644,63 @@ function get_correct_var_display(varid::String)::Tuple{String, Float64, String, 
     
     return info_dict[varid]
 end
+
+
+function get_correlation_map(variable_data, temporal_pattern)
+
+    lon, lat = size(variable_data)[1:2]
+
+    return reshape(cor(reshape(variable_data, lon * lat, :), temporal_pattern, dims=2), lon, lat)
+end
+
+function colleration_maps_per_member(eof_result::EOFEnsemble, original_data::EnsembleSimulation, mode_id, scope_index)::Vector{Matrix{Float64}}
+
+
+
+    result = Vector{Matrix{Float64}}(undef, length(original_data.members))
+
+    scope = eof_result.scopes[scope_index]
+
+    # println("Generating cmaps for Mode $mode_id and scope $scope_index")
+
+    for member_index in eachindex(original_data.members)
+        member = original_data.members[member_index]
+
+        eof_results = eof_result.ensemble[member.id]
+
+        tmp_pattern = eof_results[scope_index].temporal_modes[:, mode_id]
+
+        result[member_index] = get_correlation_map(member.data[:, :, scope], tmp_pattern)
+    end
+
+    return result
+end
+
+function generate_all_correlation_results(eof_result::EOFEnsemble, original_data::EnsembleSimulation, mode)::Array{Float64,4}
+
+    # shape of result: morrelation_data[member, lon, lat, time]
+    scopes = eof_result.scopes
+    lons, lats = size(original_data.members[1].data)[1:2]
+    results = zeros(Float64, length(original_data.members), lons, lats, length(scopes))
+
+    p = Progress(length(scopes))
+
+    Threads.@threads for scopeindex in eachindex(scopes)
+
+        correlation_map_for_members = colleration_maps_per_member(eof_result, original_data, mode, scopeindex)
+
+        for member_index in eachindex(original_data.members)
+            for lon in 1:lons
+                for lat in 1:lats
+
+                    results[member_index, lon, lat, scopeindex] = correlation_map_for_members[member_index][lon, lat]
+                end
+            end
+        end
+        next!(p)
+    end
+
+    return results
+
+end
+
