@@ -1,5 +1,4 @@
 using Makie
-import MakieCore
 
 
 @recipe(EnsembleHexbin) do scene
@@ -13,9 +12,9 @@ import MakieCore
       visible = true,
       colormap = :viridis,
       colorscale = identity,
-      colorrange = MakieCore.automatic,
-      lowclip = MakieCore.automatic,
-      highclip = MakieCore.automatic,
+      colorrange = Makie.automatic,
+      lowclip = Makie.automatic,
+      highclip = Makie.automatic,
       nan_color = :transparent,
       alpha = 1.0
     )
@@ -150,8 +149,6 @@ function Makie.plot!(hb::EnsembleHexbin{<:Tuple{<:AbstractVector{T}}}) where T <
             end
         end
 
-        println("Dict size: $(length(d))")
-
         if threshold == 0
             for iy in 0:nbinsy-1
                 _nx = isodd(iy) ? fld(nbinsx, 2) : cld(nbinsx, 2)
@@ -178,7 +175,6 @@ function Makie.plot!(hb::EnsembleHexbin{<:Tuple{<:AbstractVector{T}}}) where T <
         markersize[] = Vec2f(rx, ry)
         notify(points)
 
-        println("Size of data: $(size(points[])), $(size(count_hex[]))")
         return notify(count_hex)
     end
     onany(calculate_grid, ensemble_data, hb.bins, hb.cellsize, hb.threshold)
