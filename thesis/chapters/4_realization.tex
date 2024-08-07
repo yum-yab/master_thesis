@@ -37,7 +37,7 @@ It uses an acyclic task graph, which distributes tasks efficiently over multiple
 \subsection{Process}
 
 The following the process for handling one timescope of member of one scenario is described. For one member the different timescope files are handled iteratively. 
-Scaling it up for all the members is trivial by either running them in parallel on multiple nodes of the cluster (for the relatively computation-heavy IVT calculation) or by running different members iteratively (for simple variables). 
+Scaling it up for all the members is trivial by either running them in parallel on multiple nodes of the cluster (for the relatively computation-heavy \ac{ivt} calculation) or by running different members iteratively (for simple variables). 
 The high resolution of 6 hourly data is used at first for all the variables since it can be trivially reduced to daily/monthly means later. 
 
 \textbf{1. Loading the Dataset}
@@ -45,7 +45,7 @@ The high resolution of 6 hourly data is used at first for all the variables sinc
 In the first step the process is to load the required dataset(s) into xarray. 
 This means not actually loading the grids into RAM but rather loading the metadata. 
 The actual loading and computation is only performed when required (e.g. when writing the result), every step in between only returns another xarray (meta)dataset. 
-Xarray offers different methods for either loading one dataset file or multiple, the latter is needed for the IVT calculation since multiple different variables need to be used. 
+Xarray offers different methods for either loading one dataset file or multiple, the latter is needed for the \ac{ivt} calculation since multiple different variables need to be used. 
 Important choices are here setting the \texttt{compat} parameter and choosing the chunking for Dask. 
 The first one needs to be set to \textit{override}, which prevents xarray to check variables with the same label for compatibility (in this case here dimension like \textit{lon, lat, time} and the pressure fields \textit{ps}), which is useful e.g. when using dataset of different sources, but since all datasets conform to the same resolutions it is unnecessary. 
 
@@ -84,26 +84,26 @@ Then the area of interest can be cut out without problems and the result can eit
 
 The size of data could be further reduced in this timestep by selecting only the relevant winter months (see Section~\ref{sec:eof_calc}), but with future work in mind the whole year was kept in this stage. 
 
-\textbf{3. Calculating IVT Field}
+\textbf{3. Calculating \ac{ivt} Field}
 
-The first step to calculate the IVT field is to convert the hybrid sigma pressure levels (see Section \ref{sec:hybridsigma}) to actual pressure values. 
+The first step to calculate the \ac{ivt} field is to convert the hybrid sigma pressure levels (see Section \ref{sec:hybridsigma}) to actual pressure values. 
 For this Equation \ref{eq:mpige-sigma-hybrid-pressure} is used for calculating a new variable \texttt{plev} containing the pressure values at each grid point in each time step. 
-Then NumPy's trapezoidal integration function is used to calculate the zonal (Equation \ref{eq:zonal_ivt}) and meridional (Equation \ref{eq:meridional_ivt}) components of the IVT. 
+Then NumPy's trapezoidal integration function is used to calculate the zonal (Equation \ref{eq:zonal_ivt}) and meridional (Equation \ref{eq:meridional_ivt}) components of the \ac{ivt}. 
 Similar to related literature \cite{ayantobo_integrated_2022}, a constant value for the gravitational acceleration $g = 9.806~ms^{-2}$ is used in the calculation. 
-Using the result of the zonal and meridional components, the norm field $\lVert IVT \rVert$ can be calculated using Equation \ref{eq:ivtnorm}. 
+Using the result of the zonal and meridional components, the norm field $\lVert \ac{ivt} \rVert$ can be calculated using Equation \ref{eq:ivtnorm}. 
 
 
 
 \textbf{4. Saving Results to NetCDF dataset}
 
 The results of these calculations (or the geographical box cutout) are then again saved as NetCDF files, in the far less complex directory structure \texttt{time\_resolution}, \texttt{variable}, \texttt{member} and then the actual file \texttt{timescope.nc}. 
-In case of the IVT, both (zonal and meridional) components are saved alongside the Euclidean norm. 
+In case of the \ac{ivt}, both (zonal and meridional) components are saved alongside the Euclidean norm. 
 
 
 \textbf{5. Generating daily/monthly means}
 
-Since the related literature does not entirely agree regarding the timely resolution of IVT in EOFs (see Table \ref{tab:ivtpatterns-overview}), the six hourly data is reduced to monthly and daily means using CDO.
-Monthly IVT is also called stationary moisture transport and dominates the total water vapor transport \cite{zhou_atmospheric_2005}, while the anomalies (departures from monthly mean per daily/subdaily timestep) are transient components.
+Since the related literature does not entirely agree regarding the timely resolution of \ac{ivt} in EOFs (see Table \ref{tab:ivtpatterns-overview}), the six hourly data is reduced to monthly and daily means using CDO.
+Monthly \ac{ivt} is also called stationary moisture transport and dominates the total water vapor transport \cite{zhou_atmospheric_2005}, while the anomalies (departures from monthly mean per daily/subdaily timestep) are transient components.
 Both are important parts of total moisture transport, but since a comparison of stationary and transient components is beyond the scope of this thesis, only monthly data will be used for the further analysis. 
 The higher resolutions are still saved and can be used in future work. 
 
@@ -114,12 +114,12 @@ The steps described in the section before were just the final attempt.
 The first idea was using Climate Data Operators \cite{schulzweida2024}, a command line tool containing multiple operators for processing climate and similar data. 
 The operators consist of common statistical and mathematical functions (mean, add, sum), sampling and data selection tools (select geographical or time limits) and other helpful operators like interpolations and even EOF calculation. 
 Although this sounded very promising, it quickly turned out to be very complicated to implement the desired vertical integration in CDO.
-The following idea was to implement the IVT calculation in Julia \cite{gao_julia_2020}, using just a NetCDF library \cite{barth_ncdatasetsjl_2024} while the rest was coded from scratch. 
+The following idea was to implement the \ac{ivt} calculation in Julia \cite{gao_julia_2020}, using just a NetCDF library \cite{barth_ncdatasetsjl_2024} while the rest was coded from scratch. 
 The algorithm was very simple: 
 
 \begin{enumerate}[itemsep=0mm]
   \item Load all datasets into the RAM (as recommended by the NetCDF library itself) and cut out the used geographical limits. This should be feasible since all in all one dataset for one timescope-file accounts for $\sim 12~GB$\footnote{$70~lon * 32~lat * 47~levels * 29220~timesteps * 4~byte \approx 12 GB$}, so the maximum is around $36~GB$, since the surface pressure data is not that large ($\sim 260~MB$)   
-  \item Calculate the IVT with trapezoidial integration multithreaded by handling one time\-step by one thread
+  \item Calculate the \ac{ivt} with trapezoidial integration multithreaded by handling one time\-step by one thread
   \item Write the results (Euclidean norm and the meridional/zonal component)
 \end{enumerate}
 
@@ -160,7 +160,7 @@ In general, the procedure of this step is based on the approach of \cite{vieting
 \textbf{1. Preparation of the Datasets for Sliding Window Approach}
 
 In the very first step, the monthly data in form of multiple NetCDF files containing different time scopes are loaded. 
-Since the influence of the NAO especially significant in the boreal winter, this thesis focuses on the extended winter season like \cite{vietinghoff_visual_2021}, keeping only the months December, January, February and March (in the following DJFM). 
+Since the influence of the \ac{nao} especially significant in the boreal winter, this thesis focuses on the extended winter season like \cite{vietinghoff_visual_2021}, keeping only the months December, January, February and March (in the following DJFM). 
 So during loading the irrelevant months are filtered out, additionally to filtering out double values of months (a result of the monthly mean process with CDO), resulting in a timeline containing exactly one spatial map for each month value for each month. 
 The data is now available in the form of a three-dimensional array with the shape $(lon, lat, time)$, while longitude, latitude and time are stored separately as one-dimensional arrays. 
 To make changes from the (pre)industrial time to future scenarios visible, each scenario is concatenated with the historical simulation. 
@@ -168,10 +168,10 @@ Then the data is grouped in certain scopes for the sliding window approach.
 For this the data is grouped into winter seasons, one season is defined as a slice of data before a huge time threshold (e.g. 150 days, representing the spring/summer/autumn gap) to the next date. 
 Following the argumentation of \citeauthorwork{vietinghoff_visual_2021}, the window size affects the smoothing of the data: The larger the time window, the better the noise is smoothed out.
 But as a drawback small scale features are smoothed out along the noise. 
-But since the focus of this thesis is monthly mean data, we are interested in the large scale structure of IVT and its connection to other variables, so rather large windows of 30 and 50 years were chosen, similar to \citeauthorwork{vietinghoff_visual_2021}.  
+But since the focus of this thesis is monthly mean data, we are interested in the large scale structure of \ac{ivt} and its connection to other variables, so rather large windows of 30 and 50 years were chosen, similar to \citeauthorwork{vietinghoff_visual_2021}.  
 Similar to \citeauthor{vietinghoff_visual_2021}, scopes of 30 and 50 winters are implemented.  
 The next scope is then shifted by one winter season, and again counted for 30/50 seasons. 
-In difference to \cite{vietinghoff_visual_2021}, the winters themselves are not reduced to one mean map since this has not been done by any related work using IVT fields, and smoothing out the data any further could potentially remove important features. 
+In difference to \cite{vietinghoff_visual_2021}, the winters themselves are not reduced to one mean map since this has not been done by any related work using \ac{ivt} fields, and smoothing out the data any further could potentially remove important features. 
 
 
 From here on steps are described for one time window of any variable. 
@@ -179,29 +179,29 @@ These steps are then computed the same for any other time scope of any member of
 
 
 
-\textbf{1. Preparation of the Data for SVD}
+\textbf{1. Preparation of the Data for \ac{svd}}
 
-Before calculating SVD, the data needs to be prepared accordingly. 
+Before calculating \ac{svd}, the data needs to be prepared accordingly. 
 After the scoping, the data for each scope is available as a 
 Following the argumentation from \cite{vietinghoffdiss} and Section~\ref{sec:eof} the first step is to multiply each datapoint with the factor $\sqrt{m-1}^{-1}$\footnote{\label{timesize}$m$ being the time dimension size}. 
 Then the geographical weights are applied, shifting the data into weighted space. 
 The geographical weights are applied depending on the latitude of the data, approximated by $\cos(lat)$. 
-Next, the data needs to be reshaped, since SVD only works for matrices (two-dimensional arrays): The geographical dimensions $(lon, lat)$ are reduced to one spatial dimension and then permuted, so the time is the first dimension. 
-Now the shape of the data is $(time, spat)$, and SVD can be calculated. 
+Next, the data needs to be reshaped, since \ac{svd} only works for matrices (two-dimensional arrays): The geographical dimensions $(lon, lat)$ are reduced to one spatial dimension and then permuted, so the time is the first dimension. 
+Now the shape of the data is $(time, spat)$, and \ac{svd} can be calculated. 
 
-\textbf{2. Calculating EOFs with SVD}
+\textbf{2. Calculating EOFs with \ac{svd}}
 
 In the next step the Singular Value Decomposition is applied to the geographically weighted two-dimensional data chunk. 
-For this the SVD implementation of Julia's \texttt{Linear\-Algebra} package (which is part of the Standard Library) is used.
+For this the \ac{svd} implementation of Julia's \texttt{Linear\-Algebra} package (which is part of the Standard Library) is used.
 This approach computes all $m$\cref{timesize} modes, although at most the top five modes are used in this thesis. 
 This was feasible for the monthly data used in this thesis, but once this approach is scaled up to daily or subdaily data it should be replaced by faster algorithms like Snapshot POD or the SLEPC implementation used by \citeauthor{vietinghoffdiss} \cite{vietinghoffdiss}.
-Those implementations compute only the first $n$ modes, which is significantly faster than the full SVD computation. 
+Those implementations compute only the first $n$ modes, which is significantly faster than the full \ac{svd} computation. 
 
-The result of the SVD of the weighted data chunk $D$ is then:
+The result of the \ac{svd} of the weighted data chunk $D$ is then:
 
 \begin{equation}
 \label{eq:SVD}
-L,S,R = SVD(D)
+L,S,R = \ac{svd}(D)
 \end{equation}
 
 $L$ are the left singular vectors, $R$ the right singular vectors and $S$ a vector containing the singular values. 
@@ -216,7 +216,7 @@ After the first $n$ modes of interest were cut off, a few more steps are require
 First, the temporal modes are scaled with $\sqrt{m-1}$, then the modes are aligned to some vector (see Section~\ref{sec:mode_alignment}) and the weighting is reverted by multiplying the spatial modes depending on their latitude with $\cos(lat)^{-1}$.
 The results are then saved using a data structure serialization library called \texttt{JLD2}, which is based on HDF5 \cite{noauthor_juliaiojld2jl_2024}. 
 For this the five most significant modes of the spatial and temporal patterns are persisted, alongside the singular values (for scaling and variability computation) and the sum of all eigenvalues
-As stated in Section~\ref{sec:eof}, the spatial as well as the temporal patterns from the SVD are in unit scale, and since they are eigenvectors, any combination of a scalar $c$ and the EOF modes $cg^{(k)}$ and their corresponding temporal pattern $\alpha^{(j)}_k c^{-1}$ are also viable solutions to the problem. 
+As stated in Section~\ref{sec:eof}, the spatial as well as the temporal patterns from the \ac{svd} are in unit scale, and since they are eigenvectors, any combination of a scalar $c$ and the EOF modes $cg^{(k)}$ and their corresponding temporal pattern $\alpha^{(j)}_k c^{-1}$ are also viable solutions to the problem. 
 This leaves room for the scaling and choosing the sign of the spatial/temporal patterns in a way that simplifies interpretation of the patterns. 
 The former is explained in Section~\ref{sec:mode_scaling}, the latter  in Section~\ref{sec:mode_alignment}.
 
@@ -248,7 +248,7 @@ A way of testing the alignment of patterns is by computing the cross-correlation
 % Figure~\ref{fig:TODO} gives an example of such an analysis. 
 If the absolute correlation boxplot shows a clear trend (e.g. consistent values) but the plot with normal correlation values has either no visible correlation (meaning the alignment is very arbitrary and varies a lot) or there are many outliers on the opposite side of the zero line (alignment did not work for just some members). 
 To fix these problems and also measure correlation of the secondary or lesser modes, the spatial pattern of the first scope in the historical simulation is used as the field to align to as the best effort approach. Depending on the mode and variable this was more or less successful. 
-The top five spatial patterns of each relevant variable (IVT, surface pressure and precipitation) are shown in Figure~\ref{fig:5modes each variable}.
+The top five spatial patterns of each relevant variable (\ac{ivt}, surface pressure and precipitation) are shown in Figure~\ref{fig:5modes each variable}.
 
 
 
@@ -267,7 +267,7 @@ Unfortunately, this library revealed to be not fully mature, leaving the Mercato
 
 
 While the previous two Sections had the goal of generating the spatio-temporal EOF patterns (\textbf{M1} from Section~\ref{sec:research_questions}), this Section has the goal of fulfilling the other two milestones:  
-Studying the relationships with other variables (\textbf{M2}) to get a sense of the meaning of the IVT EOF patterns as well as displaying the variability introduced by the multiple members of the chosen dataset (\textbf{M3}). 
+Studying the relationships with other variables (\textbf{M2}) to get a sense of the meaning of the \ac{ivt} EOF patterns as well as displaying the variability introduced by the multiple members of the chosen dataset (\textbf{M3}). 
 
 % \subsection{Mode Reconstruction} % (fold)
 % \label{sec:Mode Reconstruction}
@@ -288,7 +288,7 @@ Studying the relationships with other variables (\textbf{M2}) to get a sense of 
 % with $\hat{L}$ being the remaining temporal patterns, $\hat{S}$ the singular values, and $\hat{R}'$ the transposed, reshaped spatial modes. 
 % Additionally, the original mean of the EOF scope can be added to the anomaly maps, resulting in an approximation of the actual data. 
 %
-% To help to understand before unknown patterns, it is useful to depict better understood patterns (i.e. patterns of Sea Level Pressure) next to other, rather unknown patterns (like IVT patterns) to maybe get insight about possible correlations and the original data. 
+% To help to understand before unknown patterns, it is useful to depict better understood patterns (i.e. patterns of Sea Level Pressure) next to other, rather unknown patterns (like \ac{ivt} patterns) to maybe get insight about possible correlations and the original data. 
 % To get insight about specific events, the generation function allows passing a filter function searching for certain values of the temporal patterns, e.g. looking for months when a certain pattern was particularly positively (or negatively) active, or not active at all. 
 % The result can then either be presented as a visual analysis tool with a slider or as a video which can easily be shared.
 
@@ -322,7 +322,7 @@ Instead, a certain feature could be extracted to show the ensembles' variability
 As shown in Section~\ref{sec:uncertainity_vis}, there exist multiple ways of visualizing scalar fields, either by transforming the actual scalar field somehow (like the approach of \citeauthorwork{coninx_visualization_2011}) or by selecting an interesting feature in it and visualizing it. 
 The latter approach was used by  \citeauthorwork{vietinghoffdiss} (using the extreme points of the fields) and by \cite{sanyal_noodles_2010, whitaker_contour_2013} using contour lines.  
 
-After analyzing the different spatial patterns of the different variables (and especially IVT), it was obvious that the separation line between the positive and negative spatial patterns seems to be very pronounced, especially in the primary modes. 
+After analyzing the different spatial patterns of the different variables (and especially \ac{ivt}), it was obvious that the separation line between the positive and negative spatial patterns seems to be very pronounced, especially in the primary modes. 
 Therefor, the use of contour lines seemed like a good choice for a feature. 
 Contour lines (also referred to as isolines) are lines, that share the same value of the function defining the field. The best known contour lines are lines of same height in maps of mountains.  
 And since one question of the introduction was how those spatial patterns shift geographically, the contour line of zero, representing the borders of positive and negative patterns seems fitting. 
@@ -353,7 +353,7 @@ The advantage of hexbin plots is that it represents distribution better than squ
   \begin{center}
     \includegraphics[width=0.95\textwidth]{figures/hexbin_approach_overview.png}
   \end{center}
-  \caption{Example of the hexbin approach using the dominant IVT pattern. Sample distance is $0.1$. A to C show the contour lines vertices in one member, all members and all members with sampling along the line. D to F show the hexbin visualization of the corresponding vertices.}\label{fig:hexbin overview}
+  \caption{Example of the hexbin approach using the dominant \ac{ivt} pattern. Sample distance is $0.1$. A to C show the contour lines vertices in one member, all members and all members with sampling along the line. D to F show the hexbin visualization of the corresponding vertices.}\label{fig:hexbin overview}
 \end{figure}
 \todo{redo figure with correct algorithm}
 The threshold for displayed hexbins was set to one, so that areas without any contour line stay free of hexagons. 
@@ -371,7 +371,7 @@ An analysis comparing this approach to the traditional spaghetti plots is given 
 %   \item greates challenge comes from the variability introduced by the multiple members of the dataset. 
 %   \item vizualizing the scalar data turns the 2D map into a 3D cube. 
 %   \item there are multiple ways of handling this: either plot a 3D object encoding the variability in the third dimension, or by using the noise technique from \citeauthorwork{coninx_visualization_2011} or by using isocontours. 
-%   \item Since the most dominant patterns of IVT show very clear seperation between positive and negative patterns (see Figure TODO), the method of level-crossing probabilities \cite{poethkow_approximate_2013} was implemented.  
+%   \item Since the most dominant patterns of \ac{ivt} show very clear seperation between positive and negative patterns (see Figure TODO), the method of level-crossing probabilities \cite{poethkow_approximate_2013} was implemented.  
 %   \item The level set of switching was chosen to be 0, which means that the contours indicate the borders of negative/positive patterns.  \item Those show the borders in scalar fields
 % \end{itemize}
 
@@ -400,7 +400,7 @@ To explore the relationships between certain patterns, the EOF coefficients can 
 This can answer the question of which patterns share activity in a certain month and how this relationship evolves over time. 
 
 This is evaluated using cross-correlation. 
-The reason for this was that introducing a lag to the signal, it could reveal certain temporal relationships, e.g. a positive IVT EOF coefficient of EOF2 (see Figure~\ref{fig:5modes each variable}) leads to positive activity of the precipitation pattern positive in Great Britain (e.g. PR EOF2). 
+The reason for this was that introducing a lag to the signal, it could reveal certain temporal relationships, e.g. a positive \ac{ivt} EOF coefficient of EOF2 (see Figure~\ref{fig:5modes each variable}) leads to positive activity of the precipitation pattern positive in Great Britain (e.g. PR EOF2). 
 
 This evaluation was conducted in the following way: 
 Per scope (30 or 50 winters), the cross-correlation of two different variables $X$ and $Y$ was calculated for two modes $a$ and $b$ by calculating the cross-correlation of their temporal patterns $c_a^X(t)$ and $c_b^Y(t)$. 
@@ -420,7 +420,7 @@ If the plot of absolute correlation revealed a consistently high value, but the 
 
 Since it is notoriously hard to connect (mathematical) EOF modes to real physical modes \cite{hannachi_empirical_2007, dommenget_cautionary_2002}, it is not enough to analyze the relationships between patterns since they may not represent any actual physical modes (see the simple example explained in \citeauthorwork{dommenget_cautionary_2002}). 
 Instead, the recommendations of \citeauthorwork{dommenget_cautionary_2002} were followed, using different statistical tools to evaluate the modes. 
-Some of the related work \cite{zou_interdecadal_2018, zhou_atmospheric_2005, li_quasi-4-yr_2012} used regression maps, depicting the regression slopes between the EOF coefficient $c_a^X(t)$ of variable $X$ and mode $a$ (e.g. the dominant EOF mode of IVT $c_1^{IVT}(t)$)and the temporal evolution of each gridpoints $Y(lon, lat)(t)$ of another variable $Y$. 
+Some of the related work \cite{zou_interdecadal_2018, zhou_atmospheric_2005, li_quasi-4-yr_2012} used regression maps, depicting the regression slopes between the EOF coefficient $c_a^X(t)$ of variable $X$ and mode $a$ (e.g. the dominant EOF mode of \ac{ivt} $c_1^{\ac{ivt}}(t)$)and the temporal evolution of each gridpoints $Y(lon, lat)(t)$ of another variable $Y$. 
 \citeauthorwork{fernandez_analysis_2003} used a similar procedure but with the correlation of $c_a^X(t)$ and $X(lon, lat)(t)$, so depicting the correlation coefficient for each gridpoint with the temporal pattern for the same variable $X$. 
 This tackles the problem described by \citeauthor{dommenget_cautionary_2002}: \enquote{The PCs of the dominant patterns are often a superposition of many different modes that are uncorrelated in time and that are often modes of remote regions that have no influence on the region in which the pattern of this PC has its center of action.} \cite{dommenget_cautionary_2002} 
 
@@ -429,7 +429,7 @@ For this Thesis an interactive comparison of the patterns of any variable $X$ an
 To display the ambiguity introduced by the different members, spaghetti plots and the hexbin approach described above were reused, highlighting contour lines of certain correlation levels. 
 Therefor, they display areas with correlation higher (or lower) then an interactively chosen correlation level (e.g. $0.7$). 
 Also, the mode and the scope can be interactively chosen, to explore different modes and their evolution in time. 
-Of particular interest are here the correlation between IVT modes and precipitation data, which could help to explain how the dominant IVT modes influence the precipitation in Europe. 
+Of particular interest are here the correlation between \ac{ivt} modes and precipitation data, which could help to explain how the dominant \ac{ivt} modes influence the precipitation in Europe. 
 
 % section Temporal Pattern Correlation (end)
 %

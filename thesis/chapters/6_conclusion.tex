@@ -7,7 +7,7 @@
 
 This thesis presents the first ensemble-scale evaluation of Empirical Orthogonal Functions (EOFs) for moisture-related variables across Europe, encompassing future scenarios. A sliding window approach was used in the EOF analysis to evaluate the evolution of these patterns over time. The primary objective of this pattern analysis was to gain visual insights into the structural nature of these recurring oscillations of moisture transport and their consequences, which are typically challenging to track.
 Furthermore, this research addresses the challenge of managing a vast amount of temporally dynamic yet repetitive data, consisting of 50 different members in the ensemble simulation, by applying EOF analysis to reduce its complexity and make member-sensitive visual analysis possible. This Thesis not only analyzes changes visually but also highlights the variability across different simulation members.
-This work provides the first known computation of Integrated Vapor Transport (IVT) and precipitation EOF patterns for the entirety of Europe and the Northern Atlantic. The relationships between these patterns and other variables were explored to enhance the understanding of their implications. This thesis focuses on two major oscillations in Europe, the North Atlantic Oscillation (NAO) and the East Atlantic Pattern (EAP), which are established results of EOF analysis of sea level pressure data and primary drivers of winter winds and weather patterns.
+This work provides the first known computation of Integrated Vapor Transport (\ac{ivt}) and precipitation EOF patterns for the entirety of Europe and the Northern Atlantic. The relationships between these patterns and other variables were explored to enhance the understanding of their implications. This thesis focuses on two major oscillations in Europe, the North Atlantic Oscillation (\ac{nao}) and the East Atlantic Pattern (\ac{eap}), which are established results of EOF analysis of sea level pressure data and primary drivers of winter winds and weather patterns.
 Additionally, the most critical result of moisture transport, precipitation, was analyzed to explore the consequences and significance of specific modes of moisture transport. To illustrate member variability, contour lines were employed. Moreover, the study introduced a novel method for displaying level crossing probabilities using hexbins, enhancing the clarity and interpretability of the data. 
 \todo{This section may sound a bit to chatgpty}
 % Intro:
@@ -18,8 +18,8 @@ Additionally, the most critical result of moisture transport, precipitation, was
 %   \item Goal of this pattern analysis: Lear something visually about the structural nature of these repeating oscillations, which are usually hard to track 
 %   \item also tries to reduce the vast amount of data (temporal always changing but stilll repetetive data which comes in 50 different variants), which is very hard to analyse visually
 %   \item Analyse the change in a visual way, while also displaying the variability across simulation members
-%   \item Since it is the first time (to the authors knowledge) that IVT and precipitation patterns are computed for whole Europe/Northern Atlantic, try to make understanding them easier by exploring their relationships to each other and to other variables to learn about their consequences. 
-%   \item for the relationships the most important oscillations of europe (NAO and EAP) were chosen, which are established results of EOF analysis of sea level pressure data in europe. they are main drivers of winterly winds and weather
+%   \item Since it is the first time (to the authors knowledge) that \ac{ivt} and precipitation patterns are computed for whole Europe/Northern Atlantic, try to make understanding them easier by exploring their relationships to each other and to other variables to learn about their consequences. 
+%   \item for the relationships the most important oscillations of europe (\ac{nao} and \ac{eap}) were chosen, which are established results of EOF analysis of sea level pressure data in europe. they are main drivers of winterly winds and weather
 %   \item additionally, the most important result of moisture transport was chosen, precipitation. This helps elaborating the cosequences and therefore the meaning of certain modes of moisture transport 
 %   \item to display member variability the feature of contour lines was chosen
 %   \item introduced a new way of displaying level crossing probabilities using hexbins 
@@ -28,29 +28,29 @@ Additionally, the most critical result of moisture transport, precipitation, was
 % results: 
 %
 % \begin{itemize}
-%   \item Analysis of stationary water vapor transport (monthly means) and their relationship with monthly precipitation and sea level pressure (represent dominant oscillations NAO and EAP) 
-%   \item Results show two dominant modes of water vapor transport (quantified using IVT), which seem quite stable across members and time
+%   \item Analysis of stationary water vapor transport (monthly means) and their relationship with monthly precipitation and sea level pressure (represent dominant oscillations \ac{nao} and \ac{eap}) 
+%   \item Results show two dominant modes of water vapor transport (quantified using \ac{ivt}), which seem quite stable across members and time
 %   \item Precipitation EOFs reveal one quite stable mode and one questionable mode, the others seem degenerate
-%   \item relationships between patterns was explored using correlation in two ways: one by comparing modes of PSL (= oscillations), IVT and precipitation EOF and anoother by generating correlation map of a certain mode and data 
-%   \item the former revealed quite strong correlations of the dominant modes of PSL and IVT (and also precipitation). But they are also somewhat (weaker connected vice versa). 
-%   \item Also a very strong relationship between the primary modes of IVT and precipitation, which seems especially relevant for precipitation variability in the Iberian Peninsula. 
-%   \item a bit weaker connection of both secondary EOF of IVT and precipitation, the weaker connection could be due to the instability of the secondary precipitation EOF (which questions the usefullness of interpreting it) 
+%   \item relationships between patterns was explored using correlation in two ways: one by comparing modes of PSL (= oscillations), \ac{ivt} and precipitation EOF and anoother by generating correlation map of a certain mode and data 
+%   \item the former revealed quite strong correlations of the dominant modes of PSL and \ac{ivt} (and also precipitation). But they are also somewhat (weaker connected vice versa). 
+%   \item Also a very strong relationship between the primary modes of \ac{ivt} and precipitation, which seems especially relevant for precipitation variability in the Iberian Peninsula. 
+%   \item a bit weaker connection of both secondary EOF of \ac{ivt} and precipitation, the weaker connection could be due to the instability of the secondary precipitation EOF (which questions the usefullness of interpreting it) 
 %   \item the latter revealed that the area of precipitation strongly correlated with the primary mode expands to te north, more pronounced in hevier climate change
-%   \item Also for the secondary mode of IVT (and precipitation data): It is less influential on the west coast of europe. 
+%   \item Also for the secondary mode of \ac{ivt} (and precipitation data): It is less influential on the west coast of europe. 
 %   \item but a full evaluation and interpretation needs to be performed by a domain expert (meterologist or climate scientist)
 % \end{itemize}
 
 
-The analysis focused on stationary water vapor transport, represented by monthly means, and its relationship with monthly precipitation and sea level pressure, which reflect the dominant oscillations, NAO and EAP. 
-The results identified two dominant modes of water vapor transport, quantified using Integrated Vapor Transport (IVT), which demonstrated considerable stability across different members and time periods.
+The analysis focused on stationary water vapor transport, represented by monthly means, and its relationship with monthly precipitation and sea level pressure, which reflect the dominant oscillations, \ac{nao} and \ac{eap}. 
+The results identified two dominant modes of water vapor transport, quantified using Integrated Vapor Transport (\ac{ivt}), which demonstrated considerable stability across different members and time periods.
 In the analysis of precipitation EOFs, the primary mode appeared quite stable, while the secondary mode seemed questionable, with the remaining modes exhibiting degeneracy. 
-Relationships between these patterns were explored using two correlation-based methods: one involved comparing the modes of sea level pressure (PSL), IVT, and precipitation EOFs, while the other involved generating correlation maps between specific modes and the corresponding data.
-The first method revealed strong correlations between the dominant modes of PSL and IVT, as well as between these modes and precipitation. 
+Relationships between these patterns were explored using two correlation-based methods: one involved comparing the modes of sea level pressure (PSL), \ac{ivt}, and precipitation EOFs, while the other involved generating correlation maps between specific modes and the corresponding data.
+The first method revealed strong correlations between the dominant modes of PSL and \ac{ivt}, as well as between these modes and precipitation. 
 However, the correlations were somewhat weaker in the reverse direction, but still existent. 
-A particularly strong relationship was observed between the primary modes of IVT and precipitation, which seems especially relevant for understanding precipitation variability in the Iberian Peninsula. 
-Conversely, the connection between the secondary EOFs of IVT and precipitation was weaker, possibly due to the instability of the secondary precipitation EOF, which raises questions about its interpretative usefulness.
+A particularly strong relationship was observed between the primary modes of \ac{ivt} and precipitation, which seems especially relevant for understanding precipitation variability in the Iberian Peninsula. 
+Conversely, the connection between the secondary EOFs of \ac{ivt} and precipitation was weaker, possibly due to the instability of the secondary precipitation EOF, which raises questions about its interpretative usefulness.
 The second method indicated that the area of precipitation strongly correlated with the primary mode extends northward, with this pattern becoming more pronounced under scenarios of more severe climate change. 
-Additionally, the secondary mode of IVT, and consequently the precipitation data, appeared to have less influence on the western coast of Europe.
+Additionally, the secondary mode of \ac{ivt}, and consequently the precipitation data, appeared to have less influence on the western coast of Europe.
 It is important to note that a comprehensive evaluation and interpretation of these findings should be conducted by a domain expert, such as a meteorologist or climate scientist, to ensure accuracy and relevance.
 
 % reflection: 

@@ -30,6 +30,8 @@
 
 % \usepackage{subfig}
 
+% use acronym package for acronyms 
+\usepackage{acro}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Hyperlinks & bookmarks
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -37,7 +39,7 @@
 \usepackage[%
   colorlinks = true,
   citecolor  = RoyalBlue,
-  linkcolor  = RoyalBlue,
+  linkcolor  = Black,
   urlcolor   = RoyalBlue,
   unicode,
   ]{hyperref}
@@ -113,27 +115,112 @@
 %   \singlespacing
 % \fi
 
-\newacronym[description={Principal component analysis}]{PCA}{PCA}{principal component analysis}
-\newacronym[description={Empirical Orthogonal Functions}]{EOF}{EOF}{empirical orthogonal functions}
-\newacronym                                            {SNF}{SNF}{Smith normal form}
-\newacronym[description={Topological data analysis}]   {TDA}{TDA}{topological data analysis}
-\newacronym                                            {GCM}{GCM}{Global Coupled Model}
 
-\newglossaryentry{LaTeX}{%
-  name        = {\LaTeX},
-  description = {A document preparation system},
-  sort        = {LaTeX},
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Define the acronyms
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\DeclareAcronym{ghg}{
+  short = GHG,
+  long  = Greenhouse Gasses
+}
+\DeclareAcronym{ivt}{
+  short = IVT,
+  long  = Integrated Water Vapor
+}
+\DeclareAcronym{eof}{
+  short = EOF,
+  long  = Empirical Orthogonal Functions
+}
+\DeclareAcronym{pca}{
+  short = PCA,
+  long  = Principal Component Analysis
+}
+\DeclareAcronym{cmip}{
+  short = CMIP,
+  long  = Coupled Model Intercomparison Project
+}
+\DeclareAcronym{cmip6}{
+  short = CMIP6,
+  long  = Coupled Model Intercomparison Project 6th Iteration
+}
+\DeclareAcronym{mip}{
+  short = MIP,
+  long  = Model Intercomparison Project
+}
+\DeclareAcronym{ipcc}{
+  short = IPCC,
+  long  = Intergovernmental Panel on Climate Change
+}
+\DeclareAcronym{rcp}{
+  short = RCP,
+  long  = Representative Concentration Pathways
+}
+\DeclareAcronym{ssp}{
+  short = SSP,
+  long  = Shared Socioeconomic Pathways
+}
+\DeclareAcronym{mpige6}{
+  short = MPI GE CMIP6,
+  long  = Max Planck Institute Grand Ensemble CMIP6
+}
+\DeclareAcronym{svd}{
+  short = SVD,
+  long  = Singular Value Decomposition
+}
+\DeclareAcronym{gcm}{
+  short = GCM,
+  long  = Global Coupled Model
+}
+\DeclareAcronym{nao}{
+  short = NAO,
+  long  = North Atlantic Oscillation
+}
+\DeclareAcronym{eap}{
+  short = EAP,
+  long  = East Atlantic Pattern
+}
+\DeclareAcronym{erf}{
+  short = ERF,
+  long  = Effective Radiative Forcing
+}
+\DeclareAcronym{enso}{
+  short = ENSO,
+  long  = El Niño Southern Oscillation
+}
+\DeclareAcronym{psl}{
+  short = PSL,
+  long  = Sea Level Pressure
+}
+\DeclareAcronym{pr}{
+  short = PR,
+  long  = Precipitation
 }
 
-\newglossaryentry{Real numbers}{%
-  name        = {$\real$},
-  description = {The set of real numbers},
-  sort        = {Real numbers},
-}
 
-\makeindex
-\makeglossaries
+% \newacronym[description={Principal component analysis}]{PCA}{PCA}{principal component analysis}
+% \newacronym[description={Empirical Orthogonal Functions}]{EOF}{EOF}{empirical orthogonal functions}
+% \newacronym                                            {SNF}{SNF}{Smith normal form}
+% \newacronym[description={Topological data analysis}]   {TDA}{TDA}{topological data analysis}
+% \newacronym                                            {GCM}{GCM}{Global Coupled Model}
 
+% \newglossaryentry{LaTeX}{%
+%   name        = {\LaTeX},
+%   description = {A document preparation system},
+%   sort        = {LaTeX},
+% }
+%
+% \newglossaryentry{Real numbers}{%
+%   name        = {$\real$},
+%   description = {The set of real numbers},
+%   sort        = {Real numbers},
+% }
+%
+% \makeindex
+% \makeglossaries
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Custom Commands
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -167,7 +254,6 @@
 
 \begin{document}
 
-
 \frontmatter
   \include{Sources/Title}
   %\include{chapters/titlepage}
@@ -189,14 +275,37 @@
 \bookmarksetup{startatroot}
 \backmatter
 
-  \begingroup
-    \let\clearpage\relax
-    \glsaddall
-    \printglossary[type=\acronymtype]
-    \newpage
-    \printglossary
-  \endgroup
+  % \begingroup
+  %   \let\clearpage\relax
+  %   % \glsaddall
+  %   % \section*{Acronyms}
+  %   %   \begin{acronym}
+  %   %     \acro{ghg}[GHG]{Greenhouse Gasses}
+  %   %     \acro{ivt}[IVT]{Integrated Water Vapor}
+  %   %     \acro{eof}[EOF]{Empirical Orthogonal Functions}
+  %   %     \acro{pca}[PCA]{Principal Component Analysis}
+  %   %     \acro{cmip}[CMIP]{Coupled Model Intercomparison Project}
+  %   %     \acro{cmip6}[CMIP6]{Coupled Model Intercomparison Project $6th$ Iteration}
+  %   %     \acro{mip}[MIP]{Model Intercomparison Project}
+  %   %     \acro{ipcc}[IPCC]{Intergovernmental Panel on Climate Change}
+  %   %     \acro{rcp}[RPC]{Representative Concentration Pathways}
+  %   %     \acro{ssp}[SSP]{Shared Socioeconomic Pathways}
+  %   %     \acro{mpige6}[MPI GE CMIP6]{Max Planck Institute Grand Ensemble CMIP6}
+  %   %     \acro{svd}[SVD]{Singular Value Decomposition}
+  %   %     \acro{gcm}[GCM]{Global Coupled Model}
+  %   %     \acro{nao}[NAO]{North Atlantic Oscillation}
+  %   %     \acro{eap}[EAP]{East Atlantic Pattern}
+  %   %     \acro{erf}[ERF]{Effective Radiative Forcing}
+  %   %     \acro{enso}[ENSO]{El Niño Southern Oscillation}
+  %   %     \acro{psl}[PSL]{Sea Level Pressure}
+  %   %     \acro{pr}[PR]{Precipitation}
+  %   %   \end{acronym}
+  %
+  %   \newpage
+  %   \printglossary
+  % \endgroup
 
+  \printacronyms
   \printindex
   \printbibliography
 

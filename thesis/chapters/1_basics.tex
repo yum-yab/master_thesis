@@ -97,7 +97,7 @@ Unfortunately, this requires the mapping of a 2D paper plane to a 2D sphere surf
 Therefor, numerous different map projections were invented, which all have a different kind of distortion in different geographical places. 
 Figure~\ref{fig:tissot map projections} shows two distinct projections, both with their own advantages and disadvantages. 
 As pointed out by \citeauthorwork{vietinghoffdiss}, a different map projections may fit the area of interest better, the Mercator projection in Figure~\ref{fig:tissot map projections} (left) is still chosen for this thesis, due to limitations in the employed map projections library (see Section~\ref{sec:vis_analysis}). 
-This distortion also plays a role in calculations with uniform lon/lat-grids, since coordinates in the far north (and south) are vastly overrepresented, since they actually refer to a far smaller portion of the earth's surface than data near the equator (see Section~\ref{sec:eof} for geographical weighting). 
+This distortion also plays a role in calculations with uniform lon/lat-grids, since coordinates in the far north (and south) are vastly overrepresented, because they actually refer to a far smaller portion of the earth's surface than data near the equator (see Section~\ref{sec:eof} for geographical weighting). 
 
 
 \subsection{Uncertain Fields}
@@ -134,10 +134,10 @@ Connecting this with the terms mentioned in Section~\ref{sec:climate research}: 
 
 \subsection{Overview}
 
-Empirical Orthogonal Functions (short: EOFs) analysis, also known as geographically weighted PCA or Proper Orthogonal Decomposition \cite{vietinghoffdiss}, was first introduced to the field of turbulence and fluid dynamics in the late 60s. The goal was to reduce turbulent flow to a limit number of deterministic functions to explain the structure of the flow by showing coherent structures that are otherwise hard to find and define \cite{weiss_tutorial_2019}. Currently, it \enquote{is among the most widely and extensively used methods in atmospheric science} \cite{hannachi_empirical_2007}. 
+\acf{eof} analysis, also known as geographically weighted \ac{pca} or Proper Orthogonal Decomposition \cite{vietinghoffdiss}, was first introduced to the field of turbulence and fluid dynamics in the late 60s. The goal was to reduce turbulent flow to a limit number of deterministic functions to explain the structure of the flow by showing coherent structures that are otherwise hard to find and define \cite{weiss_tutorial_2019}. Currently, it \enquote{is among the most widely and extensively used methods in atmospheric science} \cite{hannachi_empirical_2007}. 
 One of its goals is to reduce the usually very high dimensionality of atmospheric data and can be used to link certain modes/patterns to the physics/dynamics of the analyzed system.  
-EOFs are a statistical procedure to decompose spatio-temporal data into two components: On the one hand orthogonal spatial patterns, on the other hand corresponding uncorrelated temporal coefficients, representing the activity of their corresponding pattern in certain time steps \cite{hannachi_empirical_2007, vietinghoffdiss}. 
-The naming of the components is for from being consistent: The spatial patterns are also called spatial modes, PC loadings, EOFs or even sometimes PCs, while the temporal coefficients are also named principal components (PCs), EOF amplitudes or EOF (expansion) coefficients \cite{hannachi_empirical_2007}. 
+\acp{eof} are a statistical procedure to decompose spatio-temporal data into two components: On the one hand orthogonal spatial patterns, on the other hand corresponding uncorrelated temporal coefficients, representing the activity of their corresponding pattern in certain time steps \cite{hannachi_empirical_2007, vietinghoffdiss}. 
+The naming of the components is for from being consistent: The spatial patterns are also called spatial modes, PC loadings, \acp{eof} or even sometimes PCs, while the temporal coefficients are also named principal components (PCs), \ac{eof} amplitudes or \ac{eof} (expansion) coefficients \cite{hannachi_empirical_2007}. 
 So as a formula, a spatio-temporal field $X(t, s)$ (e.g. a sea level pressure field over time mentioned in Section~\ref{sec:nao}) can be described as
 
 \begin{equation}
@@ -147,15 +147,15 @@ So as a formula, a spatio-temporal field $X(t, s)$ (e.g. a sea level pressure fi
 
 with $M$ being the number of modes/patterns and  $c_k$ the $k$th temporal coefficients and $u_k$ the spatial pattern \cite{hannachi_empirical_2007}. 
 
-This could be achieved with multiple kinds of decomposition, but EOF tries finding new sets of variables ($c_k(t)$ and $u_k(s)$ from Equation~\ref{eq:eof decomposition}) that each capture a maximum possible amount of variance/variability of the original dataset. 
+This could be achieved with multiple kinds of decomposition, but \ac{eof} tries finding new sets of variables ($c_k(t)$ and $u_k(s)$ from Equation~\ref{eq:eof decomposition}) that each capture a maximum possible amount of variance/variability of the original dataset. 
 So the first of $M$ modes captures the most variance, the second one the second most and so on. 
 
-\subsection{Mathematical Derivation and Computation of EOFs}
+\subsection{Mathematical Derivation and Computation of \acp{eof}}
 
-The goal of this Section is to give an overview of the mathematical origins of EOFs based on the work of \citeauthorwork{hannachi_empirical_2007} as well as their actual practical computation. 
-For a more in depth history and derivation, please refer to \cite{hannachi_empirical_2007} and their references, while \citeauthorwork{weiss_tutorial_2019} gives a great hands-on tutorial on POD/EOFs and their interpretation and computation. 
+The goal of this Section is to give an overview of the mathematical origins of \acp{eof} based on the work of \citeauthorwork{hannachi_empirical_2007} as well as their actual practical computation. 
+For a more in depth history and derivation, please refer to \cite{hannachi_empirical_2007} and their references, while \citeauthorwork{weiss_tutorial_2019} gives a great hands-on tutorial on POD/\acp{eof} and their interpretation and computation. 
 
-As already explained, the starting point of EOFs is usually a spatio-temporal field $X(t, s)$ defined on a Grid $G$ over $n$ time steps, for example the precipitation analyzed in this Thesis. 
+As already explained, the starting point of \acp{eof} is usually a spatio-temporal field $X(t, s)$ defined on a Grid $G$ over $n$ time steps, for example the precipitation analyzed in this Thesis. 
 The value at each grid point at geographical location $s_j$ and time $t_i$ is given as $x_{ij}$, with $i = 1, ..., n$  and $j = 1, ..., p$.  
 The first step is usually to remove the climatology of the dataset to turn it into anomaly maps. 
 The climatology is usually defined as the temporal mean $\bar{x}$ of the analyzed datachunk, so 
@@ -185,8 +185,8 @@ x'_{i1} & x'_{i2} & \cdots & x'_{ij}
   \label{eq:anomaly map}
 \end{equation}
 
-% Since from here on only anomaly maps are considered in the derivation and calculation of EOFs, the $'$ gets omitted and $X$ stands now for the anomaly data.  
-The first usual step for generating EOFs is the covariance matrix defined by 
+% Since from here on only anomaly maps are considered in the derivation and calculation of \acp{eof}, the $'$ gets omitted and $X$ stands now for the anomaly data.  
+The first usual step for generating \acp{eof} is the covariance matrix defined by 
 
 \begin{equation}
   S = \frac{1}{n} X'^T X' 
@@ -194,17 +194,17 @@ The first usual step for generating EOFs is the covariance matrix defined by
 \end{equation}
 
 This covariance matrix with the values $s_{ab}$ with $a,b = 1, \cdots, p$ contains the covariance of any grid point with any other grid point over the time. 
-To find EOFs means determining a unit length direction $u = (u_1, \cdots, u_p)$ that explains the most variability. 
-This problem is therefor equivalent to the solution to the eigenvalue problem, so finding all the eigenvectors ($\equiv$ EOFs) and their eigenvalue. Which means that the vector $u$ multiplied by the covariance matrix $S$ is equivalent to the multiplication with a scalar $\lambda^2$ (the eigenvalue):  
+To find \acp{eof} means determining a unit length direction $u = (u_1, \cdots, u_p)$ that explains the most variability. 
+This problem is therefor equivalent to the solution to the eigenvalue problem, so finding all the eigenvectors ($\equiv$ \acp{eof}) and their eigenvalue. Which means that the vector $u$ multiplied by the covariance matrix $S$ is equivalent to the multiplication with a scalar $\lambda^2$ (the eigenvalue):  
 
 \begin{equation}
   Su = \lambda^2 u
   \label{eq:eigenvalue problem} 
 \end{equation}
 
-So to find the $k$th EOF of a Covariance matrix, the eigenvectors $u$ are sorted by the (largest first) value of their corresponding eigenvalue $\lambda^2$. 
-The primary (or dominant) EOF the first in this order, the secondary EOF the second and so on. 
-The variance $v_k$ of the original dataset associated with the $k$th EOF can then be calculated with: 
+So to find the $k$th \ac{eof} of a Covariance matrix, the eigenvectors $u$ are sorted by the (largest first) value of their corresponding eigenvalue $\lambda^2$. 
+The primary (or dominant) \ac{eof} the first in this order, the secondary \ac{eof} the second and so on. 
+The variance $v_k$ of the original dataset associated with the $k$th \ac{eof} can then be calculated with: 
 
 \begin{equation}
   v_k = \frac{\lambda^2_k}{\sum^{p}_{i=1} \lambda^2_i}
@@ -240,7 +240,7 @@ Those can be approximated by the square root of the cosine of the respective lat
   
 
 Fortunately, there is no need to calculate the covariance matrix and solve the eigenvalue problem. 
-Linear Algebra provides a tool called \textit{Singular Value Decomposition} (SVD), which decomposes any matrix $X$ into three components: 
+Linear Algebra provides a tool called \textit{Singular Value Decomposition} (\ac{svd}), which decomposes any matrix $X$ into three components: 
 
 \begin{equation}
   X = L \Lambda R^T 
@@ -249,7 +249,7 @@ Linear Algebra provides a tool called \textit{Singular Value Decomposition} (SVD
 
 $L$ contains the left singular vectors, $R$ the right singular vectors and $\Lambda$ a diagonal matrix containing the singular values $\lambda_k$ (as used in Equation~\ref{eq:eof variance calculation} above). 
 
-Now all of the above is used to calculate the EOFs of geographical data by applying SVD to the matrix (like in \citeauthorwork{vietinghoffdiss}): 
+Now all of the above is used to calculate the \acp{eof} of geographical data by applying \ac{svd} to the matrix (like in \citeauthorwork{vietinghoffdiss}): 
 
 \begin{equation}
   \tilde{X} = \frac{1}{\sqrt{n - 1}} W^{\frac{1}{2}} X' 
@@ -257,7 +257,7 @@ Now all of the above is used to calculate the EOFs of geographical data by apply
 \end{equation}
 
 
-When using SVD of $\tilde{X}$ with time as the first dimension (like depicted here), the columns of $R^T$ are the EOFs (so $u_k(s)$ of Equation~\ref{eq:eof decomposition}) and the columns of $L$ multiplied with $\sqrt{n - 1}$ are the principal components or EOF coefficients ($c_k(t)$ in Equation~\ref{eq:eof decomposition}).
+When using \ac{svd} of $\tilde{X}$ with time as the first dimension (like depicted here), the columns of $R^T$ are the \acp{eof} (so $u_k(s)$ of Equation~\ref{eq:eof decomposition}) and the columns of $L$ multiplied with $\sqrt{n - 1}$ are the principal components or \ac{eof} coefficients ($c_k(t)$ in Equation~\ref{eq:eof decomposition}).
 As explained above, this result can be scaled, which is explained in detail in Section~\ref{sec:eof_calc}.
 \todo{go over this whole section and check everything for being correct!!!!}
 

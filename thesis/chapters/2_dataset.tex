@@ -1,12 +1,12 @@
-\chapter{MPI GE CMIP6}
+\chapter{Max Planck Institute Grand Ensemble CMIP6}
 \label{ch:dataset}
 
 \section{Overview}
 
-The dataset chosen for this project is the \textit{Max Planck Institute Grand Ensemble CMIP6} (from now on MPI-GE CMIP6), presented by \citeauthor{olonscheck_new_2023}. 
-It is a Single-model initial-condition large ensemble (in short: SMILE) consisting of multiple, coupled models: ECHAM6 for the atmosphere directly coupled to JSBACH for land and MPIOM for sea and sea-ice. 
+The dataset chosen for this project is the \ac{mpige6}, presented by \citeauthor{olonscheck_new_2023}. 
+It is a single-model initial-condition large ensemble (in short: SMILE) consisting of multiple, coupled models: ECHAM6 for the atmosphere directly coupled to JSBACH for land and MPIOM for sea and sea-ice. 
 The models are coupled once a day, meaning that the simulation results of the different models serve as inputs for the other models.
-As an ensemble simulation, it consists of multiple members, which are different variants of the simulation with the same forcings (like GHGs) but different initial conditions. 
+As an ensemble simulation, it consists of multiple members, which are different variants of the simulation with the same forcings (like \acp{ghg}) but different initial conditions. 
 For this the historical simulations are split from 1000 year quasi-stationary preindustrial control simulation circa 25 years apart for each member, and the results of them in the year 2015 serve as the initial state for each corresponding member in the future scenarios. \cite{olonscheck_new_2023}
 % This means that a single model was run with different initial conditions but the same external forcings (e.g. greenhous gasses) mutiple times. 
 % Every seperate intial condition is a member of the simulation, and all members together are the whole ensemble. \cite{olonscheck_new_2023}
@@ -16,7 +16,7 @@ For this the historical simulations are split from 1000 year quasi-stationary pr
 % As described in Section \ref{sec:climate}, Coupled models 
 
 Differences to its predecessor MPI GE \cite{maher_max_2019} (which was used in the work of \citeauthor{vietinghoffdiss} \cite{vietinghoffdiss}) include improved time resolution (from monthly means to 3/6 hourly intervals) and the updated CMIP6 forcings and future scenarios (see Section~\ref{sec:scenariomip}). 
-Since MPI GE CMIP6 follows the CMIP6 protocol (see Section~\ref{sec:climate} and \cite{eyring_overview_2016}), it implements the DECK core with (amongst others) a quasi-stationary preindustrial control simulation and the historical simulations.
+Since \ac{mpige6} follows the CMIP6 protocol (see Section~\ref{sec:climate} and \cite{eyring_overview_2016}), it implements the DECK core with (amongst others) a quasi-stationary preindustrial control simulation and the historical simulations.
 Furthermore, it also uses the forcings defined by CMIP6 (like volcanic eruptions, solar circle, GHGs etc.) for the historical and future simulations (see Section~\ref{sec:scenariomip}).
 
 
@@ -55,7 +55,7 @@ In the actual scenarios these pathways are combined with the additional radiativ
 RCP describes the level of radiative forcing (in $Wm^{-2}$) reached in the year 2100 (see Section~\ref{sec:climate}).
 Although there are now 35 possible scenarios, \citeauthor{oneill_scenario_2016} defined two different tiers of scenarios ranked by their importance. 
 Figure~\ref{fig:ssprcp} lists Tier 1, which are scenarios mostly comparable to the old RCP scenarios. 
-These scenarios are available in the MPI GE CMIP6, amongst some of Tier 2. \cite{oneill_scenario_2016, riahi_shared_2017, bottinger_michael_ssp_nodate}
+These scenarios are available in the \ac{mpige6}, amongst some of Tier 2. \cite{oneill_scenario_2016, riahi_shared_2017, bottinger_michael_ssp_nodate}
 
 \begin{figure}[bht]
   \begin{center}
@@ -74,12 +74,12 @@ These scenarios are available in the MPI GE CMIP6, amongst some of Tier 2. \cite
 \subsection{Resolutions and Dimensions}
 \label{sec:dataset-description}
 
-In terms of spatial resolution, MPI GE CMIP6 comes in three variants: The low resolution variant MPI-ESM1.2-LR with a horizontal resolution of roughly $1.8^\circ$ longitude/latitude resolution in the atmospheric part and $0.4^\circ$ lon/lat for the ocean, the high resolution variant MPI-ESM1.2-HR with a horizontal resolution of $1.0^\circ$/$0.4^\circ$ for atmosphere/ocean and the extreme high resolution MPI-ESM1.2-XR with $0.5^\circ$/$0.4^\circ$ for atmosphere/ocean. 
+In terms of spatial resolution, \ac{mpige6} comes in three variants: The low resolution variant MPI-ESM1.2-LR with a horizontal resolution of roughly $1.8^\circ$ longitude/latitude resolution in the atmospheric part and $0.4^\circ$ lon/lat for the ocean, the high resolution variant MPI-ESM1.2-HR with a horizontal resolution of $1.0^\circ$/$0.4^\circ$ for atmosphere/ocean and the extreme high resolution MPI-ESM1.2-XR with $0.5^\circ$/$0.4^\circ$ for atmosphere/ocean. 
 Each variant has a vertical resolution of 47 levels for the atmosphere and 40 for ocean.
 With increasing spatial resolution comes decreased availability of other variables like simulation members, covered time period, and implemented scenarios. 
 Although \cite{olonscheck_new_2023} reports 30 members for each simulation (for the LR variant), in the actual dataset available for this work 50 members were simulated. 
 
-In terms of time resolution, MPI GE CMIP6 provides very few, limited variables in 3 hour intervals and most variables in a 6 hourly interval.  
+In terms of time resolution, \ac{mpige6} provides very few, limited variables in 3 hour intervals and most variables in a 6 hourly interval.  
 A full list of the variables can be seen in \cite[Table 3]{olonscheck_new_2023}, the variables necessary for this thesis are listed in Table~\ref{tab:thesisVariables}. 
 
 \begin{table}[bht]
@@ -134,7 +134,7 @@ with $A(\tilde{\eta})$ being a vertical shift, which is close to 0 at low levels
 
 
 This results in levels of equal pressure thickness, converging to isobaric layers at higher altitudes. 
-Which exact form $A(\tilde{\eta})$ and $B(\tilde{\eta})$ took in the MPI GE CMIP6 could not be found in \cite{olonscheck_new_2023}, but every dataset using hybrid sigma pressure levels contains the variabels $ap(lev)$, $b(lev)$ and the field of pressure levels $ps(lon, lat, time)$, from which the pressure at any gridpoint and level can be calculated with 
+Which exact form $A(\tilde{\eta})$ and $B(\tilde{\eta})$ took in the \ac{mpige6} could not be found in \cite{olonscheck_new_2023}, but every dataset using hybrid sigma pressure levels contains the variabels $ap(lev)$, $b(lev)$ and the field of pressure levels $ps(lon, lat, time)$, from which the pressure at any gridpoint and level can be calculated with 
 
 \begin{equation}
 \label{eq:mpige-sigma-hybrid-pressure}

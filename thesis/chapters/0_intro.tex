@@ -8,7 +8,7 @@
 
 Since the discovery (and further confirmation) of the greenhouse effect in the years from 1824 to 1900 \cite{fourier1824remarques, foote1856circumstances} humans came a long way of fighting the consequences of the increased greenhouse gas concentration in earth's atmosphere. 
 % In 1972 \citeauthor{sawyer1972man} summarized the knowledge and predicted quite accurately the warming at the end of the century \cite{sawyer1972man}.
-Especially the last decades the climate crisis gained more and more attention, leading to the creation of multiple international organizations and institutions (e.g. the International Panel on Climate Change (IPCC) in 1988). \todo{Weiß nciht ob so sinnvoll hier bei adam und eva anzufangen...}
+Especially the last decades the climate crisis gained more and more attention, leading to the creation of multiple international organizations and institutions (e.g. the \ac{ipcc} in 1988). \todo{Weiß nciht ob so sinnvoll hier bei adam und eva anzufangen...}
 In 2019 more than 11,000  scientists from around the world released a declaration \cite{ripple_world_2019}, calling governments from around the world to action.
 
 
@@ -30,12 +30,12 @@ The sources of such consequences are manyfold, but recent research shows that bi
 These oscillation systems, which play a crucial role in regulating weather patterns.
 %, are experiencing shifts that have yet to be fully understood or explored. 
 This thesis aims to investigate the implications of these changes specifically in the context of moisture transport.
-Moisture transport, a critical component of the atmospheric system, presents significant challenges for analysis due to its inherently oscillative nature. 
+Moisture transport, a critical component of the atmospheric system, presents significant challenges for analysis due to its inherently oscillating nature. 
 To address this complexity, this study employs pattern analysis  and a sliding window approach (motivated by the research of \citeauthor{vietinghoff_visual_2021}) to identify and understand structural changes in moisture transport mechanisms in Europe and the Northern Atlantic. 
 By examining these patterns, this Thesis seeks to uncover potential consequences of altered oscillation systems under different climate change scenarios.
 Furthermore, this pattern analysis approach addresses one of the major challenges in modern climate science: the uncertainty associated with multiple simulation results. 
 By analyzing and interpreting the variability across different simulation members, this study contributes to a more robust understanding of moisture transport and its future evolution in Europe. 
-% The mid and long-term consequences are manyfold and go far beyond the general rising of the worlds' average temperature (see Figure \ref{fig:impacts_climate_change}), e.g. shifts in circulation systems like the North Atlantic Oscillation (NAO) \cite{vietinghoff_visual_2021}, which in turn also have varying consequences. 
+% The mid and long-term consequences are manyfold and go far beyond the general rising of the worlds' average temperature (see Figure \ref{fig:impacts_climate_change}), e.g. shifts in circulation systems like the North Atlantic Oscillation (\ac{nao}) \cite{vietinghoff_visual_2021}, which in turn also have varying consequences. 
 
 % Although the water vapor in the air accounts for only 0.001 \% of the water on the earth, it is the most active part of that cycle \cite{zou_investigating_2020}. 
 % Also, research shows that the precipitation on land does not match the evaporation, meaning the water was transported (from the oceans) to land, providing water for the ecosystems there.  \todo{CITE!!! Where the fuck did I read this?}
@@ -52,7 +52,7 @@ By analyzing and interpreting the variability across different simulation member
 
 % This section should give an introduction to the current state of climate research. 
 % Therefor it should explain what the current way of future climate predictions is (Coupled Models), how they work, and 
-% It should explain some part of the politics, who is involed in what and what the backroud of the most important projects (CMIP, ScenarioMIP \dots). 
+% It should explain some part of the politics, who is involed in what and what the backroud of the most important projects (\ac{cmip}, ScenarioMIP \dots). 
 % It should be explained that the data used is the one that the highest council of fighting climate change uses for its report. 
 
 
@@ -64,7 +64,7 @@ By analyzing and interpreting the variability across different simulation member
 %   % \item What are climate systems? 
 %   % \item What are forcings? 
 %   \item What does variability in climate systems stem from?
-%   \item Give an example with the NAO
+%   \item Give an example with the \ac{nao}
 % \end{itemize}
 
 In difference to weather, which is the momentary state of the atmosphere at a time, climate is the average of weather patterns over a larger period of time, usually 30 years or more \cite{noaa_whats_nodate}. 
@@ -72,7 +72,7 @@ So the term climate change does not refer to any unexpected weather changes, but
 Earth's climate system can be seen as complex interactions of its major components: atmosphere, hydrosphere, cryosphere, lithosphere, and biosphere \cite{vietinghoffdiss, intergovernmental_panel_on_climate_change_ipcc_climate_2023}. 
 Changes in this system can have (roughly) two reasons: 
 Either \enquote{internal variations in form of redistributions of energy} \cite{vietinghoffdiss}, which can happen on arbitrary scales (see the discussion on the change of AMOC in \cite{lobelle_detectability_2020}) or in the form of external forcings. 
-Such forcings could be vulcanic activity, differences in solar radiation, and of course the emission of greenhouse gases (GHGs). 
+Such forcings could be volcanic activity, differences in solar radiation, and of course the emission of \ac{ghg}. 
 
 \begin{figure}[htb]
   \begin{center}
@@ -81,22 +81,22 @@ Such forcings could be vulcanic activity, differences in solar radiation, and of
   \caption{The evolution of the effective radiative forcing and contributing components, taken from \cite{intergovernmental_panel_on_climate_change_ipcc_climate_2023}}\label{fig:erf-with-forcings}
 \end{figure}
 
-Figure \ref{fig:erf-with-forcings} gives an example what effect such external forcing can have: It shows the change in effective radiative forcing (ERF) and its contributing components. 
+Figure \ref{fig:erf-with-forcings} gives an example what effect such external forcing can have: It shows the change in \ac{erf} and its contributing components. 
 ERF (in $Wm^{-2}$) is a way of measuring how much energy from the sun is \enquote{trapped} instead of reflected back to space (greenhouse effect). 
 A positive value means warming, while a negative value is associated with cooling. 
 It can be seen in Figure \ref{fig:erf-with-forcings} that neither volcanic activity nor solar radiation changed that much, the main drivers of change in ERF are the man-made GHGs and cooling aerosols. \cite{intergovernmental_panel_on_climate_change_ipcc_climate_2023}
 
 Regarding the internal variations: Most of it is part of some oscillation, with the oscillations of the atmosphere with the hydrosphere (i.e. all liquid forms of water on earth) being responsible for large parts of climate's internal variations on decadal and interannual time frames \cite{vietinghoffdiss}. 
-Prominent examples for such oscillations are the El Niño Southern Oscillation (ENSO) or the North Atlantic Oscillation (NAO), which is especially relevant for this thesis. 
+Prominent examples for such oscillations are the \ac{enso} or the \ac{nao}, the latter one being especially relevant for this thesis. 
 
 
 \subsection{The North Atlantic Oscillation}
 \label{sec:nao}
 
-The aforementioned NAO is \enquote{... one of the most recurrent and prominent patterns of atmospheric circulation variability} \cite{hurrell_overview_2003}. 
+The aforementioned \ac{nao} is \enquote{... one of the most recurrent and prominent patterns of atmospheric circulation variability} \cite{hurrell_overview_2003}. 
 It is also one of the oldest known weather patterns, since some descriptions of Scandinavians exist from a few centuries back. 
 It dictates the climate variability for a large area: From the East Coast of the USA to Siberia and from the Arctic to the subtropical Atlantic. \todo{Explain physical modes!}
-Especially in the boreal winter (usually from December to February), the variations of the NAO influences a wide range of variability areas: From the mean wind speed and direction to the heat and moisture transport as well as the intensity and amount of storms and their path. 
+Especially in the boreal winter (usually from December to February), the variations of the \ac{nao} influences a wide range of variability areas: From the mean wind speed and direction to the heat and moisture transport as well as the intensity and amount of storms and their path. 
 
 \begin{figure}[htb]
   \begin{center}
@@ -107,54 +107,54 @@ Especially in the boreal winter (usually from December to February), the variati
 \end{figure}
 
 
-The NAO is a redistribution of atmospheric mass from the Arctic to the subtropical Atlantic, producing the aforementioned effects while swinging from one phase to another. 
+The \ac{nao} is a redistribution of atmospheric mass from the Arctic to the subtropical Atlantic, producing the aforementioned effects while swinging from one phase to another. 
 Its basis is a characteristic dipole in the Sea Level Pressure Field (SLP) of the Atlantic (see Figure \ref{fig:naopattern}).
 Due to the Coriolis Force, air flows clockwise around high pressure and counterclockwise around low pressure in the Northern Hemisphere, leading to the transport of the maritime air from the Atlantic towards Europe (see Figure~\ref{fig:naopattern}) \cite{hurrell_overview_2003, vietinghoffdiss}. 
 Depending on the pressure differences, the effect varies: High pressure differences lead to higher transport of mild, humid air to Europe, which in turn results in milder European winters. In contrast, a low difference leads to a less pronounced effect and therefor to colder winters. 
 This varies on an interannual scale, and this effect is called the North Atlantic Oscillation. 
-% The difference per year is called the NAO index and can be seen in Figure \ref{fig:naoindex_comparison}. 
-Figure~\ref{fig:naoindex_comparison} shows the actual index based on measurements of weather stations in Iceland and the Azores (top row), which was the usual way of defining the NAO. 
+% The difference per year is called the \ac{nao} index and can be seen in Figure \ref{fig:naoindex_comparison}. 
+Figure~\ref{fig:naoindex_comparison} shows the actual index based on measurements of weather stations in Iceland and the Azores (top row), which was the usual way of defining the \ac{nao}. 
 Another method is by computing the first/dominant Empirical Orthogonal Function (the pattern analysis technique employed in this Thesis, see Section~\ref{sec:eof}) of the sea level pressure field in wintry North Atlantic/Europe, the temporal coefficients (or Principal Components) are very similar to the measured Index (middle row). 
 
 \begin{figure}[htb]
   \begin{center}
     \includegraphics[width=0.75\textwidth]{figures/hurrel_nao_index_comparison.png}
   \end{center}
-  \caption{Comparison of the NAO index from \cite{hurrell_overview_2003}: The top panel are differences of SLP from weather stations in Portugal and Iceland, the middle panel is the first principal component of corresponding to the first EOF of the northern Atlantic SLP field, and the bottom panel is the same as the middle panel but for the whole Northern Hemisphere. See \cite{hurrell_overview_2003} for a more detailed description}
+  \caption{Comparison of the \ac{nao} index from \cite{hurrell_overview_2003}: The top panel are differences of SLP from weather stations in Portugal and Iceland, the middle panel is the first principal component of corresponding to the first \ac{eof} of the northern Atlantic SLP field, and the bottom panel is the same as the middle panel but for the whole Northern Hemisphere. See \cite{hurrell_overview_2003} for a more detailed description}
   \label{fig:naoindex_comparison}
 \end{figure}
 
-A large fraction of the recent warming in Europe can be linked to the behavior of the NAO in the last decades: it shifted from large amplitude anomalies in the negative to similar anomalies in the opposite direction in the later years. 
-Therefor, \citeauthor{hurrell_overview_2003} points out the need to study the relationship of anthropogenic climate change and the NAO. 
+A large fraction of the recent warming in Europe can be linked to the behavior of the \ac{nao} in the last decades: it shifted from large amplitude anomalies in the negative to similar anomalies in the opposite direction in the later years. 
+Therefor, \citeauthor{hurrell_overview_2003} points out the need to study the relationship of anthropogenic climate change and the \ac{nao}. 
 Following this, the motivation of thesis \cite{vietinghoff_visual_2021} by \citeauthor{vietinghoff_visual_2021} tried to track the shift of the centers of the dipoles in different climate scenarios.   
 
 \begin{figure}
   \begin{center}
     \includegraphics[width=0.75\textwidth]{figures/nao_eap.png}
   \end{center}
-  \caption{The most prominent modes of internal atmospheric variability in Europe/the Atlantic: The North Atlantic Oscillation (NAO) and East Atlantic Pattern (EAP) (taken from \cite{vietinghoff_extension_2021})}\label{fig:nao eap}
+  \caption{The most prominent modes of internal atmospheric variability in Europe/the Atlantic: The North Atlantic Oscillation (\ac{nao}) and East Atlantic Pattern (EAP) (taken from \cite{vietinghoff_extension_2021})}\label{fig:nao eap}
 \end{figure}
 
 
 Also worth mentioning is the East Atlantic Pattern (EAP, see Figure~\ref{fig:nao eap}), the second most prominent mode of internal atmospheric variability.
-It is defined as the second Principal Component (EOF) of Sea Level Pressure in the Atlantic.  
+It is defined as the second Principal Component (\ac{eof}) of Sea Level Pressure in the Atlantic.  
 It is characterized by a large Sea Level Pressure Anomaly in the west of the British Islands and less pronounced  anomalies in the subtropical Atlantic and Eastern Europe. 
-Similar to the NAO, it is prominent throughout the winter and influences precipitation and temperature throughout Europe. \cite{comas-bru_effect_2016, song_east_2019}
+Similar to the \ac{nao}, it is prominent throughout the winter and influences precipitation and temperature throughout Europe. \cite{comas-bru_effect_2016, song_east_2019}
 
-\subsection{Climate Research: The IPCC and the Coupled Model Intercomparison Project (CMIP)}
+\subsection{Climate Research: The IPCC and the \ac{cmip}}
 \label{sec:climate research}
 
 
-The reason for the endorsement of the IPCC by the UN General Assembly 1988 was to prepare comprehensive reviews and report about the current state of scientific knowledge and research. 
+The reason for the endorsement of the \ac{ipcc} by the UN General Assembly 1988 was to prepare comprehensive reviews and report about the current state of scientific knowledge and research. 
 Since then there were six assessment cycles and six reports were published, condensing the research of the scientific community. Figure \ref{fig:impacts_climate_change} is a graphic from the latest report for policymakers from 2023 \cite{lee2024climate}, displaying the probable consequences for humans in climate change.
 
-A main source for such figures in the reports are so-called Global Coupled Models (GCMs)\footnote{Unfortunately, Global Coupled Models share their acronym with General Circulation Models, which are quite similar}, trying to model the state and evolution of certain fields of earth data.
+A main source for such figures in the reports are so-called \ac{gcm}, trying to model the state and evolution of certain fields of earth data.
 They consist of multiple Models, each representing a major part of Earth's complex climate system (like atmosphere, hydrosphere, etc.), also allowing to model the dynamic interactions between these parts \cite{vietinghoffdiss}. 
-In the mid 90s the Coupled Model Intercomparison Project (CMIP) was brought to life, with the aim of streamlining results of GCMs and making them comparable. 
-CMIP provides the outer structure, amongst others what kind of simulations to produce (e.g. preindustrial control simulations, future scenarios etc.), what kinds of fields should be generated, what kind of resolutions to provide and also how these results should be serialized.
-Since then the results of CMIP played an increasingly major part in the reports of the IPCC \cite{touzepeiffer_coupled_2020}, and are now even called \enquote{\dots one of the foundational elements of climate science} \cite{eyring_overview_2016}. 
-CMIP is currently in its 6th phase, corresponding to the recently finished 6th Assessment Report of the IPCC \cite{lee2024climate}. 
-The 6th phase describes an inner core (DECK + historical simulations), required for participating in CMIP, and some endorsed Model intercomparison Projects (MIPs). 
+In the mid 90s the \ac{cmip} was brought to life, with the aim of streamlining results of GCMs and making them comparable. 
+\ac{cmip} provides the outer structure, amongst others what kind of simulations to produce (e.g. preindustrial control simulations, future scenarios etc.), what kinds of fields should be generated, what kind of resolutions to provide and also how these results should be serialized.
+Since then the results of \ac{cmip} played an increasingly major part in the reports of the IPCC \cite{touzepeiffer_coupled_2020}, and are now even called \enquote{\dots one of the foundational elements of climate science} \cite{eyring_overview_2016}. 
+\ac{cmip} is currently in its 6th phase, corresponding to the recently finished 6th Assessment Report of the IPCC \cite{lee2024climate}. 
+The 6th phase describes an inner core (DECK + historical simulations), required for participating in \ac{cmip}, and some endorsed \acp{mip}. 
 The latter are optional and consist of e.g. ScenarioMIP (future scenario simulations), HighResMIP (for exploring Models with higher resolutions), and GeoMIP (exploring effects of geoengineering).
 
 The simulations are usually set up as so-called ensemble simulations, consisting of different members which are one realization or run of a simulation. 
@@ -175,7 +175,7 @@ Following up the previous sections, the research question for this thesis is:
   \larger{\enquote{How do the Patterns of Moisture Transport and precipitation change in the face of different climate scenarios in the North-East Atlantic?}}
 \end{center}
 
-The goal of this thesis is not to interpret the results, but rather providing ideas, algorithms and visualizations for actual climate scientists to interpret the results of changing moisture transport EOF patterns. 
+The goal of this thesis is not to interpret the results, but rather providing ideas, algorithms and visualizations for actual climate scientists to interpret the results of changing moisture transport \ac{eof} patterns. 
 The patterns are needed to reduce the sheer amount of data and make it possible to compare different climate scenarios across multiple members of the simulation ensemble beyond simple statistics\todo{Can I say it like this?}.
 With this goal the broad research question can be broken down into smaller milestones for this thesis: 
 
@@ -183,13 +183,13 @@ With this goal the broad research question can be broken down into smaller miles
 
 For this moisture transport needs to be somehow quantified, and this quantification needs to be calculated based on the data available in the chosen dataset (Chapter~\ref{ch:dataset}). 
 Furthermore, a similar sliding window approach as in \cite{vietinghoff_visual_2021} needs to be implemented to study the evolution of the patterns.
-% THos include the patterns of the quantified moisture transport, preciptation and surface level pressure (PSL), which can be used as the NAO index (see Figure~\ref{fig:naoindex_comparison}) and can be used t
+% THos include the patterns of the quantified moisture transport, preciptation and surface level pressure (PSL), which can be used as the \ac{nao} index (see Figure~\ref{fig:naoindex_comparison}) and can be used t
 
 \textbf{M2 Study the relationships with other variables and patterns}
 
 To get a grasp of the meaning of the moisture transport, the connection or relation to other variables (see Section~\ref{sec:Position of this Thesis}) and patterns needs to be explored. 
 % This can be achieved by analyzing the connection of moisture transport patterns with precipitation or the activity of sea level pressure patterns. 
-The first connection should be to the NAO, or generally, patterns of surface pressure levels (like the East Atlantic Pattern, the second most significant mode of PSL EOF). 
+The first connection should be to the \ac{nao}, or generally, patterns of surface pressure levels (like the East Atlantic Pattern, the second most significant mode of PSL \ac{eof}). 
 The second connection should be precipitation (patterns), as one of the most important consequences of transported moisture and the great influence on ecological and economic systems. 
 
 
@@ -198,18 +198,18 @@ The second connection should be precipitation (patterns), as one of the most imp
 The patterns, its components and their relationships with each other and variables need to visualized so that they can properly be interpreted. 
 Important is here  to visualize the variability introduced by uncertain fields (introduced by multiple members of the ensemble simulation).  
 This includes choosing a feature in the results on which this variability as well as the change over time can be analyzed. 
-One interesting thing to find if IVT (or other variables) experience a similar shift to the north similar to the results of \citeauthorwork{vietinghoff_visual_2021}.
+One interesting thing to find if \ac{ivt} (or other variables) experience a similar shift to the north similar to the results of \citeauthorwork{vietinghoff_visual_2021}.
 
 % \begin{itemize}[noitemsep]
 %   \item[\textbf{M1}] How to quantify the moisture transport for calculating the patterns of it? 
 %   \item[\textbf{M2}] How do the most significant patterns look?
-%   \item[\textbf{M3}] How to implement a sliding window EOF pattern calculation similar to \citeauthorwork{vietinghoffdiss}?
+%   \item[\textbf{M3}] How to implement a sliding window \ac{eof} pattern calculation similar to \citeauthorwork{vietinghoffdiss}?
 %   \item[\textbf{M4}] How to visualize the moisture transport patterns over time?
 %   \item[\textbf{M5}] How to visualize the variability introduced by multiple members of an ensemble simulation?
 % \end{itemize}
 \vspace{.3cm}
 The remaining thesis is structured as follows: Chapter \ref{ch:basics} gives the theoretical background on fields and pattern analysis. 
-The following Chapter \ref{ch:dataset} gives a detailed overview about the used CMIP6 based dataset. 
+The following Chapter \ref{ch:dataset} gives a detailed overview about the used \ac{cmip}6 based dataset. 
 Chapter \ref{ch:related_work} provides an overview of related work, the motivation for this thesis and the placement of this thesis in the academic context. 
 While the results are discussed and presented in Chapter \ref{ch:results}, Chapter \ref{ch:methodology} gives a detailed description how these results came about. 
 The thesis is concluded with Chapter \ref{ch:conclusions} and gives an outlook for future research. 
