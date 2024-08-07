@@ -68,35 +68,62 @@ In general, the modes beyond the second seem to be not well separated from the o
 
 \todo{Maybe I should just cut out the third pattern since I do not use it anywhere else and it seems degenerate, but alos this is why I assume it is degenerate and not worth of analyzing further}
 
+%
+% \begin{figure}[htb]
+%   \begin{center}
+%     \includegraphics[width=0.85\textwidth]{figures/ivt_spat_patterns_hexbin_18501899_ssp585_50seasons.png}
+%     \includegraphics[width=0.85\textwidth]{figures/ivt_spat_patterns_hexbin_20502100_ssp126_50seasons.png}
+%     \includegraphics[width=0.85\textwidth]{figures/ivt_spat_patterns_hexbin_20502100_ssp585_50seasons.png}
+%   \end{center}
+%   \caption{The top three EOFs of IVT data, with a 50 winter scope and hexbins visualizing the variability introduced by simulation members. The top row displays the state in the historical simulation (second half of 19th century), while middle (SSP126) and bottom (SSP585) display the state in the second half of the 21st century. The red line shows the contour line of zero of the preindustrial control simulation. }\label{fig:ivt eof evolution}
+% \end{figure}
 
-\begin{figure}[htb]
-  \begin{center}
-    \includegraphics[width=0.85\textwidth]{figures/ivt_spat_patterns_hexbin_18501899_ssp585_50seasons.png}
-    \includegraphics[width=0.85\textwidth]{figures/ivt_spat_patterns_hexbin_20502100_ssp126_50seasons.png}
-    \includegraphics[width=0.85\textwidth]{figures/ivt_spat_patterns_hexbin_20502100_ssp585_50seasons.png}
-  \end{center}
-  \caption{The top three EOFs of IVT data, with a 50 winter scope and hexbins visualizing the variability introduced by simulation members. The top row displays the state in the historical simulation (second half of 19th century), while middle (SSP126) and bottom (SSP585) display the state in the second half of the 21st century. The red line shows the contour line of zero of the preindustrial control simulation. }\label{fig:ivt eof evolution}
+\begin{figure}[!htb]
+  \begin{subfigure}[b]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{figures/ivt_eof_2modes_historical.png}
+    \caption{First scope of historical simulation}
+    \label{fig:ivt spatial patterns historical}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{figures/ivt_eof_2modes_endscenario.png}
+    \caption{Last Scope of scenario simulation}
+    \label{fig:ivt spatial patterns endscenario}
+  \end{subfigure}
+  \caption{The two primary spatial modes of IVT EOF, with a 50 winter scope and hexbins visualizing the variability introduced by simulation members. Figure~\ref{fig:ivt spatial patterns historical} shows the state in the historical simulation (second half of 19th century), while Figure~\ref{fig:ivt spatial patterns endscenario} displays the state in the second half of the 21st century. The left column in each picture is the result of SSP126, the right of SSP585. The red line shows the contour line of zero of the preindustrial control simulation. }\label{fig:ivt eof evolution}
 \end{figure}
 
-
 This Section shows the evolution of the spatial EOF patterns, shown in Figure~\ref{fig:5modes each variable}. 
-Since the EOF modes four and five are generally quite low and similar in their eigenvalues (which directly correspond to the variance (see Equation~\ref{eq:eof variance calculation}) encoded shown in Figures~\ref{fig:ivt mode variability}, \ref{fig:psl mode variability}, and \ref{fig:pr mode variability}), they are left out of the analysis of this and the following sections, as modes' eigenvalues need to be well separated from each other \cite{hannachi_empirical_2007}. 
+Since the EOF modes three, four and five are generally quite low and similar in their eigenvalues (which directly correspond to the variance (see Equation~\ref{eq:eof variance calculation}) encoded shown in Figures~\ref{fig:ivt mode variability}, \ref{fig:psl mode variability}, and \ref{fig:pr mode variability}), they are left out of the analysis of this and the following sections, as modes' eigenvalues need to be well separated from each other \cite{hannachi_empirical_2007}. 
 As already mentioned, mode three also seems to be not well separated, but is still shown in the following figures for an example how an inconsistent mode looks (at least for IVT and precipitation), which makes it hard (or even pointless) to evaluate it for an ensemble simulation.  
 Usually, the rule of thumb introduced by \citeauthorwork{north_sampling_1982} is used, but since the eigenvalues of the first three modes (or two for precipitation, see Figure~\ref{fig:pr mode variability}), this is left out of this Thesis. 
 
 The variability introduced through the 50 members of the MPI GE CMIP6 is displayed here with the hexbin approach explained in Section~\ref{sec:vis_analysis}, while a discussion of the hexbin visualization compared to the classical spaghetti is given in Section~\ref{sec:discussion}.
 The images in this section are the first and last frame from the video displaying the evolution of the different scenarios.\todo{Reference the videos somehow}  
 
-\begin{figure}[htb]
-  \begin{center}
-    \includegraphics[width=0.85\textwidth]{figures/psl_spat_patterns_hexbin_18501899_ssp585_50seasons.png}
-    \includegraphics[width=0.85\textwidth]{figures/psl_spat_patterns_hexbin_20502100_ssp126_50seasons.png}
-    \includegraphics[width=0.85\textwidth]{figures/psl_spat_patterns_hexbin_20502100_ssp585_50seasons.png}
-  \end{center}
+% \begin{figure}[htb]
+%   \begin{center}
+%     \includegraphics[width=0.85\textwidth]{figures/psl_spat_patterns_hexbin_18501899_ssp585_50seasons.png}
+%     \includegraphics[width=0.85\textwidth]{figures/psl_spat_patterns_hexbin_20502100_ssp126_50seasons.png}
+%     \includegraphics[width=0.85\textwidth]{figures/psl_spat_patterns_hexbin_20502100_ssp585_50seasons.png}
+%   \end{center}
+%   \caption{Same as Figure~\ref{fig:ivt eof evolution}, but with sea level pressure data.}\label{fig:psl eof evolution}
+% \end{figure}
+
+\begin{figure}[!tbp]
+  \begin{subfigure}[b]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{figures/psl_eof_2modes_historical.png}
+    \caption{First scope of historical simulation}
+    \label{fig:psl spatial patterns historical}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{figures/psl_eof_2modes_endscenario.png}
+    \caption{Last Scope of scenario simulation}
+    \label{fig:psl spatial patterns endscenario}
+  \end{subfigure}
   \caption{Same as Figure~\ref{fig:ivt eof evolution}, but with sea level pressure data.}\label{fig:psl eof evolution}
 \end{figure}
-
-
 
 
 Figure~\ref{fig:ivt eof evolution} shows the evolution of IVT EOF spatial patterns. 
@@ -122,16 +149,29 @@ Also, the big area of fading out contour lines in the north of Scandinavia, seem
 While mode three of IVT EOF does expose changes between the different scenarios (again historical simulation and SSP126 look very similar, while SSP585 differs), the patterns seem to be pretty unstable compared to the other, indicated by the whole map being covered in light green hexbins. 
 This implies that the contour lines of zero are all over the map, which means that the structures are quite different across the simulations' members. 
 
-\begin{figure}[htb]
-  \begin{center}
-    \includegraphics[width=0.85\textwidth]{figures/pr_spat_patterns_hexbin_18501899_ssp585_50seasons.png}
-    \includegraphics[width=0.85\textwidth]{figures/pr_spat_patterns_hexbin_20502100_ssp126_50seasons.png}
-    \includegraphics[width=0.85\textwidth]{figures/pr_spat_patterns_hexbin_20502100_ssp585_50seasons.png}
-  \end{center}
+% \begin{figure}[htb]
+%   \begin{center}
+%     \includegraphics[width=0.85\textwidth]{figures/pr_spat_patterns_hexbin_18501899_ssp585_50seasons.png}
+%     \includegraphics[width=0.85\textwidth]{figures/pr_spat_patterns_hexbin_20502100_ssp126_50seasons.png}
+%     \includegraphics[width=0.85\textwidth]{figures/pr_spat_patterns_hexbin_20502100_ssp585_50seasons.png}
+%   \end{center}
+%   \caption{Same as Figure~\ref{fig:ivt eof evolution}, but with precipitation data.}\label{fig:pr eof evolution}
+% \end{figure}
+
+\begin{figure}[!tbp]
+  \begin{subfigure}[b]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{figures/pr_eof_2modes_historical.png}
+    \caption{First scope of historical simulation}
+    \label{fig:pr spatial patterns historical}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{figures/pr_eof_2modes_endscenario.png}
+    \caption{Last Scope of scenario simulation}
+    \label{fig:pr spatial patterns endscenario}
+  \end{subfigure}
   \caption{Same as Figure~\ref{fig:ivt eof evolution}, but with precipitation data.}\label{fig:pr eof evolution}
 \end{figure}
-
-
 
 The evolution of sea level pressure patterns is displayed in Figure~\ref{fig:psl eof evolution}, showing the North Atlantic Oscillation  and the East Atlantic Pattern (see Section~\ref{sec:nao}). 
 While the first two EOFs are well known, real world phenomena, the third mode was never mentioned in the related literature. 
@@ -432,7 +472,7 @@ Figure~\ref{fig:ivt eof pr cor mode2} shows the same analysis, but for mode 2 of
 The area of higher (positive) correlation are here especially the west coasts of the British Islands and Scandinavia, but also the ocean westwards of them, the whole west coast of Europe, the North Sea. 
 Also, there are only a few members indicating that correlation level in the Gulf of Bothnia (between Finland and Sweden), but these seem to be outliers. 
 The end of the SSP126 scenario looks quite similar to the beginning of the historical simulation, except that the contour lines seem to reach less into European Mainland, and are less confident on the west coast of France.  
-This could be due to the increased influence of IVT EOF mode one in the same area, which reduces the effect of the secondary mode on that coast. 
+This could be due to the increased influence of IVT EOF1 in the same area, which reduces the effect of the secondary mode on that coast. 
 
 
 \begin{figure}[!htb]
@@ -459,7 +499,9 @@ This could be due to the increased influence of IVT EOF mode one in the same are
 
 Figure~\ref{fig:psl eof ivt cor mode1} shows the same correlation maps, but with the primary PSL EOF (the NAO index) and IVT data. 
 This has the goal of seeing how the oscillation indices are connected to the actual IVT data, and maybe even track a northward shift there. 
-In the first mode the negative correlations below $-0.6$ are shown, which should display the areas assiciated with the inverse of the normal NAO (pressure low in the south and pressure high in the north). 
+Here, the correlations in the direction of Figures~\ref{fig:cor ivt psl modes11} and \ref{fig:cor ivt psl modes22}, so negative for EOF1 and positive for EOF2.  
+% In the first mode the negative correlations below $-0.6$ are shown, which should display the areas associated with the inverse of the normal NAO (pressure low in the south and pressure high in the north). 
+Worth noting is here the area of positive correlation, which fits the description of the mechanics of the NAO given in Section~\ref{sec:nao}. 
 In general, the hexbins are not as dark green as in the previous figures, indicating that the members do not agree as unanimous. 
 The highest are of correlation on that level is on the west coast of the Iberian Peninsula and Morocco, and the ocean westwards of that are. 
 In the historical simulation, also the Labrador Sea features a few light green hexbins, indicating that only a few members seem to have that kind of correlation between IVT and the NAO index. 
@@ -488,8 +530,9 @@ This means that only a few outliers of the members changed, the contour lines of
   \label{fig:psl eof ivt cor mode2}
 \end{figure}
 
-\todo{Replace with positive correlations since the correlations are also positive!}
-
+Figure~\ref{fig:psl eof ivt cor mode2} depict the changes in correlation between PSL EOF2 coefficients (EAP index) and IVT data. 
+The positive correlation seems to affect whole Europe, but especially the European West Coast in France and the Iberian Peninsula. 
+But similar to the NAO index, there are no structural changes visible between the historical simulation and both future scenarios, only some outliers, while the hexbins of darker green stay in place.
 
 \section{Discussion}
 \label{sec:discussion}
