@@ -355,15 +355,18 @@ The advantage of hexbin plots is that it represents distribution better than squ
   \end{center}
   \caption{Example of the hexbin approach using the dominant IVT pattern. Sample distance is $0.1$. A to C show the contour lines vertices in one member, all members and all members with sampling along the line. D to F show the hexbin visualization of the corresponding vertices.}\label{fig:hexbin overview}
 \end{figure}
-
-
-The approach using hexbins was conducted as follows: First, the required contour lines were computed, which are represented as a list of 2D points. 
+\todo{redo figure with correct algorithm}
 The threshold for displayed hexbins was set to one, so that areas without any contour line stay free of hexagons. 
-Since the resolution is too high at some places (multiple observations per bin) and too low at others (no observation hitting the bin) like it is depicted in Figure~\ref{fig:hexbin overview} A and D, a sampling algorithm  was used to sample along the line.\todo{The problem here is: What gets depicted is in reference to the maximum amount of \enquote{line} in the hexbin containing most lines. How much is that? Nobody knows...} 
-Of course this results in a distorted color bar since one observation, but by choosing a small enough integration distance (i.e. $0.01$), this distortion is reduced to an invisible minimum. 
-So now by using multiple members (Figure~\ref{fig:hexbin overview}, E and F), it approximates the number of lines hitting a certain bin. 
-An analysis comparing this approach to the traditional spaghetti plots is given in Section~\ref{sec:pattern evolution}. 
-\todo{This is not very mathematical, and I think Ill run into problems once I analyze this approach mathematically...}
+The preparation of points was conducted as follows: First, the required contour lines were computed, which are represented as a list of 2D points. 
+Unfortunately, the resolution is too high at some places (multiple observations per bin) and too low at others (no observation hitting the bin) like it is depicted in Figure~\ref{fig:hexbin overview}. 
+The solution for this involves two steps: 
+For the first problem a Makie recipe\footnote{This is the name for certain types of plots in Makie, like surface, heatmap or boxplot.} was implemented that accepts grouped observations, allowing only one observation to count for one hexbin per group. 
+For the second, a sampling algorithm  was used to sample along the line. 
+With a sufficient sampling distance, no bin is missed no matter how small the hexbins are. 
+Therefor, the range of possible values is one (hexbins with value zero are not plotted), only one member's contour line passes through that bin, representing an outlier, to 50, meaning that all the contour line is very certain at that point. 
+An analysis comparing this approach to the traditional spaghetti plots is given in Section~\ref{sec:discussion}, while in Section~\ref{sec:spatial pattern evolution} the interpretation is explained on the actual results. 
+
+
 % \begin{itemize}
 %   \item greates challenge comes from the variability introduced by the multiple members of the dataset. 
 %   \item vizualizing the scalar data turns the 2D map into a 3D cube. 

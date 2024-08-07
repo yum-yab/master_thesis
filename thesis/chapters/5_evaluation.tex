@@ -594,20 +594,21 @@ In the end it needs to be stressed that these are just speculations, and the act
 This Section focuses on the discussion of the presented hexbin visualization of contour lines in ensemble simulations. 
 The goal was to convey the likelihood of a contour line going through a bin in a more direct way, instead of relying on counting (which isn't even possible sometimes). 
 Especially for large numbers of members/contour lines, the real quantity of contour lines passing through an area is quite hard to recognize. 
-Looking at Figure~\ref{fig:comparsion member vis spaghetti}, it is quite hard (even with zooming and counting), to determine (approxiately) how many contour lines are there actually at the coast of Norway/Sweden.
-While this is also not possible using the current hexbin approach, it gives at least an idea about the percentage and can be compared to other regions (e.g. the density at the coast of Norway/Sweden is similar to the density near Ireland). 
+Looking at Figure~\ref{fig:comparsion member vis spaghetti}, it is quite hard (even with zooming and counting), to determine intuitively how many contour lines are there actually at the coast of Norway/Sweden. 
+It is easy to recognize very few contour lines, but it gets far harder to distinguish, e.g. between 10 or 25 lines. 
+While intuitively seeing the exact amount is also not possible using the current hexbin approach, it gives at least an idea about the percentage and can be compared to other regions (e.g. the density at the coast of Norway/Sweden is similar to the density near Ireland). 
 In the authors' opinion, that not really possible to compare in spaghetti plots. 
 Given the fact that the trend of ensemble members tends to be more than less, spaghetti plots seem to be less capable of displaying an ensembles' variability. 
 
 
 \begin{figure}[!htb]
-  \begin{subfigure}[b]{0.49\textwidth}
+  \begin{subfigure}[b]{0.48\textwidth}
     \includegraphics[width=\textwidth]{figures/ivt_pr_cor_mode2_ssp126.png}
     \caption{Spaghetti plots.}
     \label{fig:comparsion member vis spaghetti}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[b]{0.49\textwidth}
+  \begin{subfigure}[b]{0.51\textwidth}
     \includegraphics[width=\textwidth]{figures/ivt_pr_cor_mode2_ssp126_hexbin.png}
     \caption{Presented hexbin visualization}
     \label{fig:comparsion member vis hexbin}
@@ -617,11 +618,8 @@ Given the fact that the trend of ensemble members tends to be more than less, sp
 \end{figure}
 
 
-The biggest weakness of the presented approach is the imprecision of the color of hexbins. 
-Through the regression it is not entirely clear how many contour lines go through a bin. 
-Additionally, the presented approach is susceptible for misrepresenting certain structers, e.g. a very small local high (of one member) of the size of one or two bins may make the impression of containing multiple members. 
-A better way would be to implement it in a more stable way, each bin counting the exact amount of contour lines of different members passing through. 
-But this would have required the implementation of a new Makie recipe\footnote{This is the name for certain types of plots in Makie, like surface, heatmap or boxplot.}, which was out of scope for this Thesis. 
+A weakness of the approach is the distortion introduced by the map projection, which results in the space between the bins in the far north of the map, which may result in confusion. 
+A possible way of fixing this error could be to also distort the polygons at each position, similar to the Tissot's spheres shown in Section~\ref{sec:map projections}. 
 
 % \begin{itemize}
 %   \item Goal was to improve on spaghetti plots and to reduce the chaos of them 
