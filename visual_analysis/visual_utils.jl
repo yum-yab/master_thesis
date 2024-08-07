@@ -120,30 +120,35 @@ function display_eof_modes!(
     coastline_color=:white,
     shading=Makie.automatic,
     vertical=true,
-    sample_distance = 0.1,
-    axis_size = 500
+    sample_distance=0.1,
+    axis_size=500,
+    interactive=true,
+    draw_colorbars=true,
+    limits=nothing
 )
     lonmin, lonmax = extrema(eof_result.lon)
     latmin, latmax = extrema(eof_result.lat)
 
- 
+
     picontrol_observable = @lift(eof_result.piControl[$current_scope_index].spatial_modes[:, :, 1])
 
     contour_colors = distinguishable_colors(50)
 
-    eof_extremas = [extrema(res.spatial_modes) for (_, eofresarray) in eof_result.ensemble for res in eofresarray]
+    if isnothing(limits)
+        eof_extremas = [extrema(res.spatial_modes) for (_, eofresarray) in eof_result.ensemble for res in eofresarray]
 
-    _, maxval = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), eof_extremas)
+        _, maxval = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), eof_extremas)
 
-    limits = (-1 * maxval, maxval)
+        limits = (-1 * maxval, maxval)
+    end
 
     mode_iterator = 1:nmodes
 
-    function get_position(mode_id)
+    function get_position(mode_id; fixed_pos=1)
         if vertical
-            return (mode_id, 1)
+            return (mode_id, fixed_pos)
         else
-            return (1, mode_id)
+            return (fixed_pos, mode_id)
         end
     end
 
@@ -154,9 +159,9 @@ function display_eof_modes!(
         mode_layout = layout[row, column] = GridLayout()
 
         # title = @lift("$(ensemble_simulation.id) $(year(ensemble_simulation.time[all_scopes[$current_scope_index].start]))-$(year(ensemble_simulation.time[all_scopes[$current_scope_index].stop])) Mode $mode Variability $(round(mean([get_modes_variability(resarray[$current_scope_index])[mode] for (_, resarray) in eof_result.ensemble]), digits = 2) * 100) %")
-        title = "Mode $mode"
+        title = "$(uppercase(eof_result.variable_id)) Mode $mode"
         axis = GeoAxis(
-            mode_layout[1, 1:2];
+            mode_layout[1, 1];
             dest="+proj=merc",
             limits=((lonmin, lonmax), (latmin, latmax)),
             title=title,
@@ -178,9 +183,11 @@ function display_eof_modes!(
         )
         lines!(axis, GeoMakie.coastlines(); color=coastline_color, transformation=(; translation=(0, 0, 1000)))
 
-
-        surface_toggle = Toggle(mode_layout[2, 1], active=true)
-        ensemble_vis_toggle = Toggle(mode_layout[2, 2], active=true, buttoncolor = :red)
+        if interactive
+            toggle_layout = mode_layout[2, 1] = GridLayout()
+            surface_toggle = Toggle(toggle_layout[1, 1], active=true)
+            ensemble_vis_toggle = Toggle(toggle_layout[1, 2], active=true, buttoncolor=:red)
+        end
 
         connect!(surf.visible, surface_toggle.active)
 
@@ -198,10 +205,12 @@ function display_eof_modes!(
                 transformation=(; translation=(0, 0, 1100))
             ) for (i, matrix) in enumerate(seperate_matrices_observables)]
 
-            for c in spaghetti_contours
-                connect!(c.visible, ensemble_vis_toggle.active)
+            if interactive
+                for c in spaghetti_contours
+                    connect!(c.visible, ensemble_vis_toggle.active)
+                end
             end
-            
+
         elseif contour_mode == :hexbin
 
             picontrol_observable = @lift(eof_result.piControl[$current_scope_index].spatial_modes[:, :, mode])
@@ -223,15 +232,12 @@ function display_eof_modes!(
 
             ehb = ensemblehexbin!(axis, ensemble_vertices_obs, cellsize=2.0, colormap=hexbin_colormap, threshold=1)
 
-            connect!(ehb.visible, ensemble_vis_toggle.active)
-
+            if interactive
+                connect!(ehb.visible, ensemble_vis_toggle.active)
+            end
 
         else
             ArgumentError("Use either :spaghetti or :hexbin")
-        end
-
-        if !vertical
-            colsize!(layout, mode, Fixed(axis_size))
         end
 
     end
@@ -239,17 +245,19 @@ function display_eof_modes!(
     # for i in 1:nmodes
     #     colsize!(layout, mode, Fixed(axis_size))
     # end
-    
 
-    hexbin_cb_row, hexbin_cb_col = get_position(nmodes + 1)
+    if draw_colorbars
 
-    Colorbar(fig[hexbin_cb_row, hexbin_cb_col], colormap=hexbin_colormap, label="No. Members Contour Line hitting bin", colorrange=(0, length(eof_result.ensemble)), vertical=!vertical)
+        hexbin_cb_row, hexbin_cb_col = get_position(mode_iterator, fixed_pos=2)
+
+        Colorbar(layout[hexbin_cb_row, hexbin_cb_col], colormap=hexbin_colormap, label="No. Members Contour Line hitting bin", colorrange=(0, length(eof_result.ensemble)), vertical=vertical)
 
 
 
-    cb_row, cb_col = get_position(nmodes + 2)
+        cb_row, cb_col = get_position(mode_iterator, fixed_pos=3)
 
-    Colorbar(fig[cb_row, cb_col], limits=limits, colormap=colormap, vertical=!vertical, label=get_var_unit_string(eof_result))
+        Colorbar(layout[cb_row, cb_col], limits=limits, colormap=colormap, vertical=vertical, label=get_var_unit_string(eof_result))
+    end
 
 
 end
@@ -458,8 +466,9 @@ function interactive_mode_analysis(
     contour_mode=:spaghetti,
     hexbin_colormap=:algae,
     vertical=true,
-    sample_distance = 0.1,
-    axis_size=500
+    sample_distance=0.1,
+    axis_size=500,
+    additional_title_info=nothing,
 )
 
     fig = Figure()
@@ -478,14 +487,38 @@ function interactive_mode_analysis(
 
     modes_layout = fig[1, 1] = GridLayout()
 
+
+    if length(Set([ens.variable_id for ens in ensembles])) == 1
+        eof_extremas = [extrema(res.spatial_modes) for (_, eofresarray) in ensembles[end].ensemble for res in eofresarray]
+
+        _, maxval = reduce((a, b) -> (min(a[1], b[1]), max(a[2], b[2])), eof_extremas)
+
+        limits = (-1 * maxval, maxval)
+
+        #draw only for last
+        draw_colorbars = false
+        colormap = get_correct_var_display(ensembles[1].variable_id)[4]
+    else
+        limits = nothing
+        draw_colorbars = true
+    end
+
     for (i, eof_res) in enumerate(ensembles)
 
         r, c = vertical ? (1, i) : (i, 1)
 
+        title_r, title_c = vertical ? (0, i) : (i, 0)
+
+        ens_title = isnothing(additional_title_info) ? uppercase(eof_res.variable_id) : uppercase(eof_res.variable_id) * additional_title_info[i]
+
+        Label(modes_layout[title_r, title_c], ens_title, fontsize=round(Int, fontsize * 1.7))
+
         _, _, unit, cmap = get_correct_var_display(eof_res.variable_id)
 
+        mode_layout = modes_layout[r, c] = GridLayout()
+
         display_eof_modes!(
-            modes_layout[r, c],
+            mode_layout,
             eof_res,
             current_scope_index,
             nmodes;
@@ -497,20 +530,29 @@ function interactive_mode_analysis(
             shading=shading,
             vertical=vertical,
             sample_distance=sample_distance,
-            axis_size=axis_size
+            axis_size=axis_size,
+            draw_colorbars=draw_colorbars,
+            limits=limits
         )
 
+        colsize = draw_colorbars ? axis_size * 1.5 : axis_size
+
         if vertical
-            colsize!(modes_layout, i, Fixed(axis_size))
+            colsize!(modes_layout, i, Fixed(colsize))
         else
-            rowsize!(modes_layout, i, Fixed(axis_size))
+            rowsize!(modes_layout, i, Fixed(colsize))
         end
         # colsize!(modes_layout, i, Fixed(axis_size))
 
     end
 
-    
 
+    if !draw_colorbars
+
+        Colorbar(fig[1, 2], colormap=hexbin_colormap, label="No. Members Contour Line hitting bin", colorrange=(0, length(ensembles[end].ensemble)), vertical=vertical)
+
+        Colorbar(fig[1, 3], limits=limits, colormap=colormap, vertical=vertical, label=get_var_unit_string(ensembles[end]))
+    end
 
     resize_to_layout!(fig)
     return fig
