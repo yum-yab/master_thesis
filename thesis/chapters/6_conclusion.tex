@@ -48,7 +48,7 @@ Relationships between these patterns were explored using two correlation-based m
 The first method revealed strong correlations between the dominant modes of PSL and \ac{ivt}, as well as between these modes and precipitation. 
 However, the correlations were somewhat weaker in the reverse direction, but still existent. 
 A particularly strong relationship was observed between the primary modes of \ac{ivt} and precipitation, which seems especially relevant for understanding precipitation variability in the Iberian Peninsula. 
-Conversely, the connection between the secondary EOFs of \ac{ivt} and precipitation was weaker, possibly due to the instability of the secondary precipitation EOF, which raises questions about its interpretative usefulness.
+Conversely, the connection between the secondary \acp{eof} of \ac{ivt} and precipitation was weaker, possibly due to the instability of the secondary precipitation \ac{eof}, which raises questions about its interpretative usefulness.
 The second method indicated that the area of precipitation strongly correlated with the primary mode extends northward, with this pattern becoming more pronounced under scenarios of more severe climate change. 
 Additionally, the secondary mode of \ac{ivt}, and consequently the precipitation data, appeared to have less influence on the western coast of Europe.
 It is important to note that a comprehensive evaluation and interpretation of these findings should be conducted by a domain expert, such as a meteorologist or climate scientist, to ensure accuracy and relevance.
@@ -65,10 +65,12 @@ It is important to note that a comprehensive evaluation and interpretation of th
 % \end{itemize}
 %
 
-Reflecting on this thesis, the choice to utilize the Julia language and its related framework proved to be somewhat questionable. Although Julia has gained significant traction within the geo-scientific community, it has not yet achieved the same level of maturity as Python. While Julia excels in implementing mathematical concepts, Python offers a more extensive array of libraries that facilitate various tasks.
+Reflecting on this thesis, the choice to utilize the Julia language and its related framework proved to be somewhat questionable. Although Julia has gained significant traction within the geo-scientific community, it has not yet achieved the same level of maturity as Python. 
+While Julia excels in implementing mathematical concepts, Python offers a more extensive array of libraries that facilitate various tasks.
 The Makie framework, though excellent for visualization, suffers from inadequate documentation, making adjustments challenging. 
 Additionally, the GeoMakie library, responsible for the map projections of the data, is not sufficiently mature for the applications required in this thesis, presenting several limitations, such as issues with projections and boundaries.
-The proposed hexbin-based visualization of level crossing probabilities, despite ability to mitigate some issues of spaghetti plots, lacks sufficient mathematical robustness, which could also be improved in the future.
+The proposed hexbin-based visualization of level crossing probabilities, despite ability to mitigate some issues of spaghetti plots, seems to not be better than any already existing uncertain contour line visualization techniques.
+Therefor, an useable implementation of them could be very useful, since the biggest problem of the already existing approaches is the lack of implementation in all-purpose visualization toolkits.
 While the results suggest changes potentially linked to climate change, the interpretation of EOF analysis remains complex. 
 Consequently, this type of analysis necessitates validation and acceptance from meteorologists and climate scientists to ensure its credibility and applicability.
 
@@ -97,7 +99,7 @@ These methods can also be easily utilized in the presented visual analysis techn
 Implementing the established visualization techniques for contour lines or scalar fields, such as contour boxplots, could improve the representation of member variability.
 So for example the contour boxplot approach presented in related work can be combined with clustering algorithms to display the uncertainties in level crossing probabilities. 
 This would aid in the clearer visualization of differences and patterns within the data.
-As pointed out in Chapter~\ref{ch:methodology}, for this at first the far higher timely resolution of 6-hourly data was computed, which can also be analyzed to get insights into the transient components of moisture transport, which could reuse much of the work done for this Thesis. 
+As pointed out in Chapter~\ref{ch:methodology}, for this at first the far higher timely resolution of 6-hourly data was computed, which can also be analyzed to get insights into the transient components of moisture transport, which could reuse much of the work done for this Thesis.
 This could also be used to be linked to atmospheric rivers, which seems to be an area of great interest in the atmospheric science community.
 Furthermore, exploring alternative pattern analysis methods, such as Self-Organizing Maps (SOMs, see \citeauthorwork{teale_patterns_2020}), might also be beneficial. 
 However, these methods often face challenges related to interpretability, which need to be addressed.
