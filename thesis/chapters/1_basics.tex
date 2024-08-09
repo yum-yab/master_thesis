@@ -149,6 +149,11 @@ with $M$ being the number of modes/patterns and  $c_k$ the $k$th temporal coeffi
 
 This could be achieved with multiple kinds of decomposition, but \ac{eof} tries finding new sets of variables ($c_k(t)$ and $u_k(s)$ from Equation~\ref{eq:eof decomposition}) that each capture a maximum possible amount of variance/variability of the original dataset. 
 So the first of $M$ modes captures the most variance, the second one the second most and so on. 
+To give a practical example: The patterns shown in Figure~\ref{fig:nao eap} show the first two spatial patterns of \ac{psl} data, the \ac{nao} and \ac{eap} (in the formula those would be $u_1(s)$ and $u_2(s)$). 
+The temporal coefficient is basically a float value for each time step, indicating how active the pattern is ($c_1(t)$ and $c_2(t)$ for \ac{nao} and \ac{eap}, respectively). 
+This value is shown for all winter seasons in Figure~\ref{fig:naoindex_comparison}, second row. 
+A positive value indicates that the \ac{psl} is dominated by the pressure low in the north and pressure high in the south, a negative value the opposite. 
+The underlying can then be (approximately) reconstructed by using $x \leq M$ modes/EOFs (e.g. it could be approximated quite well by only using the dominant modes of \ac{nao} and \ac{eap}). 
 
 \subsection{Mathematical Derivation and Computation of \acp{eof}}
 
