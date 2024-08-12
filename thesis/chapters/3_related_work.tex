@@ -28,7 +28,7 @@ The vast majority of literature regarding moisture transport use some form of ve
 A popular usage of these quantifications was to find a filamentary weather structure called \enquote{Atmospheric Rivers}\footnote{Earlier or alternative name: \enquote{Tropospheric Rivers}}, a prominent way of water vapor transportation in the extratropic regions \cite{gimeno_atmospheric_2014}. 
 
 
-The most straightforward way of quantifying moisture is \textbf{Vertically Integrated Water Vapor (IWV)} \cite{gimeno_atmospheric_2014, schluessel_atmospheric_1990, bao_interpretation_2006, neiman_meteorological_2008, zhao_lagrangian_2021}, which is essentially the vertical integral of the specific humidity $q$ over the pressure levels $p$ from earth's surface $P_S$ to some upper limit in the atmosphere:
+The most straightforward way of quantifying moisture is \textbf{\ac{iwv}} \cite{gimeno_atmospheric_2014, schluessel_atmospheric_1990, bao_interpretation_2006, neiman_meteorological_2008, zhao_lagrangian_2021}, which is essentially the vertical integral of the specific humidity $q$ over the pressure levels $p$ from earth's surface $P_S$ to some upper limit in the atmosphere:
 
 
 \begin{equation}
@@ -45,10 +45,10 @@ IWV = \frac{1}{g} \int^{P_s}_0 q ~\diff p
 
 % \subsection{Vertically Integrated Water Vapor Transport (IVT)}
 
-Similar to Equation \ref{eq:iwv},  \citeauthor{zhu_proposed_1998} proposed in \cite{zhu_proposed_1998} to use \textbf{Vertical Integrated Moisture Transport (IVT)} for Atmospheric River detection. 
+Similar to Equation \ref{eq:iwv},  \citeauthor{zhu_proposed_1998} proposed in \cite{zhu_proposed_1998} to use \textbf{\ac{ivt}} for Atmospheric River detection. 
 It is calculated by vertically integrating over the different pressure levels the zonal (along latitude lines) and meridional (along longitude lines) fluxes.
-It became a popular metric for finding atmospheric rivers \cite{gimeno_atmospheric_2014}, sometimes alongside IWV \cite{eiras-barca_seasonal_2016}.
-IVT has the unit $\frac{kg}{ms}$ and is usually defined with
+It became a popular metric for finding atmospheric rivers \cite{gimeno_atmospheric_2014}, sometimes alongside \ac{iwv} \cite{eiras-barca_seasonal_2016}.
+\ac{ivt} has the unit $\frac{kg}{ms}$ and is usually defined with
 
 \begin{equation}
 \label{eq:ivt}  
@@ -83,7 +83,7 @@ is also a popular choice in detecting atmospheric rivers \cite{sousa_north_2020,
 
 % Also, this paper lists some other methods of moisture transportation which are also used
 
-The IVT is also part of the atmospheric moisture budget \cite{yang_moisture_2022} (and similar in \cite{seager_mechanisms_2020}) given by 
+The \ac{ivt} is also part of the atmospheric moisture budget \cite{yang_moisture_2022} (and similar in \cite{seager_mechanisms_2020}) given by 
 \begin{equation}
 \label{eq:moisture_budget}
 \frac{1}{g} \frac{\delta}{\delta t} \int^{P_s}_0 q ~ \diff p = - \nabla \cdot \frac{1}{g} \int^{P_s}_0 q ~\binom{u}{v} \diff p + E - P
@@ -264,11 +264,19 @@ Since the used dataset (see Chapter \ref{ch:dataset}) is an ensemble simulation 
 This section summarizes advances fitting for this topic, giving a frame of references of current possibilities of visualizing uncertainty.
 
 \citeauthor{kamal_recent_2021} give a recent overview over the whole topic of uncertainty visualization: From the introduction to  the whole concept of uncertainty, to the differentiation between different kinds of uncertainty in the visualization process.
+On the one hand there is the uncertainity of the data itself, resulting of measurement errors, imprecision of sensors or simulations. 
+On the other hand there is the uncertainity introduced by the visualization itself, like interpolation between grid points.  
 They grouped all kinds of representing uncertainty in two categories: quantification, consisting of mostly mathematical approaches of handling uncertain data, and visualization, displaying the uncertain data in a way directly. 
-An overview of the different kinds of uncertainty visualization were given: Manipulation of attributes (like shading), animation, visual variables (like color, hue, brightness), graphical techniques like box/scatter plots and glyphs. 
+Example for the former would be reducing the original data through various techniques to make it possible displaying the \ac{pdf} in the end (like \citeauthorwork{pothkow_probabilistic_2011}) or using clustering techniques to identify outliers (\cite{bordoloi_visualization_2004}). 
+For the latter different kinds of uncertainty visualization were presented and reviewed.
+They come in various forms: For example animating, like introducing vibrations to show more or less uncertain areas  like in the work of \citeauthorwork{brown_animated_2004},  as well as manipulating speed, blur or blinking.  
+Also, changing visual variables (like color, hue, brightness), which was reviewed in the empirical study of \citeauthorwork{maceachren_visual_2012}. 
+Another popular way is displaying the uncertainty with graphical techniques like box/scatter plots and glyphs.
+The boxplots for example can be altered to show the uncertainty on the outer lines in various ways, e.g. the work of \cite{benjamini_opening_1988}. 
+Also, boxplots can also be depicted using a 2D map, where the distortion in the 3rd dimension depicts the uncertainty \cite{kao_visualizing_2002}. 
+Another way can be using glyphs, where also different properties, like size, shape or complexity can be altered to show the uncertainty at different places. 
 Furthermore, recent advances in uncertainty visualization are given, with a special emphasis on ensemble (simulation) data, big data and machine learning, listing the most prominent areas where the presentation of uncertainty is crucial. 
 In the end, a framework for evaluating uncertainty visualization is presented, followed by an overview of possible future research directions \cite{kamal_recent_2021}. 
-\todo{Annotate here the different approaches wwith actual citations}
 
 A way of using animation to display uncertainty in scalar fields was shown by \citeauthor{coninx_visualization_2011}. 
 Their goal was to enrich the usual display of scalar fields with color maps with additional uncertainty information. 
@@ -287,7 +295,7 @@ The resulting tool was tested by two meteorologists, and classified the results 
 Another way of visualizing groups of isocontours are contour boxplots proposed in \cite{whitaker_contour_2013}, grouping isocontours together similar to conventional boxplots. 
 This means that the easiest default presentation (spaghetti plots) is replaced by popular boxplot stats: The median, the mean, the quartiles around that mean, the whole range and the outliers (not part of the whole range). 
 But the implementation is not as straight forward as in conventional boxplots. 
-To quantify the aforementioned statistics, \citeauthor{whitaker_contour_2013} propose a data depth based approach, which encodes how much a particular sample is centrally located in its function (or in this case: How central is a isocontour to a whole set of isocontours). 
+To quantify the aforementioned statistics, \citeauthor{whitaker_contour_2013} propose a data depth based approach, which encodes how much a particular sample is centrally located in its function (or in this case: How central is an isocontour to a whole set of isocontours). 
 While the results look very promising, it lacks a publicly available implementation, making it hard to use the approach.
 
 %
