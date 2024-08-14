@@ -66,7 +66,6 @@ In general, the modes beyond the second seem to be not well separated from the o
 \subsection{Evolution of Spatial Patterns}
 \label{sec:spatial pattern evolution}
 
-\todo{Maybe I should just cut out the third pattern since I do not use it anywhere else, and it seems degenerate, but also this is why I assume it is degenerate and not worth of analyzing further}
 
 %
 % \begin{figure}[htb]
@@ -295,14 +294,14 @@ Since the sample size is 200 ($50 \cdot 4$ months) for each scope, every result 
 %
 
 \begin{figure}[!tbp]
-  \begin{subfigure}[b]{0.49\textwidth}
+  \begin{subfigure}[b]{0.75\textwidth}
         \includegraphics[width=\textwidth]{figures/correlation_boxplot_ivt_psl_modes11_ssp126_50seasons.png}
         \includegraphics[width=\textwidth]{figures/correlation_boxplot_ivt_psl_modes11_ssp585_50seasons.png}
     \caption{Mode 1 of \ac{ivt} and Mode 1 of PSL (\ac{nao} index)}
     \label{fig:cor ivt psl modes11}
   \end{subfigure}
   \hfill
-  \begin{subfigure}[b]{0.49\textwidth}
+  \begin{subfigure}[b]{0.75\textwidth}
         \includegraphics[width=\textwidth]{figures/correlation_boxplot_ivt_psl_modes22_ssp126_50seasons.png}
         \includegraphics[width=\textwidth]{figures/correlation_boxplot_ivt_psl_modes22_ssp585_50seasons.png}
     \caption{Mode 2 of \ac{ivt} and Mode 2 of PSL (\ac{eap} index)}
@@ -349,17 +348,16 @@ It shows a slightly weaker relationship than Figure~\ref{fig:cor ivt psl modes11
 Again, SSP126 stays similar to the historical simulation and the piControl simulation. 
 But in SSP585, the correlation with the \ac{eap} index drops to a median of $0.5$, while the variability across members increases. 
 
-
+\begin{figure}[htb]
+    \includegraphics[width=.75\textwidth]{figures/correlation_boxplot_pr_ivt_modes11_ssp126_50seasons.png}
+    \includegraphics[width=.75\textwidth]{figures/correlation_boxplot_pr_ivt_modes11_ssp585_50seasons.png}
+    \caption{Mode 1 of \ac{ivt} and Mode 1 of precipitation}
+    \label{fig:cor pr ivt modes11}
+\end{figure}
 
 
 \begin{figure}[!tbp]
-  \begin{subfigure}[b]{0.49\textwidth}
-    \includegraphics[width=\textwidth]{figures/correlation_boxplot_pr_ivt_modes11_ssp126_50seasons.png}
-    \includegraphics[width=\textwidth]{figures/correlation_boxplot_pr_ivt_modes11_ssp585_50seasons.png}
-    \caption{Mode 1 of \ac{ivt} and Mode 1 of precipitation}
-    \label{fig:cor pr ivt modes11}
-  \end{subfigure}
-  \hfill
+  
   \begin{subfigure}[b]{0.49\textwidth}
     \includegraphics[width=\textwidth]{figures/correlation_boxplot_pr_ivt_modes22_ssp126_50seasons.png}
     \includegraphics[width=\textwidth]{figures/correlation_boxplot_pr_ivt_modes22_ssp585_50seasons.png}
