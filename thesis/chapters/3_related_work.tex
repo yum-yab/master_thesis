@@ -21,19 +21,19 @@ Also, there is no significant change if the climate remains stable.
 
 % This section should explain in what ways moisture transport can be quantified and used, give a few examples for each and maybe motivate  why we do it like we want to. 
 
-To computationally extract any spatio-temporal patterns of moisture (transport), it first needs to be quantified in any way.
-The variable from the MPI GE \ac{cmip}6 used for this task is the \textit{specific humidity}, which has no unit and is a float value between 0.0 and 1.0, denoting the percentage of water in the air at a specific grid point. 
-The vast majority of literature regarding moisture transport use some form of vertically integrated humidity and the variants will be explained in the following section.  
-% \todo{Create a table showing how different quantification were used in different algorithms}
-A popular usage of these quantifications was to find a filamentary weather structure called \enquote{Atmospheric Rivers}\footnote{Earlier or alternative name: \enquote{Tropospheric Rivers}}, a prominent way of water vapor transportation in the extratropic regions \cite{gimeno_atmospheric_2014}. 
+In order to computationally extract any spatio-temporal pattern of moisture (transport), the moisture transport must be quantified in some way.
+The variable from the \ac{mpige6} used for this task is the \textit{specific humidity}, which has no unit and is a float between 0.0 and 1.0, denoting the percentage of water in the air at a given grid point. 
+The vast majority of literature on moisture transport uses some form of vertically integrated humidity, and the variants are explained in the following section.  
+% \todo{Create a table showing how different quantifications have been used in different algorithms}
+A popular use of these quantifications is to find a filamentary weather structure called \enquote{Atmospheric Rivers}\footnote{Earlier or alternative name: \enquote{Tropospheric Rivers}}, a prominent way of transporting water vapor in the extratropical regions \cite{gimeno_atmospheric_2014}. 
 
 
-The most straightforward way of quantifying moisture is \textbf{\ac{iwv}} \cite{gimeno_atmospheric_2014, schluessel_atmospheric_1990, bao_interpretation_2006, neiman_meteorological_2008, zhao_lagrangian_2021}, which is essentially the vertical integral of the specific humidity $q$ over the pressure levels $p$ from earth's surface $P_S$ to some upper limit in the atmosphere:
+The most straightforward approach of quantifying moisture is \textbf{\ac{iwv}} \cite{gimeno_atmospheric_2014, schluessel_atmospheric_1990, bao_interpretation_2006, neiman_meteorological_2008, zhao_lagrangian_2021, wypych_atmospheric_2018}(also known as perceptible water \cite{wypych_atmospheric_2018}), which is the vertical integral of the specific humidity $q$ over the pressure levels $p$ from earth's surface $P_S$ to some upper limit in the atmosphere:
 
 
 \begin{equation}
 \label{eq:iwv}
-IWV = \frac{1}{g} \int^{P_s}_0 q ~\diff p
+\acp{iwv} = \frac{1}{g} \int^{P_s}_0 q ~\diff p
 \end{equation}
 
 % \todo{Insert some examples of usages with references to the papers, indicating the usefulness}
@@ -41,7 +41,7 @@ IWV = \frac{1}{g} \int^{P_s}_0 q ~\diff p
 
 
 
-% \subsection{Vertically Integrated Water Vapor (IWV)}
+% \subsection{Vertically Integrated Water Vapor (\acp{iwv})}
 
 % \subsection{Vertically Integrated Water Vapor Transport (IVT)}
 
@@ -77,7 +77,7 @@ While Equation \ref{eq:ivt} yields a vector field, the Euclidean norm of said ve
 \lVert IVT \rVert = \sqrt{(IVT_z)^2 + (IVT_m)^2}  
 \end{equation}
 
-is also a popular choice in detecting atmospheric rivers \cite{sousa_north_2020, ramos_atmospheric_2016} and other use cases \cite{ayantobo_integrated_2022}.
+is also a popular choice in detecting atmospheric rivers \cite{sousa_north_2020, ramos_atmospheric_2016} and other use cases, like researching patterns of moisture transport \cite{ayantobo_integrated_2022, kim_ensos_2015, zhou_atmospheric_2005, zou_investigating_2020} (see the next Section for details).
 
 % An example of using this method can be found in \cite{ayantobo_integrated_2022} with many more references why this method is working well for these kinds of approaches. 
 
@@ -93,9 +93,9 @@ With $E$ being the total evaporation and $P$ the precipitation.
 \citeauthor{yang_moisture_2022} showed in their report \cite{yang_moisture_2022} the directions of moisture flux and its evolution in the last three decades. The analysis was done for all continental borders based on the big ERA5 reanalysis.
 The metrics used for this analysis were mostly the evaporation $E$, precipitation $P$ and the moisture transport convergence  $VIMC = \frac{1}{g} \int^{P_s}_0  \nabla \cdot q ~\binom{u}{v} \diff ~ p$ from Equation \ref{eq:moisture_budget}.
 
-While the integration in the previous equations integrates from the surface to the outer border of the atmosphere (0 Pa), it is quite common to integrate up until the limit of 300 hPa \cite{ayantobo_integrated_2022, zhu_proposed_1998, kim_ensos_2015, guirguis_circulation_2018}, since the amount of moisture in the regions from 300 hPa to 0 Pa is quite neglible and amounts in total to about 2-3 cm/year in terms of freshwater flux \cite{zhou_atmospheric_2005}.
+While the integration in the previous equations integrates from the surface to the outer border of the atmosphere ($0 hPa$), it is quite common to integrate up until the limit of $300 hPa$ \cite{ayantobo_integrated_2022, zhu_proposed_1998, kim_ensos_2015, guirguis_circulation_2018}, since the amount of moisture in the regions from $300 hPa$ to $0 hPa$ is negligible and amounts in total to about 2-3 cm/year in terms of freshwater flux \cite{zhou_atmospheric_2005}.
 
-There are also some other notable other algorithms, namely stable oxygen isotope investigation \cite{ma_atmospheric_2018} and langragian backwards trajectories \cite{zhao_lagrangian_2021}, but both rather look for the origin of the  water vapor instead of its destination and are therefor out of scope for this thesis.
+There are other notable algorithms, namely stable oxygen isotope investigation \cite{ma_atmospheric_2018} and langragian backwards trajectories \cite{zhao_lagrangian_2021}, but both rather look for the origin of the  water vapor instead of its destination and are therefor out of scope for this Thesis.
 
 % \subsubsection{Usages of IVT and differences}
 %
@@ -133,75 +133,75 @@ This is not just limited to patterns of moisture (transport), but also work calc
 The procedure is quite similar in most of the related work: 
 
 \begin{enumerate}[noitemsep]
-  \item Generate the \ac{eof} patterns alongside their temporal patterns. Usually those are visualized for an overview. 
-  \item Use other variables to interpret the patterns. For this process methods like linear regression or (cross)correlation are used to explore the relationships between different variables. Those methods are usually applied on the temporal patterns of the analyzed mode and the actual data of other variables. Other variables typically include indexes of oscillations like \ac{enso} \cite{ayantobo_integrated_2022, kim_ensos_2015} or the raw data of precipitation. 
-  \item Visualize the results using maps. 
+  \item Generate the \acp{eof} and  visualize the spatial alongside the corresponding temporal pattern for an overview. 
+  \item Use other variables, e.g., precipitation, \ac{psl} (representing an oscillation like the \ac{nao}), occurrence of atmospheric rivers, or \ac{sst}, to interpret the patterns. For this process methods like linear regression or (cross)correlation are used to explore the relationships between different variables. Those methods are usually applied on the temporal patterns of the analyzed mode and the actual data of other variables. Other variables typically include indexes of oscillations like \ac{enso} \cite{ayantobo_integrated_2022, kim_ensos_2015} or the raw data of precipitation. 
+  \item Visualize the results using maps and diagrams. 
 \end{enumerate}
 
-An overview of datasets, timescopes and other metadata is given in Table \ref{tab:ivtpatterns-overview}.
+An overview of datasets, time scopes and other metadata of similar work is given in Table \ref{tab:ivtpatterns-overview}.
 
-Published in 1982, \citeauthor{salstein_modes_1983} provided the first example of calculating \ac{eof} on \ac{ivt}. 
+Published in 1982, \citeauthorwork{salstein_modes_1983} provided the first example of calculating \ac{eof} of \ac{ivt}. 
 Based on data from 91 weather stations, they computed the \ac{ivt} of the whole Northern Hemisphere. 
 Statistical significance was determined by employing a Monte Carlo testing method. 
-The \acp{eof} were computed on the IWV, the zonal and meridional \ac{ivt} fields respectively, but they also evaluated an approach of combining both \ac{ivt} components in one data vector. 
-They reported the significance of the primary mode of IWV, encoding nearly half (44 \%) of variance of the data.
+The \acp{eof} were computed on the \acp{iwv}, the zonal and meridional \ac{ivt} fields respectively, but they also evaluated an approach of combining both \ac{ivt} components in one data vector. 
+They reported especially the significance of the primary mode of \acp{iwv}, encoding nearly half (44 \%) of variance of the data.
 
-Although most found related work uses \ac{eof} analysis, \citeauthor{teale_patterns_2020} employ an approach using Self Organizing Maps (SOMs) to detect patterns of moisture transport in the eastern United States.
-SOMs are a machine learning approach to reduce data dimensionality, producing a 2D map of higher dimensional data.
-While they acknowledge the efficiency of \ac{eof} to extract dominant patterns, they emphasize the problem of required orthogonality of modes, which is not given for SOMs. 
+Although most found related work uses \ac{eof} analysis, \citeauthor{teale_patterns_2020} employ an approach using \acp{som} to detect patterns of moisture transport in the eastern United States.
+\acp{som} are a machine learning approach to reduce data dimensionality, producing a 2D map of higher dimensional data.
+While they acknowledge the efficiency of \ac{eof} to extract dominant patterns, they emphasize the problem of required orthogonality of modes, which is not given for \acp{som}. 
 The results show that fluxes with the highest moisture content occur less frequently than those with less moisture. 
 But despite the higher moisture content, fluxes with lower moisture transport dominate water vapor movement due to their prevalence. 
 Many of these fluxes meet typical criteria for atmospheric rivers, with varying trajectories and sources suggesting diverse mechanisms of formation. 
-The temporal variability in monthly flux frequencies correlates with regional precipitation patterns, indicating that this approach is a valuable framework for studying precipitation changes \cite{teale_patterns_2020}.
+The temporal variability in monthly flux frequencies correlates with regional precipitation patterns, indicating that this approach is a valuable framework for studying precipitation changes. \cite{teale_patterns_2020}
 
 
 
-\citeauthor{ayantobo_integrated_2022} analyzed the primary six modes of \ac{eof} in China, which was grouped in different regions for comparison. 
+\citeauthor{ayantobo_integrated_2022} analyzed the primary six modes of \ac{eof} in China, which was divided into seven different regions for comparison. 
 While the variances of \ac{ivt} in eastern to southern China were quite high, the variances in northern China were quite low. 
-It was shown by comparing the temporal patterns of the primary mode of \ac{eof} with the \ac{enso}, that these patterns were related. 
-The cross-wavelet coherence revealed that \ac{ivt} and \ac{enso} time-series were coherent, which implies that increased \ac{ivt} was prevalent linked to increased \ac{enso} activities \cite{ayantobo_integrated_2022}. 
+By comparing the temporal patterns of the primary mode of \ac{eof} with that of \ac{enso}, it was shown that these patterns were related. 
+Cross-wavelet coherence\footnote{Also known as time-variation Fourier analysis, this approach decomposes signals into the time-frequency domain to analyze where in time (x-axis) the signals are related at what frequency (y-axis). \cite{ayantobo_integrated_2022}} showed that the \ac{ivt} and \ac{enso} time series were coherent, implying that increased \ac{ivt} was generally associated with increased \ac{enso} activity. \cite{ayantobo_integrated_2022} 
 
 
-\citeauthor{wypych_atmospheric_2018} compares the patterns of perceptible water (IWV) in Europe for different seasons/months for the last $\approx50$ years. 
+\cite{wypych_atmospheric_2018} compares the patterns of perceived water (\acp{iwv}) in Europe for different seasons/months for the last $\approx50$ years. 
 Similar to \cite{ayantobo_integrated_2022}, Europe was grouped into different regions with different moisture conditions. 
-This revealed significantly different moisture patterns for the regions, for example Northern Continental vs. Northern Atlantic.
-The results confirmed the expected important role of atmospheric circulation for the moisture in the winter by measuring the correlation, while relationships were substantially weaker for transitional months like April or October. 
-Noticable was also the lack of correlation between the atmospheric circulation and the moisture patterns in summer. 
+This revealed significantly different moisture patterns for the regions, e.g. northern continental vs. northern Atlantic.
+The results confirmed the expected important role of the atmospheric circulation (represented in this study by \ac{eof} patterns of \ac{psl} and the advection direction of air masses) for the moisture in winter by measuring the correlation, while the relationships were much weaker for transitional months like April or October. 
+The lack of correlation between atmospheric circulation and moisture patterns in summer was also striking. \cite{wypych_atmospheric_2018}
 
 
  
 
 
-\citeauthor{fernandez_analysis_2003} analyzed the precipitation modes in the Mediterranean Sea and linking them to the moisture transport in the same area. 
-A goal of this analysis was to contribute to the understanding of the reduction of precipitation which happened in the area as well as to the low-frequency precipitation variability, leading to multiyear drought periods.
-They employed multiple methods of validating their data: The precipitation data as well as the wind/moisture data for \ac{ivt} were validated with data from actual weather stations. 
-The stability of the eigenvectors was tested with a Monte Carlo simulation, comparing the variability of actual data with random test data, while degeneracy of the \ac{eof} modes was tested using the method of \citeauthor{north_sampling_1982} \cite{north_sampling_1982}. 
-Results of the analysis identify the interpretation of the three main precipitation modes:
-The first mode (22 \% variance) seems to be linked to the \ac{nao} and Atlantic Storm tracks and associated moisture transports, while the second mode (16 \%) represents the internal redistribution of moisture in the Mediterranean basin between the eastern and western parts.  
-The third mode (11 \%) explains increased precipitation in the northern part of the domain. 
-Additionally, moisture transport during positive and negative phases of leading mode showed increased inflow of moisture from the west \cite{fernandez_analysis_2003}. 
+\citeauthor{fernandez_analysis_2003} analyzed the precipitation modes in the Mediterranean Sea and related them to the moisture transport in the same area. 
+A goal of this analysis was to contribute to the understanding of the precipitation reduction that occurred in the area, as well as the low-frequency precipitation variability that led to multi-year droughts.
+They used several methods to validate their data: The precipitation data as well as the wind/moisture data for \ac{ivt} were validated with data from actual weather stations. 
+The stability of the eigenvectors was tested with a Monte Carlo simulation comparing the variability of actual data with random test data, while the degeneracy of the \ac{eof} modes was tested using the method of \citeauthorwork{north_sampling_1982}. 
+The results of the analysis identify the interpretation of the three main precipitation modes:
+The first mode (22 \% variance) seems to be related to the \ac{nao}, Atlantic storm tracks and associated moisture transports, while the second mode (16 \%) represents the internal redistribution of moisture in the Mediterranean basin between the eastern and western parts.  
+The third mode (11 \%) explains the increased precipitation in the northern part of the domain. 
+In addition, the moisture transport during the positive and negative phases of the leading mode showed an increased inflow of moisture from the west. \cite{fernandez_analysis_2003} 
 
 
 
-Similar to \cite{fernandez_analysis_2003}, \citeauthor{zhou_atmospheric_2005} analyzed the anomalous summer rainfall patterns over China and link them to water vapor transport. 
+Similar to the work of \citeauthorwork{fernandez_analysis_2003}, \citeauthor{zhou_atmospheric_2005} analyzed the anomalous summer rainfall patterns over China and link them to water vapor transport. 
 They confirmed their results by using a second dataset for \ac{ivt} calculation. 
 They showed that the primary mode of anomalous rainfall is associated with heavier rainfall in the Yangtze river region, while the same applies to the second mode and the Huaihe river. 
 Connecting these patterns to moisture transport, they identified the different ways how these heavier rain areas are coming about by certain convergences of water vapor transports. 
-Furthermore, they compared the supply of anomalous rainfall patterns to the one of normal monsoon rainfall, revealing that those differ significantly \cite{zhou_atmospheric_2005}.
+Furthermore, they compared the supply of anomalous rainfall patterns to the one of normal monsoon rainfall, revealing that those differ significantly. \cite{zhou_atmospheric_2005}
 
 
-In \cite{guirguis_circulation_2018}, the authors calculate rotated \ac{eof} on \ac{ivt} data and try to analyze the relation between the 15 most dominant modes and the occurrence of atmospheric rivers (AR) on the USA west coast. 
+In the work of \citeauthorwork{guirguis_circulation_2018}, the authors calculate rotated \ac{eof} of \ac{ivt} data and try to analyze the relation between the 15 most dominant modes and the occurrence of atmospheric rivers (AR) on the USA west coast. 
 For this they divided the coast into different regions and linked the activity (positive and negative) of the corresponding temporal pattern of each mode to the occurrence of atmospheric rivers. 
-It was found that a few modes seem very influential for certain regions' AR activity, while others seem to play no role at all. 
-They also identified favorable and unfavorable circulation states (e.g. amongst others a low pressure anomaly in a certain region) for AR occurrence \cite{guirguis_circulation_2018}. 
+It was found that a few modes seem very influential for some regions' AR activity, while others seem to play no role at all. 
+They also identified favorable and unfavorable circulation states (e.g. amongst others a low pressure anomaly in some regions) for AR occurrence \cite{guirguis_circulation_2018}. 
 
 
-\citeauthor{kim_ensos_2015} showed in their analysis the connection of the \ac{ivt} patterns in the western USA to three different \ac{enso} events (eastern pacific El Niño (EPEN), central pacific El Niño (CPEN) and La Niña (NINA)). 
-While EPEN events are associated with large positive \ac{ivt} anomalies from the subtropical Pacific to the north-western USA, CPEN events lead to enhanced moisture transport to the southern USA. 
-During NINA events the mean \ac{ivt} anomaly is flipped in comparison to EPEN and CPEN. 
-Furthermore, it was shown that \ac{ivt} patterns computed for these events differ significantly from the ones computed for neutral years.
-Furthermore the results were connected to precipitation anomalies on the USA west coast, showing huge differences (especially for the northern part of the coast) for EPEN and CPEN events. 
-But the authors also emphasize that while the suggestions are strong, exceptions occur (e.g. one El Niño leading to a dry winter, another to the opposite) and need to be studied in greater detail.
+\citeauthor{kim_ensos_2015} showed in their analysis the connection of \ac{ivt} patterns in the western USA to three different \ac{enso} events (Eastern Pacific El Niño (EPEN), Central Pacific El Niño (CPEN) and La Niña (NINA)). 
+While EPEN events are associated with large positive \ac{ivt} anomalies from the subtropical Pacific to the northwestern USA, CPEN events lead to enhanced moisture transport to the southern USA. 
+During NINA events, the mean \ac{ivt} anomaly is reversed compared to EPEN and CPEN. 
+It is also shown that the \ac{ivt} patterns computed for these events are significantly different from those computed for neutral years.
+Furthermore, the results were related to precipitation anomalies on the west coast of the USA, showing large differences (especially for the northern part of the coast) for EPEN and CPEN events. 
+However, the authors also emphasize that while the evidence is strong, there are exceptions (e.g., one El Niño leads to a dry winter, another to the opposite) and need to be studied in more detail. \cite{kim_ensos_2015}
 
 Similar to \cite{vietinghoff_visual_2021} and the approach of this thesis, \citeauthor{zou_interdecadal_2018} applied a sliding window approach to \ac{ivt} patterns in the tropical Indian Ocean–western Pacific to analyze the evolution over time. 
 For the studied period from 1961 to 2015, they studied every 20-year period with a 5-year sliding window, computing Multivariate \acp{eof} for each window, resulting in vector fields of patterns. 
@@ -230,25 +230,25 @@ They revealed the characteristics of the two most significant modes, but most pr
 
 \begin{table}
 \centering
-\caption{Overview table of patterns with moisture transport}
+\caption{Overview table of research regarding patterns with moisture transport. THe acronyms in the Studied Season column stand for the month used: JJA for the summer (June, Juli, and August) and (N)DJF for winter (November, December, January, and February). TEIOWP stands for Tropical Eastern Indian Ocean-Western Pacific, the region around Indonesia.}
 \label{tab:ivtpatterns-overview}
 \scalebox{0.6}{
 \begin{tblr}{
   hline{2} = {-}{},
 }
 \textbf{Release Year} & \textbf{Pattern extraction} & \textbf{Area of Interest} & \textbf{Timescope} & \textbf{Time Resolution} & \textbf{Studied Season} & \textbf{Variable used for \ac{eof}} \\
-2020 \cite{teale_patterns_2020}                 & SOMs                        & USA east                  & 1979 to 2017       & daily                    & all year                & $\lVert IVT \rVert$                       \\
+2020 \cite{teale_patterns_2020}                 & SOMs                        & eastern USA                 & 1979 to 2017       & daily                    & all year                & $\lVert IVT \rVert$                       \\
 2022  \cite{ayantobo_integrated_2022}                & \ac{eof}                         & China                     & 1979 to 2010       & daily                    & all year                & $\lVert IVT \rVert$                       \\
 1982   \cite{salstein_modes_1983}               & \ac{eof}                         & Northern hemisphere       & 1958 to 1973       & monthly/yearly           & all year                & $IWV$, $IVT_m$, $IVT_z$, combined   \\
 2003  \cite{fernandez_analysis_2003}                & \ac{eof}                         & Mediterranean Sea         & 1948 to 1996       & 6hr                      & DJF                     & $PR$                              \\
 2005 \cite{zhou_atmospheric_2005}                 & \ac{eof}                         & China                     & 1951 to 1999       & monthly                  & JJA                     & $PR$                              \\
 2018 \cite{guirguis_circulation_2018}                 & \ac{eof}                         & USA (west coast)          & 1948 to 2017       & daily                    & NDJF                    & $\lVert IVT \rVert$ (assumed)             \\
 2015 \cite{kim_ensos_2015}                 & \ac{eof}                         & western USA               & 1979 to 2010       & 6hr                      & DJF                     & $\lVert IVT \rVert$ (assumed)             \\
-2018 \cite{zou_interdecadal_2018}                 & \ac{eof}                         & TEIOWP                    & 1961 to 2015       & monthly                  & JJA                     & $\overrightarrow{IVT}$                            \\
-2020 \cite{zou_investigating_2020}                 & \ac{eof}                         & TEIOWP                    & 1958 to 2018       & 6hr/monthly              & JJA                     & Integrated Water Vapor Sink    \\
+2018 \cite{zou_interdecadal_2018}                 & \ac{eof}                         & TEIOWP            & 1961 to 2015       & monthly                  & JJA                     & $\overrightarrow{IVT}$                            \\
+2020 \cite{zou_investigating_2020}                 & \ac{eof}                         & TEIOWP        & 1958 to 2018       & 6hr/monthly              & JJA                     & Integrated Water Vapor Sink    \\
 2013 \cite{yao_simulation_2013}                 & \ac{eof}                         & East Asia                 & 1997 to 2002       & -                         & JJA                     & $IVT_m$, $IVT_z$                  \\
 2012 \cite{li_quasi-4-yr_2012}                 & \ac{eof}                         & East Asia                 & 1979 to 2009       & monthly                  & summer                  & $\overrightarrow{IVT}$                            \\
-2018 \cite{wypych_atmospheric_2018}                 & \ac{eof}                         & Europe                    & 1981 to 2015       & daily                    & all year                & $IWV$, $SLP$                       
+2018 \cite{wypych_atmospheric_2018}                 & \ac{eof}                         & Europe                    & 1981 to 2015       & daily                    & all year                & $\ac{iwv}$, $SLP$                       
 \end{tblr}
 }
 \end{table}
@@ -264,8 +264,8 @@ Since the used dataset (see Chapter \ref{ch:dataset}) is an ensemble simulation 
 This section summarizes advances fitting for this topic, giving a frame of references of current possibilities of visualizing uncertainty.
 
 \citeauthor{kamal_recent_2021} give a recent overview over the whole topic of uncertainty visualization: From the introduction to  the whole concept of uncertainty, to the differentiation between different kinds of uncertainty in the visualization process.
-On the one hand there is the uncertainity of the data itself, resulting of measurement errors, imprecision of sensors or simulations. 
-On the other hand there is the uncertainity introduced by the visualization itself, like interpolation between grid points.  
+On the one hand there is the uncertainty of the data itself, resulting of measurement errors, imprecision of sensors or simulations. 
+On the other hand there is the uncertainty introduced by the visualization itself, like interpolation between grid points.  
 They grouped all kinds of representing uncertainty in two categories: quantification, consisting of mostly mathematical approaches of handling uncertain data, and visualization, displaying the uncertain data in a way directly. 
 Example for the former would be reducing the original data through various techniques to make it possible displaying the \ac{pdf} in the end (like \citeauthorwork{pothkow_probabilistic_2011}) or using clustering techniques to identify outliers (\cite{bordoloi_visualization_2004}). 
 For the latter different kinds of uncertainty visualization were presented and reviewed.
