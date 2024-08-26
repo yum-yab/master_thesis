@@ -1,3 +1,4 @@
+
 \chapter{Conclusions and Future Work}
 \label{ch:conclusions}
 
@@ -5,11 +6,16 @@
 \label{sec:conclusions}
 
 
-This thesis presents the first ensemble-scale evaluation of Empirical Orthogonal Functions (EOFs) for moisture-related variables across Europe, encompassing future scenarios. A sliding window approach was used in the EOF analysis to evaluate the evolution of these patterns over time. The primary objective of this pattern analysis was to gain visual insights into the structural nature of these recurring oscillations of moisture transport and their consequences, which are typically challenging to track.
-Furthermore, this research addresses the challenge of managing a vast amount of temporally dynamic yet repetitive data, consisting of 50 different members in the ensemble simulation, by applying EOF analysis to reduce its complexity and make member-sensitive visual analysis possible. This Thesis not only analyzes changes visually but also highlights the variability across different simulation members.
-This work provides the first known computation of Integrated Vapor Transport (\ac{ivt}) and precipitation EOF patterns for the entirety of Europe and the Northern Atlantic. The relationships between these patterns and other variables were explored to enhance the understanding of their implications. This thesis focuses on two major oscillations in Europe, the North Atlantic Oscillation (\ac{nao}) and the East Atlantic Pattern (\ac{eap}), which are established results of EOF analysis of sea level pressure data and primary drivers of winter winds and weather patterns.
-Additionally, the most critical result of moisture transport, precipitation, was analyzed to explore the consequences and significance of specific modes of moisture transport. To illustrate member variability, contour lines were employed. Moreover, the study introduced a novel method for displaying level crossing probabilities using hexbins, enhancing the clarity and interpretability of the data. 
-\todo{This section may sound a bit to chatgpty}
+This thesis presents the first ensemble-scale evaluation of Empirical Orthogonal Functions (EOFs) for moisture-related variables across Europe, encompassing the two extremes of CMIP6 future scenarios. 
+A sliding window approach was used in the \ac{eof} analysis to evaluate the evolution of the patterns over time. 
+The primary objective of this pattern analysis was to gain visual insights into the structural nature of these recurring oscillations of moisture transport and their consequences, which are typically challenging to track.
+Furthermore, the \ac{eof} analysis has the advantage of reducing the complexity of the dataset, making it easier to realize the visualization of the ensembles' multiple members.
+This work provides the first known computation of \ac{ivt} and precipitation EOF patterns for Europe and the northern Atlantic. 
+The relationships between these patterns and other variables were explored to enhance the understanding of their implications. 
+This thesis focuses on two major oscillations in Europe, the North Atlantic Oscillation (\ac{nao}) and the East Atlantic Pattern (\ac{eap}), which are established results of EOF analysis of sea level pressure data and primary drivers of winter winds and weather patterns.
+Additionally, the most critical result of moisture transport, precipitation, was analyzed to explore the consequences and significance of specific modes of moisture transport. 
+To illustrate member variability, contour lines were employed. 
+Moreover, the thesis introduced a method for displaying multiple contour lines using hexbins, enhancing the clarity and interpretability of the data compared to the conventional method (i.e., spaghetti plots). 
 % Intro:
 %
 % \begin{itemize}
@@ -42,16 +48,16 @@ Additionally, the most critical result of moisture transport, precipitation, was
 
 
 The analysis focused on stationary water vapor transport, represented by monthly means, and its relationship with monthly precipitation and sea level pressure, which reflect the dominant oscillations, \ac{nao} and \ac{eap}. 
-The results identified two dominant modes of water vapor transport, quantified using Integrated Vapor Transport (\ac{ivt}), which demonstrated considerable stability across different members and time periods.
-In the analysis of precipitation EOFs, the primary mode appeared quite stable, while the secondary mode seemed questionable, with the remaining modes exhibiting degeneracy. 
+The results identified two dominant modes of water vapor transport which demonstrated considerable stability across different members and time periods.
+In the analysis of precipitation EOFs, the primary mode appeared to be quite stable, while the secondary mode appeared questionable, with the remaining modes exhibiting degeneracy. 
 Relationships between these patterns were explored using two correlation-based methods: one involved comparing the modes of sea level pressure (PSL), \ac{ivt}, and precipitation EOFs, while the other involved generating correlation maps between specific modes and the corresponding data.
 The first method revealed strong correlations between the dominant modes of PSL and \ac{ivt}, as well as between these modes and precipitation. 
-However, the correlations were somewhat weaker in the reverse direction, but still existent. 
-A particularly strong relationship was observed between the primary modes of \ac{ivt} and precipitation, which seems especially relevant for understanding precipitation variability in the Iberian Peninsula. 
+However, the correlations were somewhat weaker in the secondary \acp{eof}, but still exist. 
+A particularly strong relationship was observed between the primary modes of \ac{ivt} and precipitation, which could be relevant to understand precipitation variability in the Iberian Peninsula. 
 Conversely, the connection between the secondary \acp{eof} of \ac{ivt} and precipitation was weaker, possibly due to the instability of the secondary precipitation \ac{eof}, which raises questions about its interpretative usefulness.
 The second method indicated that the area of precipitation strongly correlated with the primary mode extends northward, with this pattern becoming more pronounced under scenarios of more severe climate change. 
-Additionally, the secondary mode of \ac{ivt}, and consequently the precipitation data, appeared to have less influence on the western coast of Europe.
-It is important to note that a comprehensive evaluation and interpretation of these findings should be conducted by a domain expert, such as a meteorologist or climate scientist, to ensure accuracy and relevance.
+Furthermore, the secondary mode of \ac{ivt}, and consequently the precipitation data, appeared to have less influence on the western coast of Europe in more pronounced climate change.
+% It is important to note that a comprehensive evaluation and interpretation of these findings should be conducted by a domain scientists, such as a meteorologist or climate scientists, to ensure accuracy and relevance.
 
 % reflection: 
 %
@@ -65,14 +71,15 @@ It is important to note that a comprehensive evaluation and interpretation of th
 % \end{itemize}
 %
 
-Reflecting on this thesis, the choice to utilize the Julia language and its related framework proved to be somewhat questionable. Although Julia has gained significant traction within the geo-scientific community, it has not yet achieved the same level of maturity as Python. 
+Reflecting on this thesis, the choice to utilize the Julia language and its related framework proved to be somewhat questionable. 
+Although Julia has gained significant traction within the geo-scientific community, it has not yet achieved the same level of maturity as Python. 
 While Julia excels in implementing mathematical concepts, Python offers a more extensive array of libraries that facilitate various tasks.
 The Makie framework, though excellent for visualization, suffers from inadequate documentation, making adjustments challenging. 
 Additionally, the GeoMakie library, responsible for the map projections of the data, is not sufficiently mature for the applications required in this thesis, presenting several limitations, such as issues with projections and boundaries.
-The proposed hexbin-based visualization of level crossing probabilities, despite ability to mitigate some issues of spaghetti plots, seems to not be better than any already existing uncertain contour line visualization techniques.
+The proposed hexbin-based visualizatio despite ability to mitigate some issues of spaghetti plots, seems to not be better than any already existing uncertain contour line visualization techniques.
 Therefor, an useable implementation of them could be very useful, since the biggest problem of the already existing approaches is the lack of implementation in all-purpose visualization toolkits.
-While the results suggest changes potentially linked to climate change, the interpretation of EOF analysis remains complex. 
-Consequently, this type of analysis necessitates validation and acceptance from meteorologists and climate scientists to ensure its credibility and applicability.
+While the results suggest changes potentially related to climate change, the interpretation of the EOF analysis remains complex. 
+Consequently, this type of analysis requires validation and acceptance from meteorologists and climate scientists to ensure its credibility and applicability.
 
 \section{Future Work}
 \label{sec:FutureWork}
@@ -91,17 +98,18 @@ Consequently, this type of analysis necessitates validation and acceptance from 
 %
 First, anything that helps to understand the consequences of certain EOF modes could solidify this kind of analysis of water vapor transport. 
 For example, applying EOF analysis to reanalysis data of similar variables could offer further insights into the significance of identified modes. 
-% Understanding the consequences and implications of certain modes could help solidify this type of analysis within the field.
-% Or developing methods to gain a deeper understanding of specific modes is crucial. 
 Or by e.g. analyzing how much of Spain's precipitation can be explained by the dominant precipitation mode by comparing the reconstruction of this mode with actual data, could provide valuable insights.
 Also, incorporating a broader range of statistical methods, such as Spearman correlation and regression analysis, could enhance the comparative analysis of different visualizations. 
 These methods can also be easily utilized in the presented visual analysis techniques in this Thesis, like correlation boxplots of temporal patterns and correlation maps.
 Implementing the established visualization techniques for contour lines or scalar fields, such as contour boxplots, could improve the representation of member variability.
 So for example the contour boxplot approach presented in related work can be combined with clustering algorithms to display the uncertainties in level crossing probabilities. 
 This would aid in the clearer visualization of differences and patterns within the data.
-As pointed out in Chapter~\ref{ch:methodology}, for this at first the far higher timely resolution of 6-hourly data was computed, which can also be analyzed to get insights into the transient components of moisture transport, which could reuse much of the work done for this Thesis.
+As pointed out in Chapter~\ref{ch:methodology}, for this at first the far higher timely resolution of 6-hourly data was computed, which can also be analyzed to get insights into the transient components of moisture transport, which could reuse much of the work done for this thesis.
 This could also be used to be linked to atmospheric rivers, which seems to be an area of great interest in the atmospheric science community.
 Furthermore, exploring alternative pattern analysis methods, such as Self-Organizing Maps (SOMs, see \citeauthorwork{teale_patterns_2020}), might also be beneficial. 
 However, these methods often face challenges related to interpretability, which need to be addressed.
 Additionally, investigating the topological structure of the modes and employing approaches similar to those suggested \citeauthorwork{vietinghoff_visual_2021} could provide new perspectives and enhance the overall analysis.
 By pursuing these directions, future research can build on the findings of this thesis, contributing to a more comprehensive understanding of atmospheric patterns of moisture transport and their implications.
+
+
+

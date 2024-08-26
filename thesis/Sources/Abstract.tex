@@ -5,11 +5,13 @@
 \noindent
 %
 The distribution and variability of precipitation in Europe are significantly influenced by moisture transport over the north(east)ern Atlantic.
-The objective of my master thesis is to analyze the evolution of moisture transport patterns in various future climate scenarios.
-The foundation of this research lies in the MPI-GE, the Max Planck Institute Grand Ensemble Dataset, comprising an ensemble of 100 members for different RCP (climate) scenarios up until 2100.
-Each member provides multiple fields of relevant climate data.
-A challenge will be the visualization of uncertainty stemming from 100 different simulations, which will not be straightforward.
+Due to the turbulent nature of moisture transport, structural changes are difficult to track, which is tackled by analyzing the main variability patterns with a sliding window approach.
+The objective of this thesis is to visually analyze and compare changes in different future climate scenarios. 
+In addition, we investigated connections with dominant Atlantic oscillation patterns (\acf{nao} and \acf{eap}) and precipitation in Europe.
+Based on the latest \acl{mpige6}, visualizing the variability introduced by the 50 members of the simulation poses a challenge.
+To mitigate the visual clutter associated with the representation of multiple members' contour lines, a hexbin-based approach was used to facilitate the analysis of variability introduced by these numerous members.
+The results identified two dominant modes of water vapor transport, which demonstrated considerable stability across different members and time periods, along with structural changes in several spatial patterns. 
+In general, the variability explained by all moisture transport variability patterns increases, especially in pronounced climate change scenarios. 
+This effect was also observed in the primary pattern of precipitation and \ac{eap}.
+The modes of moisture transport also exhibited significant correlations with the leading oscillation and precipitation patterns. 
 
-To quantify moisture transport, an integrated water vapor transport (a combination of wind and specific moisture) scalar/vector field will be generated from the MPI-GE.
-Windowed Empirical Orthogonal Functions (EOFs) will be used to extract spatial-temporal patterns and simplify the data, making it easier to evaluate pattern evolution over time.
-\todo{Update Abstract and title and so on}

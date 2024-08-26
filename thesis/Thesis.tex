@@ -1,3 +1,4 @@
+
 \documentclass{mimosis}
 
 \usepackage{metalogo}
@@ -49,6 +50,8 @@
 % for better footnotes
 \usepackage{cleveref}
 \crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\usepackage[section]{placeins}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Bibliography
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -73,6 +76,8 @@
 \input{bibliography-mimosis}
 \addbibresource{zotero_lib.bib}
 \addbibresource{custom_references.bib}
+
+\emergencystretch=1em
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Fonts
@@ -214,7 +219,18 @@
   short = SOM,
   long  = Self Organizing Map
 }
-
+\DeclareAcronym{hpc}{
+  short = HPC,
+  long  = high performance computing
+}
+\DeclareAcronym{sd}{
+  short = SD,
+  long  = standard deviation
+}
+\DeclareAcronym{pcc}{
+  short = PCC,
+  long  = Pearson correlation coefficient
+}
 % \newacronym[description={Principal component analysis}]{PCA}{PCA}{principal component analysis}
 % \newacronym[description={Empirical Orthogonal Functions}]{EOF}{EOF}{empirical orthogonal functions}
 % \newacronym                                            {SNF}{SNF}{Smith normal form}
@@ -290,38 +306,34 @@
 \bookmarksetup{startatroot}
 \backmatter
 
-  % \begingroup
-  %   \let\clearpage\relax
-  %   % \glsaddall
-  %   % \section*{Acronyms}
-  %   %   \begin{acronym}
-  %   %     \acro{ghg}[GHG]{Greenhouse Gasses}
-  %   %     \acro{ivt}[IVT]{Integrated Water Vapor}
-  %   %     \acro{eof}[EOF]{Empirical Orthogonal Functions}
-  %   %     \acro{pca}[PCA]{Principal Component Analysis}
-  %   %     \acro{cmip}[CMIP]{Coupled Model Intercomparison Project}
-  %   %     \acro{cmip6}[CMIP6]{Coupled Model Intercomparison Project $6th$ Iteration}
-  %   %     \acro{mip}[MIP]{Model Intercomparison Project}
-  %   %     \acro{ipcc}[IPCC]{Intergovernmental Panel on Climate Change}
-  %   %     \acro{rcp}[RPC]{Representative Concentration Pathways}
-  %   %     \acro{ssp}[SSP]{Shared Socioeconomic Pathways}
-  %   %     \acro{mpige6}[MPI GE CMIP6]{Max Planck Institute Grand Ensemble CMIP6}
-  %   %     \acro{svd}[SVD]{Singular Value Decomposition}
-  %   %     \acro{gcm}[GCM]{Global Coupled Model}
-  %   %     \acro{nao}[NAO]{North Atlantic Oscillation}
-  %   %     \acro{eap}[EAP]{East Atlantic Pattern}
-  %   %     \acro{erf}[ERF]{Effective Radiative Forcing}
-  %   %     \acro{enso}[ENSO]{El Niño Southern Oscillation}
-  %   %     \acro{psl}[PSL]{Sea Level Pressure}
-  %   %     \acro{pr}[PR]{Precipitation}
-  %   %   \end{acronym}
-  %
-  %   \newpage
-  %   \printglossary
-  % \endgroup
 
   \printacronyms
   \printindex
   \printbibliography
+  \cleardoublepage
+  \phantomsection
+  \addcontentsline{toc}{chapter}{\listfigurename}
+  \listoffigures
+
+
+\newpage
+\thispagestyle{empty}
+\begin{center}
+	\vspace*{5em}
+	\huge\textbf{Erklärung}\\
+\end{center}
+\vspace{2em}
+Ich versichere, dass ich die vorliegende Arbeit selbstständig und nur unter Verwendung der angegebenen Quellen und Hilfsmittel angefertigt habe, insbesondere sind wörtliche oder sinngemäße Zitate als solche gekennzeichnet. Mir ist bekannt, dass Zuwiderhandlung auch nachträglich zur Aberkennung des Abschlusses führen kann. Ich versichere, dass das elektronische Exemplar mit den gedruckten Exemplaren übereinstimmt.
+
+\vspace{4em}
+
+Ort: \hspace{10em} Datum: \hspace{10em} Unterschrift: 
+% \begin{minipage}{\linewidth}
+% 	\centering
+% 	\begin{tabular}
+% 		Datum: &  ...................................................................\\
+% 		& \centering (Unterschrift)\\
+% 	\end{tabular}
+% \end{minipage}
 
 \end{document}

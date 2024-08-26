@@ -1,4 +1,6 @@
 
+
+
 \chapter{Basics}
 \label{ch:basics}
 
@@ -13,9 +15,9 @@ The first parts of this section are based on the textbook by \citeauthorwork{tel
 \subsection{Sampled Data, Grids and Interpolation}
 
 In general, data can be classified into two categories: intrinsically continuous or intrinsically discrete data. 
-The latter refers to data such as websites, texts, source code, images or any other type of record. 
-The first, on the other hand, usually stems from nature and is measured in physical units such as $kg$, $\frac{m}{s}$ or similar.
-Continuous data conforms to the Cauchy-Criterion (also called the $\epsilon - \delta$-Criterion), which states that a function $f(x)$ is uniformly continuous if, for any small amount $\epsilon$ you choose, you can find a small distance $\delta$ such that whenever two points are within $\delta$ of each other, their function values are within $\epsilon$ of each other (see \cite{telea2014data} for the mathematical definition). 
+The latter refers to data such as websites, texts, source code, images, or any other type of record. 
+The first, on the other hand, usually comes from nature and is measured in physical units such as $kg$, $\frac{m}{s}$ or something similar.
+Continuous data conform to the Cauchy-Criterion (also called the $\epsilon - \delta$-Criterion), which states that a function $f(x)$ is uniformly continuous if, for any small amount $\epsilon$ you choose, you can find a small distance $\delta$ such that whenever two points are within $\delta$ of each other, their function values are within $\epsilon$ of each other (see \cite{telea2014data} for the mathematical definition). 
 Continuous data can be mathematically represented as a function in the form of:
 
 \begin{equation}
@@ -24,30 +26,30 @@ Continuous data can be mathematically represented as a function in the form of:
 \end{equation}
 
 With $D \subset \mathbb{R}^d$ and $C \subset \mathbb{R}^c$. 
-In this case the function is called a d-dimensional, c-valued function, which means it maps from its original function domain $D$ to values in the codomain $C$. 
-Functions with $c=1$ are called Scalar Fields, assigning every position in the function domain a single scalar attribute $x \in \mathbb{R}$. 
-Vector Fields ($c=2$ or $c=3$) on the other hand assign every position a vector in the form of $(x_1, x_2) \in \mathbb{R}^2$ or $(x_1, x_2, x_3) \in \mathbb{R}^3$, which can (but does not have to) depend on the original function domain. 
-There are also fields related to higher dimensions (Tensor fields), but they are beyond the scope of this Thesis. 
+In this case, the function is called a d-dimensional, c-valued function, which means it maps from its original function domain $D$ to values in the codomain $C$. 
+Functions with $c=1$ are called scalar fields, which assign every position in the function domain a single scalar attribute $x \in \mathbb{R}$. 
+Vector fields ($c=2$ or $c=3$) on the other hand, assign to every position a vector in the form of $(v_1, v_2) \in \mathbb{R}^2$ or $(v_1, v_2, v_3) \in \mathbb{R}^3$, which can (but does not have to) depend on the original function domain. 
+There are also fields related to tensor fields, but they are beyond the scope of this thesis. 
 
 Although the real physical field may be continuous, its computational representation is nearly always discrete. 
 The reason for this is that it is a) hard to achieve continuous data and b) many mathematical operations (e.g., filtering, denoising, rendering) are hard to perform on continuous data. 
-According to \citeauthorwork{telea2014data}, this is called \textit{sampled data} and could come from e.g., measurements or computer simulations. 
-The sampled data can then be used to reconstruct the original, continuous dataset by using interpolation. 
-Therefor, when a field is mentioned in this Thesis, it usually refers to such an approximation of a continuous field like in Equation~\ref{eq:continous data}. 
+According to \citeauthorwork{telea2014data}, this discrete representation is called \textit{sampled data} and could come from, e.g., measurements or computer simulations. 
+The sampled data can then be used to reconstruct the original continuous dataset using interpolation. 
+Therefore, when a field is mentioned in this thesis, it usually refers to an approximation of a continuous field, such as in Equation~\ref{eq:continous data}. 
 
 
 Interpolation usually uses the structure of data, which is mostly called a \textit{grid} (or mesh). 
 A grid is a subdivision of the original function domain $D$ into a non\--overlapping collection of cells, which in turn are spanned by vertices, which are the sample points of the discretization of the continuous field.  
-There are multiple ways of defining grids (e.g., rectilinear, structured, unstructured, see Figure~\ref{fig:grid types}) and cells (examples for 2D: line, triangle, quad, hexahedron), but for the sake of brevity this section only introduces the grid applied by the dataset used for this Thesis: the uniform grid. 
+There are multiple ways of defining grids (e.g., rectilinear, structured, unstructured; see Figure~\ref{fig:grid types}) and cells (examples for 2D: line, triangle, quad, hexahedron), but for the sake of brevity this section only introduces the grid applied by the dataset used for this thesis: the uniform grid. 
 
 \begin{figure}
   \includegraphics[width=0.95\textwidth]{figures/grid-types.png}
-  \caption{Different types of Grids: A) Uniform Grid, B) unstructured grid, and C) no-conforming grid from \cite{kaltenbacher_nonconforming_2022}}
+  \caption[Examples of Different Grid Types]{Different types of Grids: A) Uniform Grid, B) unstructured grid, and C) no-conforming grid from \cite{kaltenbacher_nonconforming_2022}}
   \label{fig:grid types}
 \end{figure}
 
 
-A uniform grid is an axis-aligned box spanning over the original function domain $D$. 
+A uniform grid is an axis-aligned box that spans the original function domain $D$. 
 The extent of the box can be described as a list of $d$ pairs:
 
 \begin{equation}
@@ -55,52 +57,52 @@ The extent of the box can be described as a list of $d$ pairs:
   \label{eq:uniform grid coordinates}
 \end{equation}
 
-$(m_i, M_i)$  make up the lower and upper limit of the extent in each axis' direction. 
-The sample points are then uniformly distributed along the axis with a given distance $\delta_i$ depending on the axis and all sample points $p_i$ can be described with: 
+$(m_i, M_i)$  make up the lower and upper limit of the extent in each axis direction. 
+The sample points are then uniformly distributed along the axis with a given distance $\delta_i$ depending on the axis and all the sample points $p_i$ can be described as follows. 
 
 \begin{equation}
   p_i = (m_1 + n_i\delta_i,\dots, m_d + n_d\delta_d), n_1, \dots, n_d \in \mathbb{N}
   \label{eq:smaple point uniform grid}
 \end{equation}
 
-Therefor, every sample point can be described by its integer coordinates $n_1, \dots, n_d$. 
-The number of sample points on axis $i$ is then $N_i = 1 + (M_i - m_i)/\delta_i$, and the set $(N_1, \dots, N_d)$ is often called the \textit{shape} of the uniform grid.   
-The benefits of using uniform grids are the very low storage requirements ($3d$ floating point numbers, regardless of its size) and its simple implementation. 
+Therefore, every sample point can be described by its integer coordinates $n_1, \dots, n_d$. 
+The number of sample points on the axis $i$ is then $N_i = 1 + (M_i - m_i)/\delta_i$, and the set $(N_1, \dots, N_d)$ is often called the \textit{shape} of the uniform grid.   
+The benefits of using uniform grids are the very low storage requirements ($3d$ floating point numbers, regardless of their size) and its simple implementation. 
 Drawbacks are mainly that uniform grids do not represent all use-cases well or require an unnecessary high density to do so. 
 
 
-Interpolation is the process of reconstructing the continuous data $f$ (Equation~\ref{eq:continous data}) from sampled points $p_i$ and associated values $f_i$. 
-In general, there are multiple ways of interpolating, for example using by using \textit{nearest-neighbor interpolation}, assigning each point the value of the closest cell center. 
-While this is computationally efficient, it is a staircase-like, discontinuous approximation of the original data. 
+Interpolation is the process of reconstructing the continuous data $f$ (Equation~\ref{eq:continous data}) from the points sampled $p_i$ and associated values $f_i$. 
+In general, there are multiple ways of interpolating, for example using the \textit{ nearest-neighbor interpolation}, assigning each point the value of the closest cell center. 
+While this is computationally efficient, it is also a staircase-like, discontinuous approximation of the original data. 
 A continuous approach is linear interpolation, which interpolates the value of a point $x \in D$ based on the surrounding cell linearly. 
-But since interpolation is handled at the very last, visualization step (and handled by libraries), the full mathematical description (and other interpolation ideas) are out of the scope of this Thesis (but are detailed in the textbook by \citeauthor{telea2014data}). \cite{telea2014data} 
+But since interpolation is handled at the very last visualization step (and handled by libraries), the full mathematical description (and other interpolation ideas) are out of the scope of this thesis (but are detailed in the textbook by \citeauthor{telea2014data}). \cite{telea2014data} 
 
 \subsection{Map Projections}
 \label{sec:map projections}
 
 Regarding the original function dimension $d$ of the field $f$ described in Equation~\ref{eq:continous data}, there is a subtle but important distinction: the \textit{geometrical dimension} versus the \textit{topological dimension}. 
-The geometrical dimension refers to the dimension of space $D$ is embedded in ($d$), while the topological dimension refers to the actual function domain $D$ itself, which is $s\leq d$ \cite{telea2014data}.
-The difference is best illustrated with the example of the application in this Thesis: simulating earth's surface. 
-Since the earth is a three-dimensional object, and also the earths surface is (approximately) a sphere's surface, the geometrical dimension of such datasets is $d=3$. 
-But since the earths surface is a (curved) plane, the topological dimension of such datasets is $s=2$, which is also the reason why it is sufficient to access any gridpoint on earths with two coordinates: \textit{latitude} (lat), referring to the degrees on the north-south axis, and \textit{longitude} (lon), referring to degrees on the east-west axis.
-Typically, since the topological dimension is the more relevant one, it is referred to as the \textit{dataset dimension}, while the geometrical dimension is mostly assumed to be three. \cite{telea2014data}
+The geometrical dimension refers to the dimension of space $D$ is embedded in ($\mathbb{R}^d$), while the topological dimension refers to the actual function domain $D$ itself, which is $s\leq d$ \cite{telea2014data}.
+The difference is best illustrated with the example of the application in this thesis: simulating Earth's surface. 
+Since the earth is a three-dimensional object and the earth surface is (approximately) a sphere surface, the geometrical dimension of such datasets is $d=3$. 
+But since the earth's surface is a (curved) plane, the topological dimension of such datasets is $s=2$, which is also the reason why it is sufficient to access any point on Earth with two coordinates: \textit{latitude} (lat), referring to the degrees on the north-south axis, and \textit{longitude} (lon), referring to degrees on the east-west axis.
+Typically, since the topological dimension is the most relevant one, it is referred to as the \textit{dataset dimension}, while the geometrical dimension is assumed to be three. \cite{telea2014data}
 
 \begin{figure}[htp]
   \begin{center}
     \includegraphics[width=0.95\textwidth]{figures/tissot-map-projections.png}
   \end{center}
-  \caption{Two different map projections with different kinds of warping, depending on the map projection. The amount of warping is indicated by Tissot’s indicatrices (orange circles). Left: Mercator Projection, Right: Lambert Equal-Area Projection \cite{ghaderpour_map_2016}}\label{fig:tissot map projections}
+  \caption[Examples Of map Projections Indicating Warping]{Two different map projections with different kinds of warping, depending on the map projection. The amount of warping is indicated by Tissot’s indicatrices (orange circles). Left: Mercator Projection, Right: Lambert Equal-Area Projection \cite{ghaderpour_map_2016}}\label{fig:tissot map projections}
 \end{figure}
 
 
-Unfortunately, this requires the mapping of a 2D paper plane to a 2D sphere surface, which is topologically impossible (without distortions) \cite{vietinghoffdiss}.
-Therefor, numerous different map projections were invented, which all have a different kind of distortion in different geographical places. 
+Unfortunately, this requires mapping a 2D paper plane to a 2D sphere surface, which is impossible (without distortions) \cite{vietinghoffdiss}.
+Therefore, numerous different map projections were invented, which all have a different kind of distortion in different geographical places. 
 Figure~\ref{fig:tissot map projections} shows two distinct projections, both with their own advantages and disadvantages. 
 The orange circles are Tissot’s indicatrices, which show the distortion introduced by the projection. 
-An equal-area projection (Figure~\ref{fig:tissot map projections}, right), preserves the area of the indicatrices and changes the shape. 
-The opposite appliers to conformal projections like the Mercator projection (Figure~\ref{fig:tissot map projections}, left), where shape is preserved, but size is distorted \cite{ghaderpour_map_2016}.
-As pointed out by \citeauthorwork{vietinghoffdiss}, a different map projection may fit the area of interest better, the Mercator projection in Figure~\ref{fig:tissot map projections} (left) is still chosen for this thesis, due to limitations in the employed map projections library (see Section~\ref{sec:vis_analysis}). 
-This distortion also plays a role in calculations with uniform lon/lat-grids, since coordinates in the far north (and south) are vastly overrepresented, because they refer to a far smaller portion of the earth's surface than data near the equator (see Section~\ref{sec:eof} for geographical weighting). 
+An equal-area projection (Figure~\ref{fig:tissot map projections}, right) preserves the area of the indicatrices and changes the shape. 
+The opposite applies to conformal projections like the Mercator projection (Figure~\ref{fig:tissot map projections}, left), where shape is preserved, but size is distorted \cite{ghaderpour_map_2016}.
+As pointed out by \citeauthorwork{vietinghoffdiss}, a different map projection may fit the area of interest better, the Mercator projection in Figure~\ref{fig:tissot map projections} (left) is still chosen for this thesis due to limitations in the map projection library used (see Section~\ref{sec:vis_analysis}). 
+This distortion also plays a role in calculations with uniform lon/lat grids, since coordinates in the far north (and south) are vastly overrepresented, because they refer to a far smaller portion of the Earth's surface than data near the equator (see Section~\ref{sec:eof} for geographical weighting). 
 
 
 \subsection{Uncertain Fields}
@@ -109,22 +111,22 @@ This distortion also plays a role in calculations with uniform lon/lat-grids, si
 
 
 Let's assume $s : D \rightarrow \mathbb{R}$ is a scalar field, associating a value  with every point in $D$. 
-As mentioned in the previous section, such fields are usually approximated using $n$ sample points in a grid $(x_1,\dots, x_n) \in D^n$ and their associated scalar values, represented in a vector $(s_1,\dots,s_n) \in \mathbb{R}^n$ ($s_i$ is the scalar value at grid point $x_i$).
-This being a \enquote{normal} (or rather deterministic) scalar field, an uncertain scalar has no concrete given values $s_i$ but follows an unknown \ac{pdf} \cite{vietinghoffdiss}, which is illustrated in Figure~\ref{fig:uncertain field example}. 
+As mentioned in the previous section, such fields are usually approximated using $n$ sample points in a grid $(x_1,\dots, x_n) \in D^n$ and their associated scalar values, represented in a vector $(s_1,\dots,s_n) \in \mathbb{R}^n$ ($s_i$ is the scalar value at the grid point $x_i$).
+While a scalar field (or more specifically a deterministic one) has fixed values $s_i$, an uncertain scalar does not have explicitly defined values but instead adheres to an unknown \ac{pdf} \cite{vietinghoffdiss}, as depicted in Figure~\ref{fig:uncertain field example}. 
 
 
 \begin{figure}[htb]
   \begin{center}
     \includegraphics[width=0.95\textwidth]{figures/uncertain_gaussian_field.png}
   \end{center}
-  \caption{Illustration of an uncertain field with a Gaussian \ac{pdf} at every sample point (from \cite{pothkow2015modeling})}
+  \caption[Uncertain Field Illustration]{Illustration of an uncertain field with a Gaussian \ac{pdf} at every sample point (from \cite{pothkow2015modeling})}
   \label{fig:uncertain field example}
 \end{figure}
 
-For similar reasons why continuous data is available mostly in discrete form, the \ac{pdf} associated with every sample point is in practice rarely given as the actual function, but rather as sampled values. 
-In the case of \acp{gcm}, these samples stem from multiple \textit{realizations} $\omega \in \Omega$ ($\Omega$ being the sample space, which represents the different samples of the \ac{pdf}), which associates every realization with one version of the field: $F: \Omega \rightarrow \mathbb{R}^n$.
+For similar reasons why continuous data are available mostly in discrete form, in practice the \ac{pdf} associated with every sample point is rarely given as the actual function, but rather as sampled values. 
+In the case of \acp{gcm}, these samples are the result of multiple \textit{realizations} $\omega \in \Omega$ ($\Omega$ being the sample space, which represents the different samples of the \ac{pdf}), which associates every realization with one version of the field: $F: \Omega \rightarrow \mathbb{R}^n$.
 With regard to simulations, one realization $\omega$ is associated with a certain set of parameters for a mathematical model. 
-Again, the full set of $\Omega$ cannot be realized, so a specific number $m$ of realizations $Z = (\omega_1,\dots,\omega_m) \in \Omega^m$ is used to approximate the \acp{pdf} associated with each grid point. 
+Again, the complete set of $\Omega$ cannot be realized, so a specific number $m$ of realizations $Z = (\omega_1,\dots,\omega_m) \in \Omega^m$ is used to approximate the \acp{pdf} associated with each point in the grid. 
 Connecting this with the terms mentioned in Section~\ref{sec:climate research}: The set of fields $F(Z)$ is called \textit{ensemble}, while each field $F(\omega_i), i \in {1,\dots,m}$ is the $i$th \textit{member} (or \textit{realization}) of said ensemble. \cite{vietinghoffdiss}  
 % With $x_i \in \D, i \in {1, 2, \dots, M}$ (the approximation of $D$ in Equation~\ref{eq:continous data}), 
 
@@ -135,37 +137,37 @@ Connecting this with the terms mentioned in Section~\ref{sec:climate research}: 
 
 \subsection{Overview}
 
-\acf{eof} analysis, also known as geographically weighted \ac{pca} or Proper Orthogonal Decomposition \cite{vietinghoffdiss}, was first introduced to the field of turbulence and fluid dynamics in the late 60s. The goal was to reduce turbulent flow to a limit number of deterministic functions to explain the structure of the flow by showing coherent structures that are otherwise hard to find and define \cite{weiss_tutorial_2019}. Currently, it \enquote{is among the most widely and extensively used methods in atmospheric science} \cite{hannachi_empirical_2007}. 
+\acf{eof} analysis, also known as geographically weighted \ac{pca} or Proper Orthogonal Decomposition \cite{vietinghoffdiss}, was first introduced to the field of fluid dynamics and turbulence in the late 1960s \cite{weiss_tutorial_2019}. The goal was to reduce the turbulent flow to a limit number of deterministic functions to explain the structure of the flow by showing coherent structures that are otherwise difficult to find and define \cite{weiss_tutorial_2019}. Currently, it \enquote{is among the most widely and extensively used methods in atmospheric science} \cite{hannachi_empirical_2007}. 
 One of its goals is to reduce the usually very high dimensionality of atmospheric data \cite{hannachi_empirical_2007}, and it can also be used to link certain modes/patterns to the physics/dynamics of the analyzed system \cite{dommenget_cautionary_2002}.  
 \acp{eof} are a statistical procedure to decompose spatio-temporal data into two components: On the one hand orthogonal spatial patterns, on the other hand corresponding uncorrelated temporal coefficients, representing the activity of their corresponding pattern in certain time steps \cite{hannachi_empirical_2007, vietinghoffdiss}. 
-The naming of the components is far from being consistent: The spatial patterns are also called spatial modes, PC loadings, \acp{eof} or even sometimes PCs, while the temporal coefficients are also named principal components (PCs), \ac{eof} amplitudes or \ac{eof} (expansion) coefficients \cite{hannachi_empirical_2007}. 
-So as a formula, a spatio-temporal field $X(t, s)$ (e.g., a sea level pressure field over time mentioned in Section~\ref{sec:nao}) can be described as
+The naming of the components is far from consistent: Spatial patterns are also called spatial modes, PC loadings, \acp{eof} or even sometimes PCs, while temporal coefficients are also named principal components (PCs), \ac{eof} amplitudes or \ac{eof} (expansion) coefficients \cite{hannachi_empirical_2007}. 
+So, as a formula, a spatio-temporal field $X(t, s)$ (e.g., a sea level pressure field over time mentioned in Section~\ref{sec:nao}) can be described as
 
 \begin{equation}
   X(t, s) = \sum^{M}_{k=1} c_k(t) u_k(s)
   \label{eq:eof decomposition}
 \end{equation}
 
-with $M$ being the number of modes/patterns and  $c_k$ the $k$th temporal coefficients and $u_k$ the spatial pattern \cite{hannachi_empirical_2007}. 
-In this work, the spatial component $u_k(s)$ is usually called spatial pattern, while the temporal component $c_k(t)$ is called temporal pattern or \ac{eof} coefficients.
-The name \ac{eof} usually refers to the combination of both spatial and temporal pattern. 
+with $M$ being the number of modes/patterns and  $c_k$ the $k$th temporal coefficients and $u_k$ the $k$th spatial pattern \cite{hannachi_empirical_2007}. 
+In this work, the spatial component $u_k(s)$ is generally called the spatial pattern, while the temporal component $c_k(t)$ is called the temporal pattern or \ac{eof} coefficients.
+The name \ac{eof} or mode usually refers to the combination of spatial and temporal patterns. 
 
-This decomposition could be achieved in several ways, but \ac{eof} finds new sets of variables ($c_k(t)$ and $u_k(s)$ from Equation~\ref{eq:eof decomposition}) that each capture a maximum possible amount of variance/variability of the original dataset. 
-So the first of  the $M$ modes captures the most variance, the second one the second most and so on. 
+This decomposition could be achieved in several ways, but \ac{eof} finds new sets of variables ($c_k(t)$ and $u_k(s)$ from Equation~\ref{eq:eof decomposition}) that each capture the maximum possible amount of variance/variability of the original dataset. 
+So, the first of the $M$ modes captures the most variance, the second one the second most, and so on. 
 To give a practical example: The patterns shown in Figure~\ref{fig:nao eap} show the first two spatial patterns of \ac{psl} data, the \ac{nao} and \ac{eap} (in the formula those would be $u_1(s)$ and $u_2(s)$). 
-The temporal coefficient is basically a float value for each time step, indicating how active the pattern is ($c_1(t)$ and $c_2(t)$ for \ac{nao} and \ac{eap}, respectively). 
+The temporal coefficient is basically a floating point value for each time step, indicating how active the pattern is ($c_1(t)$ and $c_2(t)$ for \ac{nao} and \ac{eap}, respectively). 
 This value is shown for all winter seasons in Figure~\ref{fig:naoindex_comparison}, second row. 
 A positive value indicates that the \ac{psl} is dominated by the pressure low in the north and pressure high in the south, a negative value the opposite. 
-The underlying can then be (approximately) reconstructed by using $x \leq M$ modes/EOFs (e.g., it could be approximated quite well by only using the dominant modes of \ac{nao} and \ac{eap}). 
+The underlying can then be (approximately) reconstructed using $x \leq M$ \acp{eof} (e.g., it could be approximated quite well by only using the dominant modes of \ac{nao} and \ac{eap}). 
 
 \subsection{Mathematical Derivation and Computation of \acp{eof}}
 \label{sec:eof derivation}
 
 The goal of this Section is to give an overview of the mathematical origins of \acp{eof} based on the work of \citeauthorwork{hannachi_empirical_2007} as well as their actual practical computation. 
-For a more in depth history and derivation, refer to \cite{hannachi_empirical_2007} and their references, while \citeauthorwork{weiss_tutorial_2019} gives a great hands-on tutorial on POD/\acp{eof} and their interpretation and computation. 
+For a more in-depth history and derivation, refer to \cite{hannachi_empirical_2007} and their references, while \citeauthorwork{weiss_tutorial_2019} gives a great hands-on tutorial on POD/\acp{eof} and their interpretation and computation. 
 
-The starting point of \acp{eof} is usually a spatio-temporal field $X(t, s)$ defined on a Grid $G$ over $n$ time steps, for example the precipitation analyzed in this Thesis. 
-The value at each grid point at geographical location $s_j$ and time $t_i$ is given as $x_{ij}$, with $i = 1, ..., n$  and $j = 1, ..., p$.  
+The starting point of \acp{eof} is usually a spatio-temporal field $X(t, s)$ defined on a grid $G$ over $n$ time steps, for example, the precipitation analyzed in this thesis. 
+The value at each point on the grid at geographical location $s_j$ and time $t_i$ is given as $x_{ij}$, with $i = 1, ..., n$  and $j = 1, ..., p$.  
 The first step is to remove the climatology of the dataset to turn it into anomaly maps. 
 The climatology is defined as the temporal mean $\bar{x}$ of the analyzed spatio-temporal field, so 
 \begin{align}
@@ -174,7 +176,7 @@ The climatology is defined as the temporal mean $\bar{x}$ of the analyzed spatio
   \label{eq:climatology}
 \end{align}
 
-The values of anomaly map $x'_{ij}$ at each grid point are given as the deviation of $X$ from its climatology: 
+The values of the anomaly map $x'_{ij}$ at each point in the grid are given as the deviation of $X$ from its climatology: 
 
 
 
@@ -195,24 +197,24 @@ x'_{i1} & x'_{i2} & \cdots & x'_{ij}
 \end{equation}
 
 % Since from here on only anomaly maps are considered in the derivation and calculation of \acp{eof}, the $'$ gets omitted and $X$ stands now for the anomaly data.  
-The first usual step for generating \acp{eof} is the covariance matrix defined by 
+The first usual step in generating \acp{eof} is the covariance matrix defined by 
 
 \begin{equation}
   S = \frac{1}{n} X'^T X' 
   \label{eq:covariance map}
 \end{equation}
 
-The covariance matrix with the values $s_{ab}$ with $a,b = 1, \cdots, p$ contains the covariance of any grid point with any other grid point over the time. 
+The covariance matrix with the values $s_{ab}$ with $a,b = 1, \dots, p$ contains the covariance of any grid point with any other grid point over time. 
 To find \acp{eof} means determining a unit length direction $u = (u_1, \cdots, u_p)$ that explains the most variability. 
-The problem is therefor equivalent to the solution to the eigenvalue problem, so finding all the eigenvectors ($\equiv$ \acp{eof}) and their eigenvalue. Which means that the vector $u$ multiplied by the covariance matrix $S$ is equivalent to the multiplication with a scalar $\lambda^2$ (the eigenvalue):  
+The problem is therefore equivalent to the solution to the eigenvalue problem, which is to find all the eigenvectors ($\equiv$ \acp{eof}) and their eigenvalue. Being an eigenvector means that the vector $u$ multiplied by the covariance matrix $S$ is equivalent to the multiplication with a scalar $\lambda^2$ (the eigenvalue):  
 
 \begin{equation}
   Su = \lambda^2 u
   \label{eq:eigenvalue problem} 
 \end{equation}
 
-To find the $k$th \ac{eof} of a Covariance matrix, the eigenvectors $u$ are sorted by the (largest first) value of their corresponding eigenvalue $\lambda^2$. 
-The primary (or dominant) \ac{eof} the first in this order, the secondary \ac{eof} the second and so on. 
+To find the $k$th \ac{eof} of a covariance matrix, the eigenvectors $u$ are sorted by the (largest first) value of their corresponding eigenvalue $\lambda^2$. 
+The primary (or dominant) \ac{eof} is the first in this order, the secondary \ac{eof} the second and so on. 
 The variance $v_k$ of the original dataset associated with the $k$th \ac{eof} can then be calculated with: 
 
 \begin{equation}
@@ -220,21 +222,21 @@ The variance $v_k$ of the original dataset associated with the $k$th \ac{eof} ca
   \label{eq:eof variance calculation}
 \end{equation}
 
-The temporal coefficients can then in turn be calculated projecting the eigenvectors $u_k$ on the original anomaly map $X'$ with: 
+The temporal coefficients can then in turn be calculated by projecting the eigenvectors $u_k$ on the original anomaly map $X'$ with: 
 
 \begin{equation}
   a_{k} = X'u_k
 \end{equation}
 
-Together they fulfill the requirements of the decomposition in Equation~\ref{eq:eof decomposition}. 
+Together, they fulfill the requirements of the decomposition in Equation~\ref{eq:eof decomposition}. 
 % So the coefficients in Equation~\ref{eq:eof decomposition}
 Note here that the solutions being eigenvectors means that the multiplication by any scalar $\alpha$ (i.e., $\alpha u_k$ and $\alpha^{-1} a_k$) is also a valid solution to the problem. 
-This indeterminacy leaves room of choosing scale and direction in a useful way (see Section~\ref{sec:eof_calc} for a practical implementation) \cite{vietinghoffdiss}. 
+This indeterminacy leaves room for choosing scale and direction in a useful way (see Section~\ref{sec:eof_calc} for a practical implementation) \cite{vietinghoffdiss}. 
 
 \subsection{Calculation and Application to the geographical Domain}
 
 
-Since geographical data is usually given on a regular 2D grid which depicts the earth's surface, the influence of grid point density (same degree resolution is far more sparse in equatorial regions than in the Arctic) need to be corrected with geographical weights. 
+Since geographical data are usually given on a regular 2D grid, which depicts the Earth's surface, the influence of grid point density (the same degree resolution is far more sparse in equatorial regions than in the Arctic) needs to be corrected with geographical weights. 
 Those can be approximated by the square root of the cosine of the respective latitude \cite{hannachi_primer_nodate, vietinghoffdiss} with a similar diagonal matrix as depicted in \cite{hannachi_primer_nodate}: 
 
 \begin{equation}
@@ -255,9 +257,9 @@ Linear Algebra provides a tool called \textit{Singular Value Decomposition} (\ac
   \label{eq:svd definition}
 \end{equation}
 
-$L$ contains the left singular vectors, $R$ the right singular vectors and $\Lambda$ a diagonal matrix containing the singular values $\lambda_k$ (as used in Equation~\ref{eq:eof variance calculation} above). 
+$L$ contains the left singular vectors, $R$ the right singular vectors, and $\Lambda$ a diagonal matrix containing the singular values $\lambda_k$ (as used in Equation~\ref{eq:eof variance calculation} above). 
 
-Now, all of the above is used to calculate the \acp{eof} of geographical data by applying \ac{svd} to the matrix (like in \citeauthorwork{vietinghoffdiss}): 
+Now, all of the above is used to calculate the \acp{eof} of geographical data by applying \ac{svd} to the matrix (as in \citeauthorwork{vietinghoffdiss}): 
 
 \begin{equation}
   \tilde{X} = \frac{1}{\sqrt{n - 1}} W^{\frac{1}{2}} X' 
@@ -265,9 +267,11 @@ Now, all of the above is used to calculate the \acp{eof} of geographical data by
 \end{equation}
 
 
-When using \ac{svd} of $\tilde{X}$ with time as the first dimension (as defined at the begin of Section~\ref{sec:eof derivation}), the columns of $R^T$ are the \acp{eof} (so $u_k(s)$ of Equation~\ref{eq:eof decomposition}) and the columns of $L$ multiplied with $\sqrt{n - 1}$ are the principal components or \ac{eof} coefficients ($c_k(t)$ in Equation~\ref{eq:eof decomposition}).
+When using \ac{svd} of $\tilde{X}$ with time as the first dimension (as defined at the beginning of Section~\ref{sec:eof derivation}), the columns of $R^T$ are the \acp{eof} (so $u_k(s)$ of Equation~\ref{eq:eof decomposition}) and the columns of $L$ multiplied with $\sqrt{n - 1}$ are the principal components or \ac{eof} coefficients ($c_k(t)$ in Equation~\ref{eq:eof decomposition}).
 As explained above, the resulting \acp{eof} can be scaled, which is explained in detail in Section~\ref{sec:eof_calc}.
-\todo{go over this whole section and check everything for being correct!!!!}
+
+
+
 
 
 
