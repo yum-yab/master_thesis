@@ -7,7 +7,7 @@
 }{typearea}
 
 \LoadClass[a4paper,
-           twoside,
+           oneside,
            11pt,
            cleardoublepage=empty,
            numbers=noenddot,
