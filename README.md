@@ -18,7 +18,7 @@ Based on the latest MPI GE CMIP6, visualizing the variability introduced by the 
 To mitigate the visual clutter associated with the representation of multiple members' contour lines, a hexbin-based approach was used to facilitate the analysis of variability introduced by these numerous members.
 The results identified two dominant modes of water vapor transport, which demonstrated considerable stability across different members and time periods, along with structural changes in several spatial patterns. 
 In general, the variability explained by all moisture transport variability patterns increases, especially in pronounced climate change scenarios. 
-This effect was also observed in the primary pattern of precipitation and \ac{eap}.
+This effect was also observed in the primary pattern of precipitation and EAP.
 The modes of moisture transport also exhibited significant correlations with the leading oscillation and precipitation patterns. 
 
 ## Content
